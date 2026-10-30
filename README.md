@@ -240,7 +240,7 @@ This project is built for deployment on **Replit** as part of CoNSTruct 2.0.
 | Antriksh | Project Lead | [@Antrikshcodes](https://github.com/Antrikshcodes) |
 | Poorvi | Contributor / Engineer | [@poorvig222](https://github.com/poorvig222) |
 | Pavitr Makhija | Backend and API integration | [@pavitrmakhija](https://github.com/pavitrmakhija) |
-| Saureet | Backend & Reasearch | [@saureetc007](https://github.com/saureetc007) |
+| Saureet | Full Stack | [@saureetc007](https://github.com/saureetc007) |
 | Jagrit | Testing & Frontend | [@codesjagrit](https://github.com/codesjagrit) |
 
 > 💡 *Roles will be refined as team members take ownership of specific modules.*
