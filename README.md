@@ -238,9 +238,12 @@ This project is built for deployment on **Replit** as part of CoNSTruct 2.0.
 | Name | Role | GitHub |
 |------|------|--------|
 | Antriksh | Project Lead | [@Antrikshcodes](https://github.com/Antrikshcodes) |
-| *TBD* | *TBD* | *TBD* |
+| Poorvi | Contributor / Engineer | [@poorvig222](https://github.com/poorvig222) |
+| Pavitr Makhija | Contributor / Engineer | [@pavitrmakhija](https://github.com/pavitrmakhija) |
+| Saureet | Contributor / Engineer | [@saureetc007](https://github.com/saureetc007) |
+| Jagrit | Contributor / Engineer | [@codesjagrit](https://github.com/codesjagrit) |
 
-> 💡 *Team members will be added as they join the project.*
+> 💡 *Roles will be refined as team members take ownership of specific modules.*
 
 ---
 
