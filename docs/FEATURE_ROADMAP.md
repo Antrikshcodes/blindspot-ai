@@ -255,3 +255,4 @@ The 20-day engineering sprint is divided into nine sequential, milestone-driven 
 * [ ] Demo walkthrough rehearsed with backup offline video recording available.
 * [ ] Repository `README.md` includes working deployment links and demo credentials/instructions.
 * [ ] All hackathon submission deliverables completed on time.
+

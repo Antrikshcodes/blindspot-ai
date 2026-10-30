@@ -195,3 +195,4 @@ Blindspot AI transforms raw, unverified product concepts into a structured, evid
 * Direct integration with external survey tools (Typeform, Google Forms API).
 * Multi-tenant enterprise role-based access control (RBAC).
 * Native iOS / Android mobile applications.
+

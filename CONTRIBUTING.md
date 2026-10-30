@@ -6,34 +6,39 @@ This guide outlines our team standards, Git branching model, commit conventions,
 
 ---
 
-## 1. Team Roster (Null Theory)
+## 1. Team Roster & Branch Ownership (Null Theory)
 
-| Team Member | Primary Role | GitHub Profile |
-|:---|:---|:---|
-| **Antriksh** | Project Lead & Full-Stack Architect | [@Antrikshcodes](https://github.com/Antrikshcodes) |
-| **Saureet Chakrabarti** | AI & Backend Engineer | [@saureetc007](https://github.com/saureetc007) |
-| **Poorvi Gupta** | Frontend & UI/UX Engineer | [@poorvig222](https://github.com/poorvig222) |
-| **Pavitr Makhija** | Full-Stack & Integration Engineer | [@pavitrmakhija](https://github.com/pavitrmakhija) |
-| **Jagrit Arora** | QA & DevOps Engineer | [@codesjagrit](https://github.com/codesjagrit) |
+| Team Member | Official Role | Assigned Branch | Primary Engineering Scope | GitHub Profile |
+|:---|:---|:---:|:---|:---|
+| **Antriksh** | Project Lead & Full-Stack Architect | `develop` / `main` | System architecture, sprint management, integration oversight, Replit deployment | [@Antrikshcodes](https://github.com/Antrikshcodes) |
+| **Poorvi** | Frontend and Research | `poorvi` | User research synthesis, Mom Test script design, UI wireframes, Idea Intake form, Assumption Matrix views | [@poorvig222](https://github.com/poorvig222) |
+| **Pavitr Makhija** | Backend and API Integration | `pavitr` | Server setup, REST API routes, database persistence (SQLite/PostgreSQL), schema validation, endpoint integration | [@pavitrmakhija](https://github.com/pavitrmakhija) |
+| **Saureet** | Full Stack | `saureet` | AI orchestration, prompt engineering templates, structured JSON parsing, deterministic 2D risk scoring engine | [@saureetc007](https://github.com/saureetc007) |
+| **Jagrit** | Testing & Frontend | `jagrit` | Automated test suites (unit/integration/E2E), edge-case validation, CI pipeline test automation, frontend component testing | [@codesjagrit](https://github.com/codesjagrit) |
 
 ---
 
 ## 2. Git Branching Strategy
 
-To maintain stability throughout our 20-day sprint, all team members adhere strictly to the following branch architecture:
+Our repository operates with dedicated team-member development branches alongside feature branches:
 
 ```
 main (Production / Stable Releases only)
 │
 └── develop (Active Integration Branch)
     │
-    ├── feature/idea-submission          (Step 1: Idea intake form & schema validation)
-    ├── feature/assumption-engine        (Step 2: AI extraction of unstated assumptions)
-    ├── feature/risk-scoring             (Step 3: Deterministic 2D risk computation)
-    ├── feature/interview-generator      (Step 4: Mom Test question generation)
-    ├── feature/feedback-analysis        (Step 5: Customer note parsing & mapping)
-    ├── feature/contradiction-detection  (Step 6: Conflict detection & evidence audit)
-    └── feature/experiment-engine        (Step 7: Falsification experiment planner)
+    ├── poorvi                 (Poorvi: Frontend & Research workspace)
+    ├── pavitr                 (Pavitr: Backend & API Integration workspace)
+    ├── saureet                (Saureet: Full Stack & AI Engine workspace)
+    └── jagrit                 (Jagrit: Testing & Frontend QA workspace)
+    │
+    ├── feature/idea-submission          (Step 1: Intake form & validation)
+    ├── feature/assumption-engine        (Step 2: AI assumption extraction)
+    ├── feature/risk-scoring             (Step 3: Deterministic risk matrix)
+    ├── feature/interview-generator      (Step 4: Mom Test question generator)
+    ├── feature/feedback-analysis        (Step 5: Customer note parser)
+    ├── feature/contradiction-detection  (Step 6: Evidence conflict detection)
+    └── feature/experiment-engine        (Step 7: Falsification experiment board)
 ```
 
 ### 2.1 Branch Rules

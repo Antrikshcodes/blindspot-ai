@@ -81,3 +81,4 @@ All potential defects, missing dependencies, and architectural bottlenecks must 
 | **CONCERN-001** | Replit free/standard tier CPU/RAM constraints during full-stack compilation. | Build timeouts or slow hot-reloading on Replit. | Benchmark sample Vite + Express build on Replit during Day 2 stack validation. | Under Investigation |
 | **CONCERN-002** | LLM API rate limits when multiple team members run integration tests concurrently. | Failed test runs due to HTTP 429 errors. | Implement mock AI provider adapter for local and CI testing; only use live LLM for end-to-end verification. | Under Investigation |
 | **CONCERN-003** | Potential non-deterministic JSON responses from smaller LLM models. | Parsing exceptions in feedback synthesis. | Enforce strict JSON Schema mode and Zod/Pydantic validation with automatic retry loops. | Architectural Mitigation Designed |
+

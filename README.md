@@ -257,13 +257,13 @@ Refer to [`docs/DEVELOPMENT_SETUP.md`](docs/DEVELOPMENT_SETUP.md) for full deplo
 **Team Name:** Null Theory  
 **Event:** CoNSTruct 2.0 (Replit × Newton School of Technology)  
 
-| Name | Role | GitHub |
-|:---|:---|:---|
-| **Antriksh** | Project Lead & Full-Stack Architect | [@Antrikshcodes](https://github.com/Antrikshcodes) |
-| **Saureet Chakrabarti** | AI & Backend Engineer | [@saureetc007](https://github.com/saureetc007) |
-| **Poorvi Gupta** | Frontend & UI/UX Engineer | [@poorvig222](https://github.com/poorvig222) |
-| **Pavitr Makhija** | Full-Stack & Integration Engineer | [@pavitrmakhija](https://github.com/pavitrmakhija) |
-| **Jagrit Arora** | QA & DevOps Engineer | [@codesjagrit](https://github.com/codesjagrit) |
+| Name | Role | Assigned Branch | GitHub |
+|:---|:---|:---:|:---|
+| **Antriksh** | Project Lead | `develop` / `main` | [@Antrikshcodes](https://github.com/Antrikshcodes) |
+| **Poorvi** | Frontend and Research | `poorvi` | [@poorvig222](https://github.com/poorvig222) |
+| **Pavitr Makhija** | Backend and API integration | `pavitr` | [@pavitrmakhija](https://github.com/pavitrmakhija) |
+| **Saureet** | Full Stack | `saureet` | [@saureetc007](https://github.com/saureetc007) |
+| **Jagrit** | Testing & Frontend | `jagrit` | [@codesjagrit](https://github.com/codesjagrit) |
 
 ---
 
