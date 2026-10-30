@@ -1,28 +1,32 @@
-# 🔗 Shared — Blindspot AI
+# Shared — Blindspot AI
 
-> Shared utilities, types, constants, and configurations used across frontend and backend.
+> Shared TypeScript data contracts, validation schemas, and constants for Blindspot AI.
 
-## Status
-
-🚧 **Under Development** — Contents will be added as common patterns emerge during development.
+---
 
 ## Purpose
 
-This directory contains code and configuration shared between the frontend and backend to ensure consistency and reduce duplication:
+The `shared/` package serves as the single source of truth for data models shared across the client (`frontend/`) and server (`backend/`):
+* **TypeScript Interfaces:** Submissions, Assumptions, RiskScores, Questions, Notes, Contradictions, Experiments.
+* **Validation Schemas:** Zod schemas shared across frontend form validation and backend route controllers.
+* **Constants & Enums:** Risk levels, assumption categories (`PROBLEM`, `CUSTOMER`, `SOLUTION`, `MONETIZATION`), question probe types, and HTTP status codes.
 
-- **Types / Interfaces** — Common data type definitions
-- **Constants** — Shared constant values (e.g., error codes, status enums)
-- **Utilities** — Helper functions used across the stack
-- **Configuration** — Shared configuration schemas and defaults
+---
 
-## Structure
+## Planned Directory Structure
 
-```
+```text
 shared/
-├── README.md
-└── ... (to be populated)
+├── types/
+│   ├── submission.types.ts
+│   ├── assumption.types.ts
+│   ├── interview.types.ts
+│   ├── feedback.types.ts
+│   └── experiment.types.ts
+├── schemas/
+│   ├── submission.schema.ts
+│   ├── assumption.schema.ts
+│   └── feedback.schema.ts
+└── constants/
+    └── index.ts
 ```
-
-## Contributing
-
-See the [main CONTRIBUTING.md](../CONTRIBUTING.md) for guidelines.

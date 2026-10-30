@@ -1,163 +1,201 @@
-# 📡 API Documentation — Blindspot AI
+# API Documentation: Blindspot AI
 
-> REST API reference for the Blindspot AI backend.
+**Document Version:** 1.1.0  
+**Status:** Planned Contract Specification  
+**Architecture Alignment:** [`docs/ARCHITECTURE.md`](ARCHITECTURE.md)  
+**Maintained by:** Null Theory Engineering Team  
 
-> [!NOTE]
-> This documentation will be updated as endpoints are designed and implemented. All endpoints below are **planned** and subject to change.
+> **Implementation Note:**  
+> All endpoints documented below represent the target API contracts to be implemented across Phase 2 (Days 3–4), Phase 3 (Days 5–9), and Phase 4 (Days 10–13). No endpoints are currently live.
 
 ---
 
-## Base URL
+## 1. Base URL
 
-```
+```text
 # Local Development
-http://localhost:3000/api
+http://localhost:3000/api/v1
 
-# Production (Replit)
-https://<repl-name>.<username>.repl.co/api
+# Production (Replit Cloud)
+https://<repl-slug>.<username>.repl.co/api/v1
 ```
 
 ---
 
-## Authentication
+## 2. Authentication Specification (Target)
 
-> Authentication method TBD — likely JWT-based Bearer tokens.
+Authenticated routes require a standard Bearer token in the HTTP Authorization header:
 
+```text
+Authorization: Bearer <jwt-token>
 ```
-Authorization: Bearer <token>
-```
-
-All endpoints except `/api/auth/login` and `/api/auth/register` require authentication.
 
 ---
 
-## Endpoint Categories
+## 3. Core Validation Engine Endpoints
 
-### 🔐 Auth
-
-| Method | Endpoint | Description | Status |
-|---|---|---|---|
-| `POST` | `/api/auth/register` | Register a new user | 🔲 Planned |
-| `POST` | `/api/auth/login` | Authenticate and receive token | 🔲 Planned |
-| `POST` | `/api/auth/logout` | Invalidate current session | 🔲 Planned |
-| `POST` | `/api/auth/refresh` | Refresh authentication token | 🔲 Planned |
-
-### 🧠 Analysis
+### 3.1 Project & Submission Management
 
 | Method | Endpoint | Description | Status |
-|---|---|---|---|
-| `POST` | `/api/analysis/create` | Submit a decision for blind spot analysis | 🔲 Planned |
-| `GET` | `/api/analysis/:id` | Retrieve analysis results | 🔲 Planned |
-| `GET` | `/api/analysis/history` | List past analyses | 🔲 Planned |
-| `DELETE` | `/api/analysis/:id` | Delete an analysis | 🔲 Planned |
+|:---|:---|:---|:---:|
+| `POST` | `/api/v1/projects` | Initialize a new founder workspace | 🔲 Planned |
+| `GET` | `/api/v1/projects/:id` | Fetch project details and metadata | 🔲 Planned |
+| `POST` | `/api/v1/projects/:id/submissions` | Submit product idea, audience, and problem statement (Step 1) | 🔲 Planned |
+| `GET` | `/api/v1/projects/:id/submissions` | Retrieve submission history and iterations | 🔲 Planned |
 
-### 👤 User
-
-| Method | Endpoint | Description | Status |
-|---|---|---|---|
-| `GET` | `/api/user/profile` | Get current user profile | 🔲 Planned |
-| `PUT` | `/api/user/profile` | Update user profile | 🔲 Planned |
-| `GET` | `/api/user/settings` | Get user preferences | 🔲 Planned |
-| `PUT` | `/api/user/settings` | Update user preferences | 🔲 Planned |
-
-### 📊 Data
-
-| Method | Endpoint | Description | Status |
-|---|---|---|---|
-| `GET` | `/api/data/stats` | Get usage statistics | 🔲 Planned |
-| `GET` | `/api/data/export` | Export analysis data | 🔲 Planned |
+#### Request Payload: `POST /api/v1/projects/:id/submissions`
+```json
+{
+  "productName": "SaaSMetrics",
+  "targetAudience": "Bootstrapped B2B SaaS founders with $1k-$10k MRR",
+  "problemStatement": "Founders spend hours manually stitching Stripe data into spreadsheets to calculate churn and LTV.",
+  "proposedSolution": "An automated background sync that alerts founders in Slack when churn spikes."
+}
+```
 
 ---
 
-## Response Format
+### 3.2 Assumption Extraction & Risk Prioritization
 
-All API responses follow a consistent JSON structure.
+| Method | Endpoint | Description | Status |
+|:---|:---|:---|:---:|
+| `POST` | `/api/v1/submissions/:id/assumptions/extract` | Trigger AI extraction of unstated assumptions (Step 2) | 🔲 Planned |
+| `GET` | `/api/v1/submissions/:id/assumptions` | Fetch categorized assumptions with risk scores (Step 3) | 🔲 Planned |
+| `PATCH` | `/api/v1/assumptions/:id` | Manually adjust assumption category or score | 🔲 Planned |
 
-### Success Response
+#### Response Payload: `GET /api/v1/submissions/:id/assumptions`
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "asm_01j8k9",
+      "category": "PROBLEM",
+      "statement": "Founders calculate churn weekly rather than waiting for monthly accountant reports.",
+      "impactScore": 4,
+      "uncertaintyScore": 5,
+      "compositeRisk": 20,
+      "isLethal": true,
+      "rationale": "If founders only look at churn once a month, real-time Slack alerts solve a non-urgent pain.",
+      "status": "UNVERIFIED"
+    }
+  ]
+}
+```
 
+---
+
+### 3.3 Customer Discovery & Interview Generation
+
+| Method | Endpoint | Description | Status |
+|:---|:---|:---|:---:|
+| `POST` | `/api/v1/assumptions/:id/interview-questions` | Generate Mom-Test-compliant discovery questions (Step 4) | 🔲 Planned |
+| `GET` | `/api/v1/projects/:id/interview-script` | Export full project interview guide | 🔲 Planned |
+
+#### Response Payload: `POST /api/v1/assumptions/:id/interview-questions`
 ```json
 {
   "success": true,
   "data": {
-    "id": "abc123",
-    "result": "..."
-  },
-  "message": "Analysis completed successfully",
-  "timestamp": "2025-01-01T00:00:00.000Z"
-}
-```
-
-### Paginated Response
-
-```json
-{
-  "success": true,
-  "data": [],
-  "pagination": {
-    "page": 1,
-    "limit": 20,
-    "total": 100,
-    "totalPages": 5
-  },
-  "timestamp": "2025-01-01T00:00:00.000Z"
+    "assumptionId": "asm_01j8k9",
+    "questions": [
+      {
+        "question": "How did you check your revenue and churn numbers last week?",
+        "probeType": "PAST_BEHAVIOR",
+        "listenFor": "Do they mention dedicated software, manual exports, or total avoidance?"
+      },
+      {
+        "question": "What tools or subscriptions do you currently pay for to monitor your business metrics?",
+        "probeType": "CURRENT_EXPENDITURE",
+        "listenFor": "Reveals whether budget is already allocated for metrics."
+      }
+    ]
+  }
 }
 ```
 
 ---
 
-## Error Handling
+### 3.4 Feedback Ingestion & Contradiction Detection
 
-All errors return a consistent format:
+| Method | Endpoint | Description | Status |
+|:---|:---|:---|:---:|
+| `POST` | `/api/v1/projects/:id/feedback` | Ingest qualitative customer interview notes (Step 5) | 🔲 Planned |
+| `GET` | `/api/v1/projects/:id/contradictions` | Analyze ingested notes for conflicting evidence (Step 6) | 🔲 Planned |
 
+#### Response Payload: `GET /api/v1/projects/:id/contradictions`
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "cnt_99x",
+      "assumptionId": "asm_01j8k9",
+      "contradictionSummary": "Conflicting feedback regarding urgency of real-time churn metrics.",
+      "evidenceA": {
+        "interviewee": "Founder #2 (5-person agency)",
+        "quote": "I check Stripe every morning, it's my first ritual."
+      },
+      "evidenceB": {
+        "interviewee": "Founder #4 (Solo dev)",
+        "quote": "I honestly only look at churn when my quarterly taxes are due."
+      },
+      "recommendation": "Segment your target audience: agencies require daily monitoring; solo builders do not."
+    }
+  ]
+}
+```
+
+---
+
+### 3.5 Experiment Recommendations
+
+| Method | Endpoint | Description | Status |
+|:---|:---|:---|:---:|
+| `POST` | `/api/v1/assumptions/:id/experiments` | Generate falsification experiments (Step 7) | 🔲 Planned |
+| `GET` | `/api/v1/projects/:id/experiments` | List all recommended validation experiments | 🔲 Planned |
+
+#### Response Payload: `POST /api/v1/assumptions/:id/experiments`
+```json
+{
+  "success": true,
+  "data": {
+    "assumptionId": "asm_01j8k9",
+    "experimentType": "CONCIERGE_TEST",
+    "title": "Manual Daily Slack Churn Digest",
+    "description": "Offer 5 target founders a free manual 7-day test where you send their daily metric summary by 9 AM.",
+    "metric": "Daily Open / Engagement Rate",
+    "falsificationThreshold": "If fewer than 3 of 5 founders respond or check the alert for 4+ days, the pain is not urgent.",
+    "estimatedDurationDays": 7
+  }
+}
+```
+
+---
+
+## 4. Standard Response Envelope
+
+All API endpoints return JSON conforming to the following envelopes:
+
+### Success Format
+```json
+{
+  "success": true,
+  "data": {},
+  "message": "Operation completed successfully",
+  "timestamp": "2026-10-31T01:00:00.000Z"
+}
+```
+
+### Error Format
 ```json
 {
   "success": false,
   "error": {
-    "code": "VALIDATION_ERROR",
-    "message": "Invalid input provided",
-    "details": [
-      {
-        "field": "decision_text",
-        "message": "Decision text is required"
-      }
-    ]
+    "code": "VALIDATION_FAILED",
+    "message": "Problem statement must contain at least 50 characters of context.",
+    "details": []
   },
-  "timestamp": "2025-01-01T00:00:00.000Z"
+  "timestamp": "2026-10-31T01:00:00.000Z"
 }
 ```
-
-### Error Codes
-
-| HTTP Status | Error Code | Description |
-|---|---|---|
-| `400` | `VALIDATION_ERROR` | Invalid request parameters |
-| `401` | `UNAUTHORIZED` | Missing or invalid authentication |
-| `403` | `FORBIDDEN` | Insufficient permissions |
-| `404` | `NOT_FOUND` | Resource not found |
-| `429` | `RATE_LIMITED` | Too many requests |
-| `500` | `INTERNAL_ERROR` | Internal server error |
-
----
-
-## Rate Limiting
-
-> [!NOTE]
-> Rate limiting details will be defined during implementation.
-
-| Tier | Limit | Window |
-|---|---|---|
-| **Unauthenticated** | TBD | TBD |
-| **Authenticated** | TBD | TBD |
-| **Analysis Endpoint** | TBD | TBD |
-
-Rate limit headers will be included in all responses:
-
-```
-X-RateLimit-Limit: 100
-X-RateLimit-Remaining: 95
-X-RateLimit-Reset: 1672531200
-```
-
----
-
-*This API documentation will be expanded as development progresses.*

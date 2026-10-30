@@ -1,273 +1,283 @@
-<div align="center">
+# Blindspot AI
 
-# 🔍 Blindspot AI
+**An AI-Powered Product Validation Platform for Student Founders & Early-Stage Teams**
 
-**An intelligent AI-powered solution built for CoNSTruct 2.0 — Replit × Newton School of Technology**
-
-[![Project Status](https://img.shields.io/badge/Status-In%20Development-yellow?style=for-the-badge)](https://github.com/Antrikshcodes/blindspot-ai)
-[![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
-[![GitHub Stars](https://img.shields.io/github/stars/Antrikshcodes/blindspot-ai?style=for-the-badge)](https://github.com/Antrikshcodes/blindspot-ai/stargazers)
-[![Contributors](https://img.shields.io/github/contributors/Antrikshcodes/blindspot-ai?style=for-the-badge)](https://github.com/Antrikshcodes/blindspot-ai/graphs/contributors)
-[![Hackathon](https://img.shields.io/badge/Hackathon-CoNSTruct%202.0-purple?style=for-the-badge)](https://www.newtonschool.co/)
-
-</div>
+Built for **CoNSTruct 2.0 (Replit × Newton School of Technology)** by **Team Null Theory**.
 
 ---
 
-## 📋 Table of Contents
+## Table of Contents
 
-- [About the Project](#about-the-project)
-- [Problem Statement](#problem-statement)
-- [Our Solution](#our-solution)
+- [Overview](#overview)
+- [The Problem](#the-problem)
+- [The Solution](#the-solution)
+- [Core Product Workflow](#core-product-workflow)
 - [Key Features](#key-features)
-- [Technology Stack](#technology-stack)
+- [Repository Status & Tech Stack](#repository-status--tech-stack)
 - [System Architecture](#system-architecture)
-- [Getting Started](#getting-started)
-- [Environment Variables](#environment-variables)
-- [Development Workflow](#development-workflow)
-- [Contributing](#contributing)
-- [Deployment](#deployment)
-- [Team Members](#team-members)
-- [Hackathon Info](#hackathon-info)
+- [Project Directory Layout](#project-directory-layout)
+- [Installation & Getting Started](#installation--getting-started)
+- [Environment Configuration](#environment-configuration)
+- [Testing & Quality Verification](#testing--quality-verification)
+- [Deployment on Replit](#deployment-on-replit)
+- [Team Information](#team-information)
+- [Contribution Guidelines](#contribution-guidelines)
 - [License](#license)
 
 ---
 
-## 🎯 About the Project
+## Overview
 
-**Blindspot AI** is an intelligent AI-powered solution developed as part of the **CoNSTruct 2.0 Hackathon** organized by **Replit × Newton School of Technology**. The project aims to leverage artificial intelligence to identify and address critical blind spots — areas that are often overlooked, underestimated, or invisible in decision-making processes.
+**Blindspot AI** is an intelligent product validation engine engineered to challenge startup assumptions before founders commit weeks of engineering effort. Designed specifically for student builders, hackathon participants, and early-stage entrepreneurs, Blindspot AI deconstructs product ideas into testable hypotheses, prioritizes lethal risks, generates non-leading customer interview scripts, synthesizes qualitative feedback, highlights contradictory evidence, and recommends practical falsification experiments.
 
-> 🚧 **Note:** This project is currently in active development. Features and architecture are being finalized during the hackathon sprint.
-
----
-
-## ❓ Problem Statement
-
-> *To be finalized during the hackathon ideation phase.*
-
-Every day, individuals and organizations make decisions with incomplete information. Critical data points, perspectives, and risks are frequently overlooked — creating **blind spots** that lead to poor outcomes, missed opportunities, and preventable failures.
+### Core Operating Principle
+> **Blindspot AI does not cheerlead ideas.** It acts as an analytical counterweight and intellectual adversary. The system never presents AI-generated hypotheses as verified facts; every conclusion must be proven through customer evidence.
 
 ---
 
-## 💡 Our Solution
+## The Problem
 
-> *Detailed solution to be refined during development.*
-
-**Blindspot AI** uses advanced AI techniques to surface hidden patterns, overlooked insights, and potential risks that humans tend to miss. By augmenting human decision-making with intelligent analysis, we aim to make blind spots visible before they become problems.
-
----
-
-## ✨ Key Features
-
-> *Features will be finalized and updated as development progresses.*
-
-| Feature | Description | Status |
-|---------|-------------|--------|
-| 🧠 AI Analysis Engine | Core AI-powered analysis and insight generation | 🔜 Planned |
-| 🖥️ Interactive Dashboard | User-friendly interface for visualization | 🔜 Planned |
-| 🔐 User Authentication | Secure login and access control | 🔜 Planned |
-| 📊 Data Visualization | Charts and graphs for insight representation | 🔜 Planned |
-| 🔗 API Integration | RESTful API for extensibility | 🔜 Planned |
-| 📱 Responsive Design | Mobile-friendly interface | 🔜 Planned |
+1. **Premature Coding:** Founders frequently start writing code before validating whether their assumptions about users, problems, and market demand are accurate.
+2. **Hidden and Conflated Assumptions:** Teams fail to distinguish between facts and unverified beliefs across problem, customer, solution, and monetization dimensions.
+3. **Leading Customer Discovery:** Inexperienced interviewers ask biased, hypothetical questions (*"Would you buy an app that does X?"*) that elicit polite encouragement rather than honest behavioral data.
+4. **Confirmation Bias in Feedback:** When reviewing customer notes, founders selectively focus on positive comments while ignoring red flags and contradictory feedback.
+5. **Lack of Actionable Next Steps:** Teams struggle to formulate low-fidelity, falsifiable experiments to de-risk their concepts quickly.
 
 ---
 
-## 🛠️ Technology Stack
+## The Solution
 
-> *Stack will be finalized based on the project requirements.*
-
-| Layer | Technology | Purpose |
-|-------|-----------|---------|
-| **Frontend** | *TBD* | User interface |
-| **Backend** | *TBD* | Server-side logic & API |
-| **AI/ML** | *TBD* | AI analysis engine |
-| **Database** | *TBD* | Data persistence |
-| **Deployment** | Replit | Hosting & deployment |
-| **Version Control** | GitHub | Code management |
-
----
-
-## 🏗️ System Architecture
+Blindspot AI transforms an unverified product idea into a structured, evidence-based validation pipeline:
 
 ```
-┌─────────────────────────────────────────────────┐
-│                   Frontend                       │
-│              (User Interface)                    │
-└─────────────────┬───────────────────────────────┘
-                  │ API Calls
-┌─────────────────▼───────────────────────────────┐
-│                   Backend                        │
-│              (API Server)                        │
-├─────────────────┬───────────────────────────────┤
-│   Auth Service  │  AI Engine  │  Data Service   │
-└─────────────────┼─────────────┼─────────────────┘
-                  │             │
-┌─────────────────▼─────────────▼─────────────────┐
-│                  Database                        │
-└─────────────────────────────────────────────────┘
+[Idea Submission] ──> [Assumption Extraction] ──> [Risk Prioritisation] ──> [Interview Generation]
+                                                                                   │
+[Experiment Recommendations] ◄── [Contradiction Detection] ◄── [Feedback Analysis] ◄┘
 ```
 
-> 📌 *Detailed architecture diagrams will be added to [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)*
+1. **Challenges Assumptions:** Identifies unstated premises and exposes cognitive blind spots.
+2. **Applies The Mom Test:** Enforces past-behavior-focused, non-leading customer discovery questions.
+3. **Surfaces Contradictions:** Flags conflicting statements across interview transcripts to expose fragmented user needs.
+4. **Prescribes Falsification Experiments:** Generates practical experiments with defined failure thresholds.
 
 ---
 
-## 🚀 Getting Started
+## Core Product Workflow
 
-### Prerequisites
+### 1. Idea Submission
+The founder enters the product concept, target audience profile, and the core problem being addressed.
 
-- Git
-- Node.js / Python *(to be finalized)*
-- A [Replit](https://replit.com) account (for deployment)
+### 2. Assumption Extraction
+The engine parses the submission and extracts underlying assumptions, categorizing them across four fundamental domains:
+* **Problem Risk:** Does the stated problem actually exist and cause measurable pain?
+* **Customer Risk:** Can this audience be identified, reached, and persuaded to change habits?
+* **Solution Risk:** Does the proposed implementation address the root cause?
+* **Viability / Monetization Risk:** Are users willing and able to pay sustainable unit economics?
 
-### Installation
+### 3. Risk Prioritisation
+Assumptions are evaluated across two dimensions: **Impact on Venture Survival** (1–5) and **Current Uncertainty** (1–5). The system calculates a deterministic composite score ($Impact \times Uncertainty$) and isolates "Lethal Assumptions" that must be resolved first.
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/Antrikshcodes/blindspot-ai.git
-   cd blindspot-ai
-   ```
+### 4. Interview Generation
+The system generates targeted interview guides strictly following *The Mom Test* methodology. Questions probe past behaviors and current workarounds rather than speculative future intent.
 
-2. **Set up environment variables**
-   ```bash
-   cp .env.example .env
-   # Edit .env with your configuration
-   ```
+### 5. Feedback Analysis
+Founders paste qualitative interview transcripts and call notes. The engine parses the unstructured text, connects specific quotes to registered assumptions, and tags evidence as Supporting, Invalidating, or Neutral.
 
-3. **Install dependencies**
-   ```bash
-   # Instructions will be added once the tech stack is finalized
-   ```
+### 6. Contradiction Detection
+The engine cross-analyzes multiple interview notes to identify direct contradictions between respondents, highlighting unsupported founder conclusions and gaps in evidence.
 
-4. **Run the development server**
-   ```bash
-   # Instructions will be added once the tech stack is finalized
-   ```
+### 7. Experiment Recommendations
+For unresolved or high-risk assumptions, the system prescribes concrete, rapid validation experiments (e.g., landing page tests, concierge MVP, smoke tests) complete with specific metrics, falsification thresholds, and execution timelines.
 
 ---
 
-## 🔐 Environment Variables
+## Key Features
 
-Create a `.env` file in the root directory. Refer to [`.env.example`](.env.example) for required variables.
-
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `PORT` | Server port | Yes |
-| `NODE_ENV` | Environment (development/production) | Yes |
-| `DATABASE_URL` | Database connection string | Yes |
-| `AI_API_KEY` | AI service API key | Yes |
-| `JWT_SECRET` | JWT authentication secret | Yes |
-
-> ⚠️ **Never commit your `.env` file.** All secrets must remain local.
+| Capability | Module | Description | Status |
+|:---|:---|:---|:---:|
+| Idea Deconstruction | Submission Engine | Structured intake with context-depth validation | Phase 3 (Planned) |
+| Assumption Isolation | AI Analysis Engine | Extracts unstated premises across 4 risk domains | Phase 3 (Planned) |
+| 2D Risk Scoring Matrix | Scoring Service | Deterministic $Impact \times Uncertainty$ prioritization | Phase 3 (Planned) |
+| Mom Test Script Generator | Discovery Service | Generates non-leading, behavioral interview scripts | Phase 4 (Planned) |
+| Qualitative Note Ingestion | Feedback Service | Extracts quotes and maps evidence to assumptions | Phase 4 (Planned) |
+| Contradiction & Bias Flagging | Contradiction Engine | Exposes conflicting user signals and unsupported claims | Phase 4 (Planned) |
+| Experiment Planner | Experiment Service | Prescribes falsification tests with concrete thresholds | Phase 4 (Planned) |
 
 ---
 
-## 🔄 Development Workflow
+## Repository Status & Tech Stack
 
-We follow a structured Git branching strategy:
+### Current Implementation Baseline (Day 1 Audit)
+* **Codebase State:** Foundational architecture, documentation, and CI workflows established.
+* **Source Code:** Application modules (`frontend/`, `backend/`, `shared/`, `tests/`) are initialized with documentation; runtime source code implementation begins in Phase 2/3.
+* **Security & Hygiene:** Zero committed secrets; baseline GitHub Actions CI pipeline enforces environment variable protection.
+
+### Target Technology Stack (Sprint Architecture)
+
+| Layer | Technology | Architectural Role |
+|:---|:---|:---|
+| **Language** | TypeScript | End-to-end type safety between frontend views and backend services |
+| **Frontend** | React + Vite + Tailwind CSS | Fast compilation, modern component hierarchy, responsive UI |
+| **Backend** | Node.js + Express | Concurrent asynchronous handling for AI engine calls and REST APIs |
+| **Database** | SQLite (Dev) / PostgreSQL (Prod) | Zero-configuration local development; production-grade hosted SQL |
+| **ORM** | Prisma / Drizzle | Type-safe migrations and relational query models |
+| **AI Integration** | OpenAI / Anthropic API | Structured JSON schema outputs with deterministic validation |
+| **Deployment** | Replit Cloud | Native compliance with CoNSTruct 2.0 hackathon hosting guidelines |
+
+---
+
+## System Architecture
 
 ```
-main (production-ready)
-│
-└── develop (integration branch)
-    │
-    ├── feature/frontend
-    ├── feature/backend
-    ├── feature/ai-engine
-    ├── feature/authentication
-    └── feature/documentation
+┌─────────────────────────────────────────────────────────────────┐
+│                        CLIENT LAYER                             │
+│       React SPA (Submission Wizard, Risk Matrix, Scripts,       │
+│             Contradiction Viewer, Experiment Board)             │
+└───────────────────────────────┬─────────────────────────────────┘
+                                │ HTTPS / REST (JSON)
+                                ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                        SERVER LAYER                             │
+│     API Gateway ──> Validation Service ──> AI Adapter (LLM)     │
+│           │                                      │              │
+│           ▼                                      ▼              │
+│   Auth / Project Core                     Schema Validation     │
+└───────────────────────────────┬─────────────────────────────────┘
+                                │ SQL Queries / Migrations
+                                ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                     PERSISTENCE LAYER                           │
+│        Relational Database (Projects, Assumptions, Notes,       │
+│                 Contradictions, Experiments)                    │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-### Branch Naming Convention
+For complete architectural specifications, see [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
-| Branch Type | Pattern | Example |
-|-------------|---------|---------|
-| Feature | `feature/<name>` | `feature/user-auth` |
-| Bug Fix | `bugfix/<name>` | `bugfix/login-error` |
-| Hotfix | `hotfix/<name>` | `hotfix/security-patch` |
-| Documentation | `docs/<name>` | `docs/api-guide` |
+---
 
-### Quick Start for Contributors
+## Project Directory Layout
 
+```text
+blindspot-ai/
+├── .github/
+│   ├── ISSUE_TEMPLATE/        # Standardized bug and feature issue templates
+│   ├── PULL_REQUEST_TEMPLATE.md# Pre-merge validation checklist
+│   └── workflows/
+│       └── ci.yml             # Baseline CI pipeline (leak scan & docs verification)
+├── docs/
+│   ├── PROJECT_CONTEXT.md     # Detailed product vision, personas, and requirements
+│   ├── ARCHITECTURE.md        # Technical architecture and subsystem specifications
+│   ├── FEATURE_ROADMAP.md     # 20-day milestone-driven development roadmap
+│   ├── DAILY_PROGRESS.md      # Daily development tracker and blockers log
+│   ├── KNOWN_ISSUES.md        # Technical debt and defect ledger
+│   └── DEVELOPMENT_SETUP.md   # Step-by-step developer onboarding manual
+├── frontend/                  # Client-side user interface
+├── backend/                   # Server-side API and AI engine logic
+├── shared/                    # Shared TypeScript interfaces and Zod schemas
+├── tests/                     # Unit, integration, and end-to-end test suites
+├── assets/                    # Branding, diagrams, and visual resources
+├── .env.example               # Environment variable blueprint
+├── .gitignore                 # Multi-runtime ignore rules
+├── CONTRIBUTING.md            # Team branch and PR conventions
+└── LICENSE                    # MIT License
+```
+
+---
+
+## Installation & Getting Started
+
+### 1. Clone the Repository
 ```bash
-# Clone and switch to develop
 git clone https://github.com/Antrikshcodes/blindspot-ai.git
 cd blindspot-ai
-git checkout develop
-
-# Create your feature branch
-git checkout -b feature/your-feature-name
-
-# Make changes, commit, and push
-git add .
-git commit -m "feat: add your feature description"
-git push origin feature/your-feature-name
-
-# Open a Pull Request to develop on GitHub
 ```
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for full guidelines.
+### 2. Switch to the Active Integration Branch
+```bash
+git checkout develop
+git pull origin develop
+```
+
+### 3. Initialize Environment Variables
+```bash
+cp .env.example .env
+```
+Configure your local parameters inside `.env` (see below).
 
 ---
 
-## 🤝 Contributing
+## Environment Configuration
 
-We welcome contributions from all team members! Please read our:
+Configure the following parameters in your local `.env` file:
 
-- [Contributing Guidelines](CONTRIBUTING.md)
-- [Code of Conduct](CODE_OF_CONDUCT.md)
-- [Security Policy](SECURITY.md)
+```dotenv
+PORT=3000
+NODE_ENV=development
+DATABASE_URL=file:./dev.db
+AI_API_KEY=your_api_key_here
+JWT_SECRET=your_jwt_secret_here
+SESSION_SECRET=your_session_secret_here
+```
 
----
-
-## 🚢 Deployment
-
-This project is built for deployment on **Replit** as part of CoNSTruct 2.0.
-
-### Replit Deployment
-
-1. Fork or import this repository on [Replit](https://replit.com).
-2. Configure environment variables in Replit's Secrets tab.
-3. Click **Run** to start the application.
-
-> 📖 For detailed deployment instructions, see [`docs/DEVELOPMENT_SETUP.md`](docs/DEVELOPMENT_SETUP.md)
+> **Warning:** Never commit `.env` to Git. The repository’s CI pipeline will reject commits containing secrets.
 
 ---
 
-## 👥 Team Members
+## Testing & Quality Verification
+
+Run baseline repository validation checks:
+
+```bash
+# Verify no .env files are exposed in the working tree
+find . -name ".env" -not -path "./.git/*"
+
+# Check required documentation files
+test -f README.md && test -f CONTRIBUTING.md && test -f LICENSE && echo "Repository baseline verified."
+```
+
+Automated unit and integration test suites will be introduced in Phase 3.
+
+---
+
+## Deployment on Replit
+
+Blindspot AI is engineered for one-click deployment on Replit:
+
+1. Import this repository into [Replit](https://replit.com).
+2. Configure your secrets (`AI_API_KEY`, `JWT_SECRET`, `SESSION_SECRET`, `DATABASE_URL`) in Replit's **Secrets** tab.
+3. Click **Run** to launch the environment.
+
+Refer to [`docs/DEVELOPMENT_SETUP.md`](docs/DEVELOPMENT_SETUP.md) for full deployment instructions.
+
+---
+
+## Team Information
+
+**Team Name:** Null Theory  
+**Event:** CoNSTruct 2.0 (Replit × Newton School of Technology)  
 
 | Name | Role | GitHub |
-|------|------|--------|
-| Antriksh | Project Lead | [@Antrikshcodes](https://github.com/Antrikshcodes) |
-| Poorvi | Contributor / Engineer | [@poorvig222](https://github.com/poorvig222) |
-| Pavitr Makhija | Contributor / Engineer | [@pavitrmakhija](https://github.com/pavitrmakhija) |
-| Saureet | Contributor / Engineer | [@saureetc007](https://github.com/saureetc007) |
-| Jagrit | Contributor / Engineer | [@codesjagrit](https://github.com/codesjagrit) |
-
-> 💡 *Roles will be refined as team members take ownership of specific modules.*
+|:---|:---|:---|
+| **Antriksh** | Project Lead & Full-Stack Architect | [@Antrikshcodes](https://github.com/Antrikshcodes) |
+| **Saureet Chakrabarti** | AI & Backend Engineer | [@saureetc007](https://github.com/saureetc007) |
+| **Poorvi Gupta** | Frontend & UI/UX Engineer | [@poorvig222](https://github.com/poorvig222) |
+| **Pavitr Makhija** | Full-Stack & Integration Engineer | [@pavitrmakhija](https://github.com/pavitrmakhija) |
+| **Jagrit Arora** | QA & DevOps Engineer | [@codesjagrit](https://github.com/codesjagrit) |
 
 ---
 
-## 🏆 Hackathon Info
+## Contribution Guidelines
 
-| Detail | Info |
-|--------|------|
-| **Hackathon** | CoNSTruct 2.0 |
-| **Organized by** | Replit × Newton School of Technology |
-| **Duration** | 1 Month |
-| **Project** | Blindspot AI |
+All contributions must follow our team branching strategy:
+* New work branches off `develop` using `feature/<name>` or `bugfix/<name>`.
+* Code must be reviewed and tested before merging.
+* Pull requests require an approved review from at least one Null Theory team member.
 
----
-
-## 📄 License
-
-This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the complete workflow and commit message conventions.
 
 ---
 
-<div align="center">
+## License
 
-**Built with ❤️ for CoNSTruct 2.0**
-
-*Replit × Newton School of Technology*
-
-</div>
+This project is licensed under the [MIT License](LICENSE) &copy; 2026 Blindspot AI Contributors (Team Null Theory).

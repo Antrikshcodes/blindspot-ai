@@ -1,285 +1,141 @@
 # Contributing to Blindspot AI
 
-Welcome to **Blindspot AI**! 👋 We're thrilled that you're interested in contributing to this project, built as part of **CoNSTruct 2.0 (Replit × Newton School of Technology)**. Every contribution — whether it's fixing a typo, reporting a bug, or proposing a new feature — makes a difference.
+Welcome to **Blindspot AI**! This project is being engineered for **CoNSTruct 2.0 (Replit × Newton School of Technology)** by team **Null Theory**.
 
-Please take a moment to read through this guide before submitting your contribution.
-
----
-
-## Table of Contents
-
-- [How to Contribute](#how-to-contribute)
-- [Development Setup](#development-setup)
-- [Git Branching Strategy](#git-branching-strategy)
-- [Commit Message Conventions](#commit-message-conventions)
-- [Pull Request Process](#pull-request-process)
-- [Code Review Guidelines](#code-review-guidelines)
-- [Code Style Guidelines](#code-style-guidelines)
-- [Issue Reporting Guidelines](#issue-reporting-guidelines)
-- [Communication Guidelines](#communication-guidelines)
+This guide outlines our team standards, Git branching model, commit conventions, code review protocols, and quality requirements.
 
 ---
 
-## How to Contribute
+## 1. Team Roster (Null Theory)
 
-### Fork & Clone
-
-1. **Fork** the repository on GitHub: [`Antrikshcodes/blindspot-ai`](https://github.com/Antrikshcodes/blindspot-ai)
-2. **Clone** your fork locally:
-   ```bash
-   git clone https://github.com/<your-username>/blindspot-ai.git
-   cd blindspot-ai
-   ```
-3. **Add the upstream remote:**
-   ```bash
-   git remote add upstream https://github.com/Antrikshcodes/blindspot-ai.git
-   ```
-4. **Create a feature branch** from `develop`:
-   ```bash
-   git checkout develop
-   git pull upstream develop
-   git checkout -b feature/your-feature-name
-   ```
-5. **Make your changes**, commit them, and push to your fork:
-   ```bash
-   git push origin feature/your-feature-name
-   ```
-6. **Open a Pull Request** against the `develop` branch of the upstream repository.
+| Team Member | Primary Role | GitHub Profile |
+|:---|:---|:---|
+| **Antriksh** | Project Lead & Full-Stack Architect | [@Antrikshcodes](https://github.com/Antrikshcodes) |
+| **Saureet Chakrabarti** | AI & Backend Engineer | [@saureetc007](https://github.com/saureetc007) |
+| **Poorvi Gupta** | Frontend & UI/UX Engineer | [@poorvig222](https://github.com/poorvig222) |
+| **Pavitr Makhija** | Full-Stack & Integration Engineer | [@pavitrmakhija](https://github.com/pavitrmakhija) |
+| **Jagrit Arora** | QA & DevOps Engineer | [@codesjagrit](https://github.com/codesjagrit) |
 
 ---
 
-## Development Setup
+## 2. Git Branching Strategy
 
-1. **Prerequisites**
-   - Git (v2.30+)
-   - Node.js (v18+) / Python (v3.10+) — depending on the component
-   - A code editor (VS Code recommended)
+To maintain stability throughout our 20-day sprint, all team members adhere strictly to the following branch architecture:
 
-2. **Clone & Install**
-   ```bash
-   git clone https://github.com/<your-username>/blindspot-ai.git
-   cd blindspot-ai
-   ```
+```
+main (Production / Stable Releases only)
+│
+└── develop (Active Integration Branch)
+    │
+    ├── feature/idea-submission          (Step 1: Idea intake form & schema validation)
+    ├── feature/assumption-engine        (Step 2: AI extraction of unstated assumptions)
+    ├── feature/risk-scoring             (Step 3: Deterministic 2D risk computation)
+    ├── feature/interview-generator      (Step 4: Mom Test question generation)
+    ├── feature/feedback-analysis        (Step 5: Customer note parsing & mapping)
+    ├── feature/contradiction-detection  (Step 6: Conflict detection & evidence audit)
+    └── feature/experiment-engine        (Step 7: Falsification experiment planner)
+```
 
-3. **Install Dependencies**
-   ```bash
-   # Frontend
-   cd frontend
-   npm install
+### 2.1 Branch Rules
+* **`main`**: Protected branch. Represents verified, production-ready releases deployed to Replit. **Direct pushes are strictly prohibited.**
+* **`develop`**: Central integration branch. All feature branches originate from and merge back into `develop` via approved Pull Requests.
+* **`feature/*`**: Individual feature branches created from `develop`.
+* **`bugfix/*`**: Branches dedicated to fixing identified defects from `docs/KNOWN_ISSUES.md`.
+* **`docs/*`**: Branches reserved for documentation and architecture updates (e.g., `docs/repository-foundation`).
 
-   # Backend
-   cd ../backend
-   pip install -r requirements.txt   # or npm install, depending on stack
-   ```
-
-4. **Environment Variables**
-   - Copy `.env.example` to `.env` and fill in the required values.
-   - **Never commit `.env` files.** They are listed in `.gitignore`.
-
-5. **Run the Application**
-   ```bash
-   # Follow instructions in the README for running frontend and backend
-   ```
+### 2.2 Branch Naming Conventions
+* `feature/<feature-name>` (e.g., `feature/idea-submission`)
+* `bugfix/<issue-id>-<short-description>` (e.g., `bugfix/issue-001-package-manifest`)
+* `docs/<topic>` (e.g., `docs/api-specs`)
+* `test/<component>` (e.g., `test/scoring-engine`)
 
 ---
 
-## Git Branching Strategy
+## 3. Commit Message Conventions (Conventional Commits)
 
-We follow a structured branching model to keep the codebase clean and release-ready.
+Commit messages must be descriptive and follow the [Conventional Commits](https://www.conventionalcommits.org/) specification:
 
-```
-main (production-ready)
- └── develop (integration branch)
-      ├── feature/auth-system
-      ├── feature/dashboard-ui
-      ├── fix/login-bug
-      └── docs/update-readme
-```
+```text
+<type>(<scope>): <short imperative description>
 
-### Branch Descriptions
+[optional body explaining motivation and changes]
 
-| Branch | Purpose |
-|---|---|
-| `main` | Production-ready code. Only receives merges from `develop` after thorough testing. |
-| `develop` | Integration branch. All feature and fix branches merge here first. |
-| `feature/*` | New features. Branch off `develop`, merge back into `develop`. |
-| `fix/*` | Bug fixes. Branch off `develop`, merge back into `develop`. |
-| `docs/*` | Documentation updates. Branch off `develop`, merge back into `develop`. |
-| `hotfix/*` | Critical production fixes. Branch off `main`, merge into both `main` and `develop`. |
-
-### Branching Flow Diagram
-
-```
-main ───────────●────────────────────────●──────────
-                │                        ▲
-                ▼                        │
-develop ────●───●───●────●────●────●─────●──────────
-            │       ▲    │         ▲
-            ▼       │    ▼         │
-feature/a ──●───●───●    │         │
-                     fix/b ──●─────●
+[optional footer referencing issue ID]
 ```
 
-### Rules
-
-- **Never push directly to `main` or `develop`.**
-- Always create a branch for your work.
-- Keep branches short-lived — merge early and often.
-- Delete branches after they are merged.
-
----
-
-## Commit Message Conventions
-
-We use **[Conventional Commits](https://www.conventionalcommits.org/)** to maintain a clear and automated changelog.
-
-### Format
-
-```
-<type>(<optional scope>): <description>
-
-[optional body]
-
-[optional footer(s)]
-```
-
-### Types
-
-| Type | Description |
-|---|---|
-| `feat:` | A new feature |
-| `fix:` | A bug fix |
-| `docs:` | Documentation changes only |
-| `style:` | Code style changes (formatting, semicolons, etc. — no logic change) |
-| `refactor:` | Code refactoring (neither fixes a bug nor adds a feature) |
-| `test:` | Adding or updating tests |
-| `chore:` | Maintenance tasks (build scripts, dependencies, configs) |
+### Allowed Types
+* `feat`: A new user-facing capability or service feature.
+* `fix`: A bug fix or defect resolution.
+* `docs`: Documentation updates, architecture notes, or markdown fixes.
+* `style`: Code style/formatting changes that do not alter logic (white-space, formatting).
+* `refactor`: Code changes that neither fix a bug nor add a feature.
+* `test`: Adding missing tests or correcting existing tests.
+* `chore`: Build tooling, dependency management, or CI configuration updates.
 
 ### Examples
+* `feat(assumptions): implement 2D risk matrix calculation`
+* `fix(parser): handle empty interview feedback transcripts gracefully`
+* `docs(architecture): document database schema models`
+* `test(scoring): add unit tests for lethal risk flag logic`
 
+---
+
+## 4. Development & Pull Request Workflow
+
+### Step 1: Branch from `develop`
 ```bash
-feat(auth): add Google OAuth login flow
-fix(api): handle null response from detection endpoint
-docs: update contributing guide with branching strategy
-style: fix indentation in dashboard component
-refactor(models): extract base model class
-test(auth): add unit tests for token validation
-chore: update dependencies to latest versions
+git checkout develop
+git pull origin develop
+git checkout -b feature/your-feature-name
 ```
 
-### Rules
+### Step 2: Implement Changes Locally
+* Write clean, modular, documented code.
+* Add or update unit tests covering newly added business logic.
+* Ensure no secrets, `.env` files, or temporary artifacts are present.
 
-- Use the **imperative mood** in the description: "add feature" not "added feature".
-- Keep the subject line under **72 characters**.
-- Reference issue numbers in the footer: `Closes #42`.
+### Step 3: Run Pre-Commit Checks
+```bash
+# Verify no .env files are staged
+git status
 
----
+# Run automated tests once test suite is active
+# npm test
+```
 
-## Pull Request Process
+### Step 4: Commit and Push
+```bash
+git add .
+git commit -m "feat(module): describe changes concisely"
+git push -u origin feature/your-feature-name
+```
 
-1. **Ensure your branch is up-to-date** with `develop`:
-   ```bash
-   git checkout develop
-   git pull upstream develop
-   git checkout your-branch
-   git rebase develop
-   ```
-
-2. **Fill out the PR template** completely — description, type of change, and checklist.
-
-3. **Link related issues** using keywords: `Closes #123`, `Fixes #456`.
-
-4. **Request a review** from at least one team member.
-
-5. **Address review feedback** promptly. Push new commits rather than force-pushing during review.
-
-6. **Squash and merge** once approved (the maintainer will handle this).
-
-### PR Checklist
-
-- [ ] Code compiles/runs without errors
-- [ ] Tests pass locally
-- [ ] Documentation is updated (if applicable)
-- [ ] No `.env` or secret files are included
-- [ ] PR title follows conventional commit format
+### Step 5: Open a Pull Request
+1. Open a PR on GitHub targeting the **`develop`** branch (never target `main` directly for feature work).
+2. Complete all sections of the auto-populated [Pull Request Template](.github/PULL_REQUEST_TEMPLATE.md):
+   * Summary of changes.
+   * Type of change checkbox.
+   * Testing verification checklist.
+   * Linked issue IDs.
+3. Request reviews from at least one fellow teammate from Null Theory.
 
 ---
 
-## Code Review Guidelines
+## 5. Code Review & Quality Standards
 
-### For Reviewers
+Every Pull Request must satisfy the following checklist before merge approval:
 
-- Be **constructive and kind** — critique the code, not the person.
-- Focus on **correctness, readability, and maintainability**.
-- Suggest improvements with explanations — don't just say "change this."
-- Approve promptly once concerns are addressed.
-- Use GitHub's suggestion feature for small fixes.
-
-### For Authors
-
-- Keep PRs **small and focused** — one concern per PR.
-- Write a clear description of **what** and **why**.
-- Respond to all comments, even if just to acknowledge.
-- Don't take feedback personally — we're all learning and improving.
+1. **Architecture Alignment:** Changes must conform to patterns defined in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+2. **Deterministic Outputs:** AI-related logic must parse and validate outputs against strict schemas (Zod/Pydantic). No unverified hypotheses presented as facts.
+3. **Zero Leaked Credentials:** PR diff must contain zero API keys, tokens, or credentials.
+4. **Clean Git History:** Rebase or Squash and Merge into `develop` to maintain a readable linear commit log.
+5. **No Broken Builds:** GitHub Actions CI must pass cleanly.
 
 ---
 
-## Code Style Guidelines
+## 6. Engineering Standards
 
-- **Consistency is key.** Follow the patterns already established in the codebase.
-- Use **meaningful variable and function names** — code should be self-documenting.
-- Write **comments for "why"**, not "what" — the code should explain the what.
-- Keep functions **small and focused** — single responsibility principle.
-- Remove **dead code, console logs, and debugging artifacts** before committing.
-- Follow language-specific conventions:
-  - **JavaScript/TypeScript:** Use ESLint + Prettier configurations provided in the repo.
-  - **Python:** Follow PEP 8. Use type hints where possible.
-- Run the linter before committing:
-  ```bash
-  npm run lint        # for JS/TS
-  flake8 .            # for Python
-  ```
-
----
-
-## Issue Reporting Guidelines
-
-### Before Opening an Issue
-
-- **Search existing issues** to avoid duplicates.
-- Check if the problem exists on the latest `develop` branch.
-
-### Bug Reports
-
-Use the [🐛 Bug Report](.github/ISSUE_TEMPLATE/bug_report.md) template. Include:
-
-- Clear, descriptive title
-- Steps to reproduce
-- Expected vs. actual behavior
-- Screenshots or logs (if applicable)
-- Your environment (OS, browser, Node/Python version)
-
-### Feature Requests
-
-Use the [✨ Feature Request](.github/ISSUE_TEMPLATE/feature_request.md) template. Include:
-
-- Clear description of the feature
-- The problem it solves
-- Proposed solution
-- Alternatives considered
-
----
-
-## Communication Guidelines
-
-- **Be respectful and inclusive.** Follow our [Code of Conduct](CODE_OF_CONDUCT.md).
-- **Use GitHub Issues and PRs** as the primary communication channels for technical discussions.
-- **Be patient.** Maintainers and contributors are often working on this alongside other responsibilities.
-- **Ask questions!** There's no such thing as a silly question. Open a GitHub Discussion or comment on a relevant issue.
-- **Give credit** where it's due — acknowledge others' contributions.
-
----
-
-## Thank You! 🙏
-
-Your contributions make Blindspot AI better for everyone. Whether you're writing code, reporting bugs, improving documentation, or reviewing PRs — **you matter**. Let's build something great together.
+1. **No Phantom Code:** Never write mock API responses and describe them as completed live integrations.
+2. **Minimalist SaaS Design:** Avoid generic AI aesthetics, excessive gradients, and gratuitous animations. Prioritize clarity and usability.
+3. **Maintain Backward Compatibility:** Strive to prevent breaking changes to shared schemas in `shared/`.
+4. **Document Decisions:** Record substantial architectural trade-offs in `docs/ARCHITECTURE.md`.
