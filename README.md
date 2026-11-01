@@ -341,7 +341,7 @@ chore: maintenance task
 | **Poorvi** | Frontend & Research | [@poorvig222](https://github.com/poorvig222) |
 | **Pavitr Makhija** | Backend & API Integration | [@pavitrmakhija](https://github.com/pavitrmakhija) |
 | **Saureet** | Full Stack | [@saureetc007](https://github.com/saureetc007) |
-| **Jagrit** | Testing & Frontend | [@codesjagrit](https://github.com/codesjagrit) |
+| **Jagrit** | Testing & Frontend & Research | [@codesjagrit](https://github.com/codesjagrit) |
 
 ---
 
