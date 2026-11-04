@@ -2,6 +2,8 @@ import express, { Express, Request, Response } from 'express';
 import cors from 'cors';
 import { env } from './config/env.js';
 import { requestLogger } from './middleware/requestLogger.js';
+import { errorHandler } from './middleware/errorHandler.js';
+import { sendError } from './utils/response.js';
 import { healthRouter } from './modules/health/health.routes.js';
 
 export function createApp(): Express {
@@ -21,6 +23,11 @@ export function createApp(): Express {
 
   // Root API prefix
   app.use(env.API_PREFIX, apiRouter);
+
+  // 404 handler for undefined routes
+  app.use((req: Request, res: Response) => {
+    sendError(res, 'ROUTE_NOT_FOUND', `Cannot ${req.method} ${req.originalUrl}`, 404);
+  });
 
   return app;
 }
