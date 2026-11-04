@@ -205,7 +205,7 @@ pip install -r requirements.txt
 
 > 📌 Exact install commands will be confirmed once the tech stack is finalized.
 
-**4. Run the development server**
+**4. Launch the local development server**
 
 ```bash
 # Node.js
