@@ -126,3 +126,25 @@ model Contradiction {
 
   @@map("contradictions")
 }
+
+model Experiment {
+  id                   String             @id @default(cuid())
+  projectId            String
+  project              Project            @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assumptionId         String?
+  assumption           Assumption?        @relation(fields: [assumptionId], references: [id], onDelete: SetNull)
+  name                 String
+  hypothesis           String
+  executionMethod      String             // SMOKE_TEST | CONCIERGE_TEST | LANDING_PAGE | PROTOTYPE_WALKTHROUGH | PRE_SALE
+  requiredResources    String?
+  metric               String
+  failureThreshold     String
+  durationDays         Int                @default(7)
+  resultInterpretation String?
+  status               String             @default("PLANNED") // PLANNED | IN_PROGRESS | COMPLETED | ABANDONED
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  results              ExperimentResult[]
+
+  @@map("experiments")
+}
