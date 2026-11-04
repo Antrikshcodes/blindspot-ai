@@ -143,7 +143,8 @@ blindspot-ai/
 | `shared/` | Common types, constants, and utilities shared across frontend & backend |
 | `tests/` | Unit, integration, and end-to-end test suites |
 | `docs/` | In-depth documentation on architecture, API, setup, and project roadmap |
-| `assets/` | Branding materials, screenshots, and architecture diagrams |
+| `assets/` | Branding assets, UI screenshots, and architecture diagrams |
+| `shared/` | Shared data types, interfaces, schemas, and common constants |
 
 ---
 
