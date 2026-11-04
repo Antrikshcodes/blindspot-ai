@@ -78,7 +78,7 @@ These blind spots are invisible by nature — you cannot fix what you cannot see
 | 🔗 **RESTful API** | Clean, modular endpoints designed for integration and extensibility | 🔜 Planned |
 | 📱 **Responsive Design** | Fully responsive layout optimized for mobile, tablet, and desktop | 🔜 Planned |
 
-> 🚧 Features are being actively developed during the hackathon sprint. Check the [Roadmap](docs/ROADMAP.md) for progress.
+> 🚧 Features are being iteratively built during the hackathon sprint. Track detailed milestones in the [Roadmap](docs/ROADMAP.md).
 
 ---
 
