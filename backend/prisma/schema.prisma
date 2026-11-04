@@ -109,3 +109,20 @@ model Evidence {
 
   @@map("evidence")
 }
+
+model Contradiction {
+  id                   String      @id @default(cuid())
+  projectId            String
+  project              Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assumptionId         String?
+  assumption           Assumption? @relation(fields: [assumptionId], references: [id], onDelete: SetNull)
+  contradictionSummary String
+  quoteA               String
+  quoteB               String
+  recommendation       String?
+  status               String      @default("CANDIDATE") // CANDIDATE | CONFIRMED | DISMISSED
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime    @updatedAt
+
+  @@map("contradictions")
+}
