@@ -1,0 +1,11 @@
+// Blindspot AI — Database Schema
+// Team Null Theory | CoNSTruct 2.0 (Replit × Newton School of Technology)
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
