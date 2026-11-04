@@ -23,3 +23,28 @@ export async function getHealth(_req: Request, res: Response, next: NextFunction
     next(error);
   }
 }
+
+export async function getReadiness(_req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const dbCheck = await checkDatabaseConnection();
+
+    if (!dbCheck.ok) {
+      sendError(
+        res,
+        'SERVICE_UNAVAILABLE',
+        'Database connection is not ready',
+        503,
+        [{ component: 'database', message: dbCheck.message }]
+      );
+      return;
+    }
+
+    sendSuccess(res, {
+      status: 'ready',
+      database: 'connected',
+      timestamp: new Date().toISOString(),
+    }, 'Backend is ready to accept traffic');
+  } catch (error) {
+    next(error);
+  }
+}
