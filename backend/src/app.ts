@@ -29,5 +29,10 @@ export function createApp(): Express {
     sendError(res, 'ROUTE_NOT_FOUND', `Cannot ${req.method} ${req.originalUrl}`, 404);
   });
 
+  // Centralized Error Handler
+  app.use(errorHandler);
+
   return app;
 }
+
+export const app = createApp();
