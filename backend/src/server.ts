@@ -13,3 +13,18 @@ const server = app.listen(env.PORT, () => {
     'Server'
   );
 });
+
+// Graceful shutdown handling
+const shutdown = async (signal: string) => {
+  logger.info(`Received ${signal}. Gracefully shutting down server...`, 'Server');
+  server.close(async () => {
+    logger.info('HTTP server closed.', 'Server');
+    try {
+      await prisma.$disconnect();
+      logger.info('Database client disconnected.', 'Database');
+      process.exit(0);
+    } catch (error) {
+      logger.error('Error during database disconnect', 'Database', { error });
+      process.exit(1);
+    }
+  });
