@@ -28,3 +28,13 @@ const shutdown = async (signal: string) => {
       process.exit(1);
     }
   });
+
+  // Force shutdown if cleanup takes too long
+  setTimeout(() => {
+    logger.error('Forced shutdown due to timeout', 'Server');
+    process.exit(1);
+  }, 10000);
+};
+
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));
