@@ -168,7 +168,7 @@ git clone https://github.com/Antrikshcodes/blindspot-ai.git
 cd blindspot-ai
 ```
 
-**2. Set up environment variables**
+**2. Configure your local environment variables**
 
 ```bash
 cp .env.example .env
