@@ -185,7 +185,7 @@ Edit `.env` with your configuration. Required variables:
 | `JWT_SECRET` | Secret key for JWT signature verification | — |
 | `SESSION_SECRET` | Session secret key | — |
 
-> ⚠️ **Never commit your `.env` file.** All secrets must remain local. See [`.env.example`](.env.example) for the full template.
+> ⚠️ **Never commit your `.env` file.** All private keys and tokens must remain local. See [`.env.example`](.env.example) for the complete template.
 
 **3. Install dependencies**
 
