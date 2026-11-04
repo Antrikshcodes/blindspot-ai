@@ -179,7 +179,7 @@ Edit `.env` with your configuration. Required variables:
 | Variable | Description | Default |
 |---|---|---|
 | `PORT` | Backend server port | `3000` |
-| `NODE_ENV` / `ENVIRONMENT` | Runtime environment | `development` |
+| `NODE_ENV` / `ENVIRONMENT` | Runtime execution environment | `development` |
 | `DATABASE_URL` | Database connection string | — |
 | `AI_API_KEY` | AI service API key | — |
 | `JWT_SECRET` | JWT token signing secret | — |
