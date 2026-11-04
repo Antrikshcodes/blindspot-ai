@@ -17,4 +17,11 @@ describe('GET /api/v1/health', () => {
     expect(res.body.data.memory).toHaveProperty('rss');
     expect(res.body.data.memory).toHaveProperty('heapUsed');
   });
+
+  it('should return readiness status at /health/ready', async () => {
+    const res = await request(app).get('/api/v1/health/ready');
+    expect(res.status).toBe(200);
+    expect(res.body.data.status).toBe('ready');
+    expect(res.body.data.database).toBe('connected');
+  });
 });
