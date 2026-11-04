@@ -161,7 +161,7 @@ blindspot-ai/
 
 ### Local Development
 
-**1. Clone the repository**
+**1. Clone the repository to your local workspace**
 
 ```bash
 git clone https://github.com/Antrikshcodes/blindspot-ai.git
