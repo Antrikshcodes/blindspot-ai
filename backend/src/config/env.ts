@@ -27,3 +27,13 @@ const envSchema = z.object({
     .default('development_jwt_secret_key_at_least_32_characters_long'),
   JWT_EXPIRES_IN: z.string().default('7d'),
 });
+
+const parsed = envSchema.safeParse(process.env);
+
+if (!parsed.success) {
+  console.error('❌ Invalid environment configuration:', parsed.error.format());
+  throw new Error('Environment variable validation failed');
+}
+
+export const env = parsed.data;
+export type Env = z.infer<typeof envSchema>;
