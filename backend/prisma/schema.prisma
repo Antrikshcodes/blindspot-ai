@@ -94,3 +94,18 @@ model FeedbackNote {
 
   @@map("feedback_notes")
 }
+
+model Evidence {
+  id             String       @id @default(cuid())
+  feedbackNoteId String
+  feedbackNote   FeedbackNote @relation(fields: [feedbackNoteId], references: [id], onDelete: Cascade)
+  assumptionId   String
+  assumption     Assumption   @relation(fields: [assumptionId], references: [id], onDelete: Cascade)
+  quote          String
+  sentiment      String       // SUPPORTING | INVALIDATING | NEUTRAL
+  reasoning      String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@map("evidence")
+}
