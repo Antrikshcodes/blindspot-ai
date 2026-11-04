@@ -21,4 +21,14 @@ export function errorHandler(
     sendError(res, err.code, err.message, err.statusCode, err.details);
     return;
   }
+
+  // Handle Zod validation errors
+  if (err instanceof ZodError) {
+    const details = err.errors.map((e) => ({
+      field: e.path.join('.'),
+      message: e.message,
+    }));
+    sendError(res, 'VALIDATION_ERROR', 'Request validation failed', 400, details);
+    return;
+  }
 }
