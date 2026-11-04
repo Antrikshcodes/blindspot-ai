@@ -178,7 +178,7 @@ Edit `.env` with your configuration. Required variables:
 
 | Variable | Description | Default |
 |---|---|---|
-| `PORT` | Server port | `3000` |
+| `PORT` | Backend server port | `3000` |
 | `NODE_ENV` / `ENVIRONMENT` | Runtime environment | `development` |
 | `DATABASE_URL` | Database connection string | — |
 | `AI_API_KEY` | AI service API key | — |
