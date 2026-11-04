@@ -182,7 +182,7 @@ Edit `.env` with your configuration. Required variables:
 | `NODE_ENV` / `ENVIRONMENT` | Runtime execution environment | `development` |
 | `DATABASE_URL` | Database connection string | — |
 | `AI_API_KEY` | Primary AI provider API key | — |
-| `JWT_SECRET` | JWT token signing secret | — |
+| `JWT_SECRET` | Secret key for JWT signature verification | — |
 | `SESSION_SECRET` | Session secret key | — |
 
 > ⚠️ **Never commit your `.env` file.** All secrets must remain local. See [`.env.example`](.env.example) for the full template.
