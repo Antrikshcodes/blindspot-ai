@@ -251,7 +251,7 @@ python app.py
 
 | Step | Description |
 |---|---|
-| **1. Input** | The user describes a decision, scenario, or problem through the web dashboard. |
+| **1. Input** | The user outlines a decision, scenario, or dilemma via the clean input interface. |
 | **2. Analyze** | The AI Engine processes the input — identifying cognitive biases, overlooked factors, and hidden risks. |
 | **3. Results** | Analysis results are returned with clear visualizations and actionable improvement suggestions. |
 | **4. Track** | Results are stored in the user's analysis history for future reference and comparison. |
