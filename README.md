@@ -46,7 +46,7 @@ Every day, individuals and organizations make critical decisions with incomplete
 - 🚫 Missed opportunities
 - 🔄 Preventable failures
 
-These blind spots are invisible by nature — you can't fix what you can't see.
+These blind spots are invisible by nature — you cannot fix what you cannot see.
 
 ### The Solution
 
