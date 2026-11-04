@@ -69,7 +69,7 @@ These blind spots are invisible by nature — you cannot fix what you cannot see
 
 | Feature | Description | Status |
 |---|---|---|
-| 🧠 **AI Analysis Engine** | Analyzes decisions to identify blind spots, biases, and overlooked risks | 🔜 Planned |
+| 🧠 **AI Analysis Engine** | Deeply analyzes decisions to uncover cognitive biases and risk factors | 🔜 Planned |
 | 💡 **Actionable Insights** | Goes beyond detection — provides concrete suggestions to improve decision quality | 🔜 Planned |
 | 🖥️ **Interactive Dashboard** | Clean, intuitive interface for visualizing analysis results | 🔜 Planned |
 | 📊 **Data Visualization** | Charts and graphs that make complex analysis easy to understand | 🔜 Planned |
