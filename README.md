@@ -4,7 +4,7 @@
 
 ### _See what you're missing — uncover blind spots with clarity._
 
-An AI-powered decision intelligence tool that uncovers hidden biases, overlooked risks, and cognitive blind spots — so you can decide with clarity.
+An AI-powered decision intelligence platform that uncovers hidden biases, overlooked risks, and cognitive blind spots — empowering teams and individuals to decide with clarity.
 
 [![Project Status](https://img.shields.io/badge/Status-In%20Development-yellow?style=for-the-badge)](https://github.com/Antrikshcodes/blindspot-ai)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
