@@ -148,3 +148,17 @@ model Experiment {
 
   @@map("experiments")
 }
+
+model ExperimentResult {
+  id              String     @id @default(cuid())
+  experimentId    String
+  experiment      Experiment @relation(fields: [experimentId], references: [id], onDelete: Cascade)
+  outcome         String     // VALIDATED | INVALIDATED | INCONCLUSIVE
+  metricsObserved String?
+  validated       Boolean    @default(false)
+  notes           String?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  @@map("experiment_results")
+}
