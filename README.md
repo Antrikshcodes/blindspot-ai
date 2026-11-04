@@ -73,7 +73,7 @@ These blind spots are invisible by nature — you cannot fix what you cannot see
 | 💡 **Actionable Insights** | Goes beyond detection to deliver concrete recommendations for improvement | 🔜 Planned |
 | 🖥️ **Interactive Dashboard** | Clean, modern interface for inspecting decision reports | 🔜 Planned |
 | 📊 **Data Visualization** | Intuitive visual breakdowns and charts for complex analysis | 🔜 Planned |
-| 🔐 **User Authentication** | Secure registration, login, and session management | 🔜 Planned |
+| 🔐 **User Authentication** | Robust account registration, authentication, and session handling | 🔜 Planned |
 | 📜 **Analysis History** | Track past decisions and revisit previous analyses | 🔜 Planned |
 | 🔗 **RESTful API** | Well-documented API for extensibility and integration | 🔜 Planned |
 | 📱 **Responsive Design** | Mobile-friendly interface that works across devices | 🔜 Planned |
