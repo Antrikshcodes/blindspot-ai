@@ -226,7 +226,7 @@ python app.py
 
 ---
 
-## ⚙️ How It Works
+## ⚙️ How It Works: Pipeline Architecture
 
 ```
 ┌──────────────────┐     ┌──────────────────┐     ┌──────────────────┐
