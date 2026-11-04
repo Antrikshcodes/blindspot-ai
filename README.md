@@ -276,7 +276,7 @@ python app.py
 
 - 🌐 **Multi-language support** — Analyze decisions written in different languages
 - 📤 **Export reports** — Download analysis results as PDF or CSV
-- 🤝 **Collaborative analysis** — Invite team members to review and annotate shared analyses
+- 🤝 **Collaborative analysis** — Invite team members to co-review and annotate shared decision reports
 - 🔔 **Smart notifications** — Alerts for recurring blind spot patterns across decisions
 - 🧩 **Browser extension** — Quick blind spot checks directly from any web page
 - 📈 **Trend analytics** — Track how decision quality improves over time
