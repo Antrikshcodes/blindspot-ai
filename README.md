@@ -363,7 +363,7 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 
 <div align="center">
 
-**Built with ❤️ for CoNSTruct 2.0**
+**Proudly built with ❤️ for CoNSTruct 2.0**
 
 *Replit × Newton School of Technology*
 
