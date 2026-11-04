@@ -21,3 +21,23 @@ model User {
 
   @@map("users")
 }
+
+model Project {
+  id                 String          @id @default(cuid())
+  name               String
+  problemStatement   String
+  targetAudience     String
+  proposedSolution   String?
+  productDescription String?
+  userId             String?
+  user               User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  assumptions        Assumption[]
+  interviews         Interview[]
+  feedbackNotes      FeedbackNote[]
+  contradictions     Contradiction[]
+  experiments        Experiment[]
+
+  @@map("projects")
+}
