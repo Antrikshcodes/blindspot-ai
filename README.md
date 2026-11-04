@@ -37,7 +37,7 @@ An AI-powered decision intelligence platform that uncovers hidden biases, overlo
 
 ## 🎯 About the Project
 
-### The Problem
+### The Problem: Invisible Risks & Cognitive Gaps
 
 Every day, individuals and organizations make critical decisions with incomplete information. Hidden biases, overlooked data points, and cognitive gaps create **blind spots** that lead to:
 
