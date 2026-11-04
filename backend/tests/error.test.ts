@@ -23,4 +23,10 @@ describe('Error Handling', () => {
       .send('{ invalid json }');
     expect(res.status).toBeGreaterThanOrEqual(400);
   });
+
+  it('should return 404 for completely unknown paths', async () => {
+    const res = await request(app).delete('/api/v1/unknown/resource');
+    expect(res.status).toBe(404);
+    expect(res.body.success).toBe(false);
+  });
 });
