@@ -93,7 +93,7 @@ These blind spots are invisible by nature — you cannot fix what you cannot see
 | **AI / ML** | LLM Engine (OpenAI API / Anthropic / Hugging Face Models) | ![OpenAI](https://img.shields.io/badge/OpenAI-412991?style=flat-square&logo=openai&logoColor=white) |
 | **Database** | Relational / Document Store (PostgreSQL / SQLite / MongoDB) | ![Database](https://img.shields.io/badge/Database-TBD-lightgrey?style=flat-square) |
 | **Auth** | Secure JWT-based authentication & session tokens | ![JWT](https://img.shields.io/badge/JWT-000000?style=flat-square&logo=jsonwebtokens&logoColor=white) |
-| **Deployment** | Replit | ![Replit](https://img.shields.io/badge/Replit-F26207?style=flat-square&logo=replit&logoColor=white) |
+| **Deployment** | Cloud hosting via Replit Platform | ![Replit](https://img.shields.io/badge/Replit-F26207?style=flat-square&logo=replit&logoColor=white) |
 | **CI/CD** | GitHub Actions | ![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF?style=flat-square&logo=githubactions&logoColor=white) |
 | **Version Control** | Git & GitHub | ![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=github&logoColor=white) |
 
