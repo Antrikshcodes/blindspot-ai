@@ -92,7 +92,7 @@ These blind spots are invisible by nature — you cannot fix what you cannot see
 | **Backend** | API Server (Node.js Express / Python FastAPI under consideration) | ![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat-square&logo=nodedotjs&logoColor=white) ![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white) |
 | **AI / ML** | LLM Engine (OpenAI API / Anthropic / Hugging Face Models) | ![OpenAI](https://img.shields.io/badge/OpenAI-412991?style=flat-square&logo=openai&logoColor=white) |
 | **Database** | Relational / Document Store (PostgreSQL / SQLite / MongoDB) | ![Database](https://img.shields.io/badge/Database-TBD-lightgrey?style=flat-square) |
-| **Auth** | JWT-based authentication | ![JWT](https://img.shields.io/badge/JWT-000000?style=flat-square&logo=jsonwebtokens&logoColor=white) |
+| **Auth** | Secure JWT-based authentication & session tokens | ![JWT](https://img.shields.io/badge/JWT-000000?style=flat-square&logo=jsonwebtokens&logoColor=white) |
 | **Deployment** | Replit | ![Replit](https://img.shields.io/badge/Replit-F26207?style=flat-square&logo=replit&logoColor=white) |
 | **CI/CD** | GitHub Actions | ![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF?style=flat-square&logo=githubactions&logoColor=white) |
 | **Version Control** | Git & GitHub | ![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=github&logoColor=white) |
