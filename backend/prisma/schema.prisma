@@ -80,3 +80,17 @@ model Interview {
 
   @@map("interviews")
 }
+
+model FeedbackNote {
+  id                    String     @id @default(cuid())
+  projectId             String
+  project               Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  intervieweeIdentifier String
+  rawText               String
+  notes                 String?
+  createdAt             DateTime   @default(now())
+  updatedAt             DateTime   @updatedAt
+  evidence              Evidence[]
+
+  @@map("feedback_notes")
+}
