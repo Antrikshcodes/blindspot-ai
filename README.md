@@ -48,7 +48,7 @@ Every day, individuals and organizations make critical decisions with incomplete
 
 These blind spots are invisible by nature — you cannot fix what you cannot see.
 
-### The Solution
+### The Solution: AI-Powered Blind Spot Detection
 
 **BlindSpot AI** uses artificial intelligence to analyze decisions and surface what humans tend to miss. It identifies overlooked factors, detects cognitive biases, and generates actionable suggestions — transforming hidden weaknesses into informed choices.
 
