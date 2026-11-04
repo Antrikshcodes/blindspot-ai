@@ -60,7 +60,7 @@ These blind spots are invisible by nature — you cannot fix what you cannot see
 |---|---|
 | 🏢 **Business Leaders** | Strategic decision-making and risk assessment |
 | 🎓 **Students & Researchers** | Rigorous problem analysis and hypothesis validation |
-| 🛠️ **Product Teams** | Evaluating features, priorities, and trade-offs |
+| 🛠️ **Product Teams** | Evaluating product features, roadmap trade-offs, and user impacts |
 | 👤 **General Users** | Getting a second perspective on important decisions |
 
 ---
