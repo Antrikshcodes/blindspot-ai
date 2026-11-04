@@ -41,3 +41,26 @@ model Project {
 
   @@map("projects")
 }
+
+model Assumption {
+  id               String          @id @default(cuid())
+  projectId        String
+  project          Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  statement        String
+  category         String          // PROBLEM | CUSTOMER | SOLUTION | MONETIZATION
+  explanation      String?
+  impactScore      Int             @default(3) // 1 to 5
+  uncertaintyScore Int             @default(3) // 1 to 5
+  compositeRisk    Int             @default(9) // impactScore * uncertaintyScore (1 to 25)
+  isLethal         Boolean         @default(false) // compositeRisk >= 15
+  validationMethod String?
+  status           String          @default("UNVERIFIED") // UNVERIFIED | SUPPORTED | INVALIDATED
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  interviews       Interview[]
+  evidence         Evidence[]
+  contradictions   Contradiction[]
+  experiments      Experiment[]
+
+  @@map("assumptions")
+}
