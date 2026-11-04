@@ -2,7 +2,7 @@
 
 # 🔍 BlindSpot AI
 
-### _See what you're missing._
+### _See what you're missing — uncover blind spots with clarity._
 
 An AI-powered decision intelligence tool that uncovers hidden biases, overlooked risks, and cognitive blind spots — so you can decide with clarity.
 
