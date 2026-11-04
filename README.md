@@ -89,7 +89,7 @@ These blind spots are invisible by nature — you cannot fix what you cannot see
 | Layer | Technology | Badge |
 |---|---|---|
 | **Frontend** | Modern Web UI (React / Next.js / Tailwind CSS under consideration) | ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black) |
-| **Backend** | TBD (Node.js / Python FastAPI / Flask under consideration) | ![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat-square&logo=nodedotjs&logoColor=white) ![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white) |
+| **Backend** | API Server (Node.js Express / Python FastAPI under consideration) | ![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat-square&logo=nodedotjs&logoColor=white) ![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white) |
 | **AI / ML** | TBD (OpenAI API / Hugging Face / Custom Models) | ![OpenAI](https://img.shields.io/badge/OpenAI-412991?style=flat-square&logo=openai&logoColor=white) |
 | **Database** | TBD (PostgreSQL / SQLite / MongoDB) | ![Database](https://img.shields.io/badge/Database-TBD-lightgrey?style=flat-square) |
 | **Auth** | JWT-based authentication | ![JWT](https://img.shields.io/badge/JWT-000000?style=flat-square&logo=jsonwebtokens&logoColor=white) |
