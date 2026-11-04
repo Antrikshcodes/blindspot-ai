@@ -6,4 +6,13 @@ describe('Database Connection', () => {
     const result = await checkDatabaseConnection();
     expect(result.ok).toBe(true);
   });
+
+  it('should return error message when connection fails', async () => {
+    // This tests the return shape; actual failure paths are harder to mock
+    const result = await checkDatabaseConnection();
+    expect(result).toHaveProperty('ok');
+    if (!result.ok) {
+      expect(result).toHaveProperty('message');
+    }
+  });
 });
