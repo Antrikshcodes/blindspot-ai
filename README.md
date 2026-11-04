@@ -76,7 +76,7 @@ These blind spots are invisible by nature — you cannot fix what you cannot see
 | 🔐 **User Authentication** | Robust account registration, authentication, and session handling | 🔜 Planned |
 | 📜 **Analysis History** | Comprehensive history log to revisit and audit past decisions | 🔜 Planned |
 | 🔗 **RESTful API** | Clean, modular endpoints designed for integration and extensibility | 🔜 Planned |
-| 📱 **Responsive Design** | Mobile-friendly interface that works across devices | 🔜 Planned |
+| 📱 **Responsive Design** | Fully responsive layout optimized for mobile, tablet, and desktop | 🔜 Planned |
 
 > 🚧 Features are being actively developed during the hackathon sprint. Check the [Roadmap](docs/ROADMAP.md) for progress.
 
