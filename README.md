@@ -74,7 +74,7 @@ These blind spots are invisible by nature — you cannot fix what you cannot see
 | 🖥️ **Interactive Dashboard** | Clean, modern interface for inspecting decision reports | 🔜 Planned |
 | 📊 **Data Visualization** | Intuitive visual breakdowns and charts for complex analysis | 🔜 Planned |
 | 🔐 **User Authentication** | Robust account registration, authentication, and session handling | 🔜 Planned |
-| 📜 **Analysis History** | Track past decisions and revisit previous analyses | 🔜 Planned |
+| 📜 **Analysis History** | Comprehensive history log to revisit and audit past decisions | 🔜 Planned |
 | 🔗 **RESTful API** | Well-documented API for extensibility and integration | 🔜 Planned |
 | 📱 **Responsive Design** | Mobile-friendly interface that works across devices | 🔜 Planned |
 
