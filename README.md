@@ -215,7 +215,7 @@ npm run dev
 python app.py
 ```
 
-### Replit Deployment
+### Replit Cloud Deployment
 
 1. Go to [replit.com](https://replit.com) → **Create Repl** → **Import from GitHub**.
 2. Paste the repository URL: `https://github.com/Antrikshcodes/blindspot-ai`
