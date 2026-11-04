@@ -64,3 +64,19 @@ model Assumption {
 
   @@map("assumptions")
 }
+
+model Interview {
+  id             String      @id @default(cuid())
+  projectId      String
+  project        Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assumptionId   String?
+  assumption     Assumption? @relation(fields: [assumptionId], references: [id], onDelete: SetNull)
+  questionText   String
+  probeType      String      // PAST_BEHAVIOR | CURRENT_EXPENDITURE | WORKAROUND | EMOTIONAL_INTENSITY
+  listenFor      String?
+  originalScript String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  @@map("interviews")
+}
