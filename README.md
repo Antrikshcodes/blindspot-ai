@@ -99,7 +99,7 @@ These blind spots are invisible by nature — you cannot fix what you cannot see
 
 ---
 
-## 📁 Project Structure
+## 📁 Project Structure & Layout
 
 ```
 blindspot-ai/
