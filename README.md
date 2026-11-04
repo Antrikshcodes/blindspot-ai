@@ -253,7 +253,7 @@ python app.py
 |---|---|
 | **1. Input** | The user outlines a decision, scenario, or dilemma via the clean input interface. |
 | **2. Analyze** | The AI Engine analyzes the submission — detecting cognitive biases, blind spots, and systemic risks. |
-| **3. Results** | Analysis results are returned with clear visualizations and actionable improvement suggestions. |
+| **3. Results** | Structured insights are returned with risk indicators, visual breakdowns, and actionable advice. |
 | **4. Track** | Results are stored in the user's analysis history for future reference and comparison. |
 
 > 📡 For API-level details, see [`docs/API_DOCUMENTATION.md`](docs/API_DOCUMENTATION.md)
