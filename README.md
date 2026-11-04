@@ -289,7 +289,7 @@ python app.py
 
 We welcome contributions from everyone! Whether it's code, documentation, bug reports, or ideas — every contribution matters.
 
-### Quick Start
+### Quick Start Guide for Contributors
 
 ```bash
 # 1. Fork the repository on GitHub, then clone your fork
