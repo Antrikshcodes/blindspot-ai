@@ -156,7 +156,7 @@ blindspot-ai/
 |---|---|---|
 | **Git** | 2.30+ (or latest) | ✅ Yes |
 | **Node.js** / **Python** | Node.js 18+ LTS / Python 3.10+ | ✅ Yes (stack TBD) |
-| **npm** / **pip** | Latest | ✅ Yes |
+| **npm** / **pip** | npm 9+ or pip 23+ | ✅ Yes |
 | **Replit Account** | — | Optional (for deployment) |
 
 ### Local Development
