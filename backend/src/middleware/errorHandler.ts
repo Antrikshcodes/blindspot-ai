@@ -50,4 +50,12 @@ export function errorHandler(
     sendError(res, 'DATABASE_ERROR', 'A database error occurred', 500);
     return;
   }
+
+  // Fallback for unhandled unexpected errors
+  const message =
+    env.NODE_ENV === 'production'
+      ? 'An unexpected server error occurred'
+      : err.message || 'Internal server error';
+
+  sendError(res, 'INTERNAL_SERVER_ERROR', message, 500);
 }
