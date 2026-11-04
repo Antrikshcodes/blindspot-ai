@@ -323,7 +323,7 @@ git push origin feature/your-feature-name
 
 ### Commit Format
 
-We use [Conventional Commits](https://www.conventionalcommits.org/):
+We strictly follow the [Conventional Commits v1.0.0](https://www.conventionalcommits.org/) specification:
 
 ```
 feat(scope): add new feature
