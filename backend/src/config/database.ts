@@ -19,3 +19,15 @@ export const prisma: PrismaClient =
 if (env.NODE_ENV !== 'production') {
   global.__prismaClient = prisma;
 }
+
+export async function checkDatabaseConnection(): Promise<{ ok: boolean; message?: string }> {
+  try {
+    // Simple raw query to verify database connectivity
+    await prisma.$queryRaw`SELECT 1`;
+    return { ok: true };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown database error';
+    logger.error('Database connection check failed', 'Database', { error: message });
+    return { ok: false, message };
+  }
+}
