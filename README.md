@@ -187,7 +187,7 @@ Edit `.env` with your configuration. Required variables:
 
 > ⚠️ **Never commit your `.env` file.** All private keys and tokens must remain local. See [`.env.example`](.env.example) for the complete template.
 
-**3. Install dependencies**
+**3. Install project dependencies**
 
 ```bash
 # Frontend
