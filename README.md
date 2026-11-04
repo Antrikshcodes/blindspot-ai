@@ -19,6 +19,8 @@ An AI-powered decision intelligence platform that uncovers hidden biases, overlo
 
 ## 📋 Table of Contents
 
+> Quick navigation to key sections of this documentation:
+
 - [About the Project](#-about-the-project)
 - [Key Features](#-key-features)
 - [Tech Stack](#-tech-stack)
