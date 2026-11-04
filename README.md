@@ -278,6 +278,7 @@ python app.py
 - 🧩 **Browser extension** — Quick blind spot checks directly from any web page
 - 📈 **Trend analytics** — Track how decision quality improves over time
 - 🔌 **Third-party integrations** — Connect with project management tools (Jira, Notion, etc.)
+- 🛡️ **Confidence scoring** — Risk estimation and confidence metrics for identified blind spots
 
 ---
 
