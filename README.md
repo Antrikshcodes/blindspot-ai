@@ -58,7 +58,7 @@ These blind spots are invisible by nature — you cannot fix what you cannot see
 
 | User Segment | Use Case |
 |---|---|
-| 🏢 **Business Leaders** | Strategic planning and risk assessment |
+| 🏢 **Business Leaders** | Strategic decision-making and risk assessment |
 | 🎓 **Students & Researchers** | Analyzing problems and validating conclusions |
 | 🛠️ **Product Teams** | Evaluating features, priorities, and trade-offs |
 | 👤 **General Users** | Getting a second perspective on important decisions |
