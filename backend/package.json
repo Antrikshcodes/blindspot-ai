@@ -28,6 +28,8 @@
   "author": "Team Null Theory",
   "license": "MIT",
   "dependencies": {
+    "@clerk/express": "^2.1.88",
+    "@clerk/shared": "^4.44.1",
     "@prisma/client": "^6.4.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
@@ -35,6 +37,7 @@
     "express": "^4.21.2",
     "express-rate-limit": "^8.7.3",
     "helmet": "^8.3.0",
+    "http-proxy-middleware": "^4.2.1",
     "openai": "^7.53.0",
     "p-limit": "^7.3.3",
     "p-retry": "^9.0.0",

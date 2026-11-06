@@ -1,11 +1,10 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import request from 'supertest';
+import { authenticatedRequest as request, createAuthenticatedApp as createApp } from './auth.fixtures.js';
 import { eq } from 'drizzle-orm';
 import { AnalysisEngine } from '../../src/phase01/analysis/engine.js';
 import { calculateRisk, classifyRisk } from '../../src/phase01/analysis/risk.js';
 import { requireGrounded } from '../../src/phase01/analysis/grounding.js';
 import { prompts } from '../../src/phase01/analysis/prompts.js';
-import { createApp } from '../../src/phase01/app.js';
 import type { LLM, GenerationOptions } from '../../src/phase01/ai/provider.js';
 import { ApiError } from '../../src/phase01/config.js';
 import { analyses } from '../../src/phase01/db/schema.js';

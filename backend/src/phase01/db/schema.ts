@@ -21,12 +21,15 @@ export const sentimentEnum = platform.enum('evidence_sentiment', ['SUPPORTING', 
 export const experimentStatusEnum = platform.enum('experiment_status', ['PLANNED', 'IN_PROGRESS', 'COMPLETED', 'ABANDONED']);
 export const savedStatusEnum = platform.enum('saved_status', ['CONSIDERING', 'TRYING', 'INTEGRATED']);
 export const projects = platform.table('projects', {
-  id: key(), name: text('name').notNull(), productDescription: text('product_description').notNull(),
+  id: key(),
+  // NULL quarantines pre-authentication records; no automatic claiming/backfill.
+  ownerId: text('owner_id'),
+  name: text('name').notNull(), productDescription: text('product_description').notNull(),
   problemStatement: text('problem_statement').notNull(), targetAudience: text('target_audience').notNull(),
   proposedSolution: text('proposed_solution').notNull(),
   existingAlternatives: text('existing_alternatives').array().notNull().default(sql`'{}'::text[]`),
   createdAt: created(), updatedAt: updated(),
-}, t => [index('project_created_idx').on(t.createdAt)]);
+}, t => [index('project_created_idx').on(t.createdAt), index('project_owner_created_idx').on(t.ownerId, t.createdAt)]);
 export const analyses = platform.table('analyses', {
   id: key(), projectId: uuid('project_id').notNull().references(() => projects.id, { onDelete: 'cascade' }),
   projectSnapshot: jsonb('project_snapshot').notNull(), marketContext: text('market_context'),

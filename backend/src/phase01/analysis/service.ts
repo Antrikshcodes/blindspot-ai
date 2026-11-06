@@ -1,4 +1,4 @@
-import { desc, eq } from 'drizzle-orm';
+import { and, desc, eq } from 'drizzle-orm';
 import { randomUUID } from 'node:crypto';
 import type { z } from 'zod';
 import type { Database } from '../db/client.js';
@@ -10,9 +10,10 @@ import { resultSchema, providerMetadataSchema } from './contracts.js';
 import { AnalysisEngine } from './engine.js';
 
 export class IdeaAnalysisService {
-  constructor(private db: Database, private llm: LLM) {}
+  constructor(private db: Database, private llm: LLM, private ownerId: string) {}
   async analyze(projectId: string, context: z.infer<typeof analysisInput>) {
-    const [project] = await this.db.select().from(t.projects).where(eq(t.projects.id, projectId));
+    const [project] = await this.db.select().from(t.projects)
+      .where(and(eq(t.projects.id, projectId), eq(t.projects.ownerId, this.ownerId)));
     if (!project) throw new ApiError(404, 'NOT_FOUND', 'Project not found.');
     const input = projectInput.parse({
       name: project.name, productDescription: project.productDescription, problemStatement: project.problemStatement,
@@ -24,7 +25,8 @@ export class IdeaAnalysisService {
     // Do expensive AI work before taking a short DB lock. Failed stages save no
     // partial "successful analysis". The project lock serializes version allocation.
     await this.db.transaction(async tx => {
-      const [existing] = await tx.select({ id: t.projects.id }).from(t.projects).where(eq(t.projects.id, projectId)).for('update');
+      const [existing] = await tx.select({ id: t.projects.id }).from(t.projects)
+        .where(and(eq(t.projects.id, projectId), eq(t.projects.ownerId, this.ownerId))).for('update');
       if (!existing) throw new ApiError(404, 'NOT_FOUND', 'Project was removed during analysis.');
       const [previous] = await tx.select({ version: t.analyses.version }).from(t.analyses)
         .where(eq(t.analyses.projectId, projectId)).orderBy(desc(t.analyses.version)).limit(1);
@@ -51,6 +53,9 @@ export class IdeaAnalysisService {
   async artifact(analysisId: string, kind: 'blindspots' | 'interviewQuestions' | 'summary') {
     const [analysis] = await this.db.select().from(t.analyses).where(eq(t.analyses.id, analysisId));
     if (!analysis) throw new ApiError(404, 'NOT_FOUND', 'Analysis not found.');
+    const [project] = await this.db.select({ id: t.projects.id }).from(t.projects)
+      .where(and(eq(t.projects.id, analysis.projectId), eq(t.projects.ownerId, this.ownerId)));
+    if (!project) throw new ApiError(404, 'NOT_FOUND', 'Analysis not found.');
     const common = { analysisId, projectId: analysis.projectId, version: analysis.version, engineVersion: analysis.engineVersion };
     if (analysis.engineVersion !== '2.0') {
       return { ...common, available: false, ...(kind === 'summary'

@@ -1,5 +1,45 @@
 # API Documentation: Blindspot AI
 
+## Authentication and project privacy
+
+All `/api` endpoints except `GET /api/health` require a verified **Clerk
+session**. Replit-managed Clerk is provisioned separately for development and
+production. The `/api/__clerk` provider proxy is public infrastructure in
+production; it does not grant access to project data.
+
+- Browser clients use Clerk session cookies on same-origin requests. Do not
+  add browser bearer-token plumbing. Cookie-authenticated writes also require a
+  matching `Origin` and reject `Sec-Fetch-Site: cross-site`.
+- Non-browser API clients may use `Authorization: Bearer <Clerk session JWT>`.
+  The server verifies signatures, expiry and the authorized party. It accepts
+  session tokens, not API keys or machine tokens.
+- The verified provider subject is the sole owner identity. `X-User-Id`,
+  custom `userId` claims, body IDs and query IDs are never identity proof.
+  Owner/user fields are rejected in project input and cannot transfer ownership.
+- Project lists are filtered by owner before pagination. Reads/writes of
+  analyses, assumptions/evidence, interviews/notes, feedback summaries,
+  experiments, resource searches/history and saved resources check their owning
+  project. Foreign and absent records both return `404 NOT_FOUND`.
+- A resource ID is readable only after retrieval for an owned project.
+  Resource metadata may be globally deduplicated public-source metadata;
+  queries, recommendations, explanations and saves remain project-scoped.
+- Existing projects have `owner_id = NULL` and are quarantined, including their
+  descendants. They are neither deleted nor assigned to the next signed-in user.
+  There is no public claim/transfer endpoint.
+
+Missing provider keys return `503 AUTH_NOT_READY`, in production **and**
+development. Missing/invalid sessions return `401 UNAUTHENTICATED`; rejected
+cookie-write origins return `403 ORIGIN_REJECTED`. Positive owner and
+cross-account rejection tests now cover the real signature-verification
+middleware, so configured production uses authenticated access rather than the
+former unconditional 503. No publication is automatic.
+
+Apply the additive checked-in ownership migration before running this version.
+Development uses `npm run db:migrate`; production schema changes must use the
+managed release flow, never startup DDL. The existing website has not yet been
+wired to Clerk sign-in: until its separate integration, anonymous browser API
+requests correctly return 401 instead of exposing data.
+
 ## Phase 03 resource API
 
 Existing resource endpoints retain their fields and add normalized aliases and
@@ -60,8 +100,9 @@ See [complete Phase 02 contract/examples](PHASE02_AI_ENGINE.md).
 
 **Base: `/api`**, not the historical `/api/v1` contract below.
 All UUID parameters and inputs are validated. Unknown body/query keys are rejected.
-All non-health routes are development/test-only until authenticated project
-authorization exists; production returns 503 `AUTH_NOT_READY`.
+All non-health routes require the authenticated owner checks described above.
+Missing authentication configuration returns 503 `AUTH_NOT_READY`; there is no
+anonymous development bypass.
 
 ### Envelopes, pagination and errors
 
@@ -130,6 +171,7 @@ human judgment, not an automatic AI certification.
 | POST | `/api/projects/:id/interviews` | `{participant:"alias"}` | Session with non-leading mapped questions, 201 |
 | GET | `/api/projects/:id/interviews` | page/limit | Sessions |
 | POST | `/api/interviews/:id/feedback` | `{notes,assumptionIds?}` | Original feedback record, 201 |
+| GET | `/api/interviews/:id/feedback` | page/limit | Paginated original feedback records, newest first |
 | POST | `/api/projects/:id/feedback/analyze` | `{}` | Versioned summary + evidenceRecords + reviewRequired, 201 |
 | GET | `/api/projects/:id/feedback/summary` | None | Latest stored summary or null |
 | POST | `/api/projects/:id/experiments` | `{assumptionId}` for AI suggestion, or manual experiment fields | Experiment, 201 |

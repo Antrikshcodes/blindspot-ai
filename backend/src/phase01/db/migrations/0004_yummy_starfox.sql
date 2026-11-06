@@ -1,0 +1,2 @@
+ALTER TABLE "blindspot_phase01"."projects" ADD COLUMN "owner_id" text;--> statement-breakpoint
+CREATE INDEX "project_owner_created_idx" ON "blindspot_phase01"."projects" USING btree ("owner_id","created_at");

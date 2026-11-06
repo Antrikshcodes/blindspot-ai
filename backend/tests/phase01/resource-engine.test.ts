@@ -1,7 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
-import request from 'supertest';
+import { authenticatedRequest as request, createAuthenticatedApp as createApp } from './auth.fixtures.js';
 import { eq } from 'drizzle-orm';
-import { createApp } from '../../src/phase01/app.js';
 import { ApiError } from '../../src/phase01/config.js';
 import * as t from '../../src/phase01/db/schema.js';
 import * as c from '../../src/phase01/contracts.js';

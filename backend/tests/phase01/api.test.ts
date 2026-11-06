@@ -1,7 +1,6 @@
 import { beforeAll, afterAll, describe, it, expect, vi } from 'vitest';
-import request from 'supertest';
+import { authenticatedRequest as request, createAuthenticatedApp as createApp } from './auth.fixtures.js';
 import { eq } from 'drizzle-orm';
-import { createApp } from '../../src/phase01/app.js';
 import { DisabledLLM } from '../../src/phase01/ai/provider.js';
 import type { Provider } from '../../src/phase01/resource-intelligence/types.js';
 import { ApiError } from '../../src/phase01/config.js';
@@ -83,6 +82,14 @@ describe('Project and validation API with isolated PostgreSQL', () => {
       assumptionIds: [assumptionId],
     });
     expect(feedback.status).toBe(201);
+    const persisted = await request(app).get(`/api/interviews/${interviewId}/feedback?limit=1&page=1`);
+    expect(persisted.status).toBe(200);
+    expect(persisted.body.data.items[0]).toEqual(feedback.body.data);
+    expect(persisted.body.data.items[0].notes).toBe('Last week I interviewed three people and tracked their examples in a spreadsheet.');
+    expect((await request(app).get(`/api/interviews/${interviewId}/feedback?limit=1&page=2`)).body.data.items).toEqual([]);
+    expect((await request(app).get('/api/interviews/not-a-uuid/feedback')).status).toBe(400);
+    expect((await request(app).get('/api/interviews/00000000-0000-4000-8000-000000000000/feedback')).status).toBe(404);
+    expect((await request(app).get(`/api/interviews/${interviewId}/feedback?limit=101`)).status).toBe(400);
     const summary = await request(app).post(`/api/projects/${projectId}/feedback/analyze`).send({});
     expect(summary.status).toBe(201); expect(summary.body.data.reviewRequired).toBe(true);
     evidenceId = summary.body.data.evidenceRecords.find((row: any) => row.sentiment === 'SUPPORTING').id;
@@ -204,12 +211,12 @@ describe('Operational safeguards', () => {
     expect((await request(aiLimited).post(`/api/projects/${projectId}/resources/search`).send({ query: 'validation', explain: false })).status).toBe(503);
     expect((await request(aiLimited).post(`/api/projects/${projectId}/resources/search`).send({ query: 'validation', explain: false })).status).toBe(429);
   });
-  it('fails closed in production even with a spoofed user header', async () => {
-    const prod = createApp({ db: storage.db, llm, providers: [], production: true });
-    expect((await request(prod).get('/api/health')).status).toBe(200);
-    for (const method of ['get', 'post', 'delete'] as const) {
-      expect((await request(prod)[method]('/api/projects').set('X-User-Id', projectId)).status).toBe(503);
-    }
+  it('uses verified identity despite a spoofed user header', async () => {
+    const authenticated = createApp({ db: storage.db, llm, providers: [] });
+    expect((await request(authenticated).get('/api/health')).status).toBe(200);
+    const response = await request(authenticated).get('/api/projects').set('X-User-Id', projectId);
+    expect(response.status).toBe(200);
+    expect(response.body.data.items.map((row: any) => row.id)).toEqual([projectId]);
   });
   it('stores long original feedback with mappings without exceeding PostgreSQL index limits', async () => {
     const response = await request(app).post(`/api/interviews/${interviewId}/feedback`).send({

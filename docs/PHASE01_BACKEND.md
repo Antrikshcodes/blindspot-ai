@@ -11,6 +11,35 @@ No data was deleted or silently imported. Generated hypotheses start UNTESTED;
 evidence-backed outcome changes require an explicit reviewed API request.
 No experiment, AI interpretation or recommendation is a verified market finding.
 
+### Authenticated owner boundary
+
+The active Phase 01 API now uses Replit-managed Clerk sessions. A request-local
+owner comes only from the verified provider subject, never a caller ID or custom
+userId claim. Owner-filtered project queries and owner-aware analysis/validation
+services protect project descendants, including direct child-ID access. Resource
+search/list/history/save paths verify project ownership before work; direct
+resource details require retrieval through an owned project.
+
+The additive ownership migration preserves existing projects with a NULL owner,
+making them inaccessible to every account. No automated claiming, data deletion,
+import, or ownership transfer is provided. New records receive their owner from
+the verified session. Project inputs cannot edit it.
+
+The fail-closed boundary remains `503 AUTH_NOT_READY` when provider configuration
+is missing, in all environments. Configured instances return 401 for missing or
+invalid sessions and 404 for missing/foreign data. Production authenticated access
+is covered by positive and cross-account tests using locally signed ephemeral
+session JWTs through the actual Clerk verification middleware (not mocked auth).
+Tests also cover cookie sessions and cross-site write rejection; provider/AI
+adapters remain fixtures. This is not a hosted sign-in/browser verification or a
+claim of a public production release.
+
+Clerk keys are automatically provisioned by Replit. The provider proxy is mounted
+before JSON parsing at `/api/__clerk`. Apply the checked-in migration explicitly
+in development and use the managed production schema release flow later. Startup
+performs no DDL. The existing web client still needs its separate Clerk sign-in
+and account-switch cache integration; it now receives 401 while unsigned.
+
 Documentation:
 [API](API_DOCUMENTATION.md#implemented-phase-01-api) ·
 [Database/table relationships](DATABASE_SCHEMA.md) ·
@@ -44,6 +73,8 @@ Documentation:
 ## Required/optional configuration
 
 Required to serve: PostgreSQL `DATABASE_URL`. PORT/NODE_ENV have defaults.
+Private routes also require `CLERK_SECRET_KEY` and `CLERK_PUBLISHABLE_KEY`;
+Replit provisions them, with isolated development and production user stores.
 AI_PROVIDER selects replit/openai/disabled. Replit-managed AI requires no user key;
 external compatible AI requires AI_API_KEY and model configuration.
 Optional: GITHUB_TOKEN, HUGGINGFACE_TOKEN, KAGGLE_USERNAME/KAGGLE_KEY.
@@ -52,8 +83,9 @@ configurable. See the placeholder-only backend environment template.
 
 ## Honest remaining gaps
 
-- No frontend, accounts, authenticated ownership or public production release.
-  All non-health production routes intentionally return 503.
+- No public production release or web sign-in integration in this backend-only
+  delivery. Owner authorization is implemented; ownerless historical data
+  remains quarantined, with no claim/recovery UI.
 - Small reviewed technical-resource catalog; literal source searches and heuristic
   ranking, not comprehensive web search or benchmarked semantic retrieval.
 - Unknown metadata stays null/UNKNOWN; license compatibility and security are not

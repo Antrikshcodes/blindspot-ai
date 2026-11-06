@@ -9,15 +9,17 @@ import { IdeaAnalysisService } from '../analysis/service.js';
 import { resultSchema } from '../analysis/contracts.js';
 
 export class ValidationService {
-  constructor(private db: Database, private llm: LLM) {}
+  constructor(private db: Database, private llm: LLM, private ownerId: string) {}
   async project(id: string) {
-    const [project] = await this.db.select().from(t.projects).where(eq(t.projects.id, id));
+    const [project] = await this.db.select().from(t.projects)
+      .where(and(eq(t.projects.id, id), eq(t.projects.ownerId, this.ownerId)));
     if (!project) throw new ApiError(404, 'NOT_FOUND', 'Project not found.');
     return project;
   }
   async analysis(id: string) {
     const [analysis] = await this.db.select().from(t.analyses).where(eq(t.analyses.id, id));
     if (!analysis) throw new ApiError(404, 'NOT_FOUND', 'Analysis not found.');
+    await this.project(analysis.projectId);
     if (analysis.engineVersion === '2.0' && !resultSchema.safeParse(analysis.result).success) {
       throw new ApiError(500, 'ANALYSIS_DATA_INVALID', 'Stored analysis failed response validation.');
     }
@@ -33,7 +35,7 @@ export class ValidationService {
     return this.analysis(analysis.id);
   }
   async analyze(projectId: string, input: z.infer<typeof c.analysisInput>) {
-    const analysisId = await new IdeaAnalysisService(this.db, this.llm).analyze(projectId, input);
+    const analysisId = await new IdeaAnalysisService(this.db, this.llm, this.ownerId).analyze(projectId, input);
     return this.analysis(analysisId);
   }
   async assumption(id: string) {
@@ -41,6 +43,7 @@ export class ValidationService {
       .from(t.assumptions).innerJoin(t.analyses, eq(t.assumptions.analysisId, t.analyses.id))
       .where(eq(t.assumptions.id, id));
     if (!row) throw new ApiError(404, 'NOT_FOUND', 'Assumption not found.');
+    await this.project(row.projectId);
     return row;
   }
   async requireProjectAssumptions(projectId: string, ids: string[]) {
@@ -114,6 +117,7 @@ export class ValidationService {
   async addFeedback(interviewId: string, input: z.infer<typeof c.feedbackInput>) {
     const [interview] = await this.db.select().from(t.interviews).where(eq(t.interviews.id, interviewId));
     if (!interview) throw new ApiError(404, 'NOT_FOUND', 'Interview not found.');
+    await this.project(interview.projectId);
     await this.requireProjectAssumptions(interview.projectId, input.assumptionIds);
     return this.db.transaction(async tx => {
       const [record] = await tx.insert(t.feedback).values({ interviewId, notes: input.notes }).returning();
@@ -173,6 +177,10 @@ export class ValidationService {
     return experiment;
   }
   async updateExperiment(id: string, input: z.infer<typeof c.experimentPatch>) {
+    const [existing] = await this.db.select({ projectId: t.experiments.projectId })
+      .from(t.experiments).where(eq(t.experiments.id, id));
+    if (!existing) throw new ApiError(404, 'NOT_FOUND', 'Experiment not found.');
+    await this.project(existing.projectId);
     return this.db.transaction(async tx => {
       const [current] = await tx.select().from(t.experiments).where(eq(t.experiments.id, id)).for('update');
       if (!current) throw new ApiError(404, 'NOT_FOUND', 'Experiment not found.');
