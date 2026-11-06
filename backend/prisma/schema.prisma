@@ -38,6 +38,7 @@ model Project {
   feedbackNotes      FeedbackNote[]
   contradictions     Contradiction[]
   experiments        Experiment[]
+  libraryResources   LibraryResource[]
 
   @@map("projects")
 }
@@ -161,4 +162,32 @@ model ExperimentResult {
   updatedAt       DateTime   @updatedAt
 
   @@map("experiment_results")
+}
+
+// Prototype resource catalog scoped to an idea/project. Metadata is curated,
+// not provider-verified; null license/usage fields mean "unknown", not permission.
+model LibraryResource {
+  id                    String    @id @default(cuid())
+  projectId             String
+  project               Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  category              String    // GITHUB_REPOSITORY | DATASET
+  sourceUrl             String
+  name                  String
+  description           String
+  license               String?
+  usageNotes            String?
+  metadataProvenance    String    @default("CURATED_UNVERIFIED")
+  relevanceExplanation  String
+  useCase               String
+  integrationDifficulty String    @default("UNKNOWN") // EASY | MODERATE | ADVANCED | UNKNOWN
+  limitations           String?
+  savedAt               DateTime?
+  savedStatus           String?   // CONSIDERING | TRYING | INTEGRATED; null when not saved
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@unique([projectId, sourceUrl])
+  @@index([projectId, category, createdAt])
+  @@index([projectId, savedAt])
+  @@map("library_resources")
 }

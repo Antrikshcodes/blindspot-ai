@@ -5,6 +5,7 @@ import { requestLogger } from './middleware/requestLogger.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { sendError } from './utils/response.js';
 import { healthRouter } from './modules/health/health.routes.js';
+import { libraryRouter } from './modules/library/library.routes.js';
 
 export function createApp(): Express {
   const app: Express = express();
@@ -20,6 +21,7 @@ export function createApp(): Express {
   // Mount API V1 routes
   const apiRouter = express.Router();
   apiRouter.use('/health', healthRouter);
+  apiRouter.use('/projects/:projectId/library', libraryRouter);
 
   // Root API prefix
   app.use(env.API_PREFIX, apiRouter);

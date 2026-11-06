@@ -16,6 +16,16 @@ export function errorHandler(
     stack: env.NODE_ENV !== 'production' ? err.stack : undefined,
   });
 
+  const parserError = err as Error & { type?: string };
+  if (parserError.type === 'entity.parse.failed') {
+    sendError(res, 'VALIDATION_ERROR', 'Request body must be valid JSON', 400);
+    return;
+  }
+  if (parserError.type === 'entity.too.large') {
+    sendError(res, 'PAYLOAD_TOO_LARGE', 'Request body exceeds the 1 MB limit', 413);
+    return;
+  }
+
   // Handle custom AppError
   if (err instanceof AppError) {
     sendError(res, err.code, err.message, err.statusCode, err.details);
