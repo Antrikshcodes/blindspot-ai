@@ -1,0 +1,193 @@
+// Blindspot AI — Database Schema
+// Team Null Theory | CoNSTruct 2.0 (Replit × Newton School of Technology)
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String?
+  passwordHash String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  projects     Project[]
+
+  @@map("users")
+}
+
+model Project {
+  id                 String          @id @default(cuid())
+  name               String
+  problemStatement   String
+  targetAudience     String
+  proposedSolution   String?
+  productDescription String?
+  userId             String?
+  user               User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  assumptions        Assumption[]
+  interviews         Interview[]
+  feedbackNotes      FeedbackNote[]
+  contradictions     Contradiction[]
+  experiments        Experiment[]
+  libraryResources   LibraryResource[]
+
+  @@map("projects")
+}
+
+model Assumption {
+  id               String          @id @default(cuid())
+  projectId        String
+  project          Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  statement        String
+  category         String          // PROBLEM | CUSTOMER | SOLUTION | MONETIZATION
+  explanation      String?
+  impactScore      Int             @default(3) // 1 to 5
+  uncertaintyScore Int             @default(3) // 1 to 5
+  compositeRisk    Int             @default(9) // impactScore * uncertaintyScore (1 to 25)
+  isLethal         Boolean         @default(false) // compositeRisk >= 15
+  validationMethod String?
+  status           String          @default("UNVERIFIED") // UNVERIFIED | SUPPORTED | INVALIDATED
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  interviews       Interview[]
+  evidence         Evidence[]
+  contradictions   Contradiction[]
+  experiments      Experiment[]
+
+  @@map("assumptions")
+}
+
+model Interview {
+  id             String      @id @default(cuid())
+  projectId      String
+  project        Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assumptionId   String?
+  assumption     Assumption? @relation(fields: [assumptionId], references: [id], onDelete: SetNull)
+  questionText   String
+  probeType      String      // PAST_BEHAVIOR | CURRENT_EXPENDITURE | WORKAROUND | EMOTIONAL_INTENSITY
+  listenFor      String?
+  originalScript String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  @@map("interviews")
+}
+
+model FeedbackNote {
+  id                    String     @id @default(cuid())
+  projectId             String
+  project               Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  intervieweeIdentifier String
+  rawText               String
+  notes                 String?
+  createdAt             DateTime   @default(now())
+  updatedAt             DateTime   @updatedAt
+  evidence              Evidence[]
+
+  @@map("feedback_notes")
+}
+
+model Evidence {
+  id             String       @id @default(cuid())
+  feedbackNoteId String
+  feedbackNote   FeedbackNote @relation(fields: [feedbackNoteId], references: [id], onDelete: Cascade)
+  assumptionId   String
+  assumption     Assumption   @relation(fields: [assumptionId], references: [id], onDelete: Cascade)
+  quote          String
+  sentiment      String       // SUPPORTING | INVALIDATING | NEUTRAL
+  reasoning      String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@map("evidence")
+}
+
+model Contradiction {
+  id                   String      @id @default(cuid())
+  projectId            String
+  project              Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assumptionId         String?
+  assumption           Assumption? @relation(fields: [assumptionId], references: [id], onDelete: SetNull)
+  contradictionSummary String
+  quoteA               String
+  quoteB               String
+  recommendation       String?
+  status               String      @default("CANDIDATE") // CANDIDATE | CONFIRMED | DISMISSED
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime    @updatedAt
+
+  @@map("contradictions")
+}
+
+model Experiment {
+  id                   String             @id @default(cuid())
+  projectId            String
+  project              Project            @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assumptionId         String?
+  assumption           Assumption?        @relation(fields: [assumptionId], references: [id], onDelete: SetNull)
+  name                 String
+  hypothesis           String
+  executionMethod      String             // SMOKE_TEST | CONCIERGE_TEST | LANDING_PAGE | PROTOTYPE_WALKTHROUGH | PRE_SALE
+  requiredResources    String?
+  metric               String
+  failureThreshold     String
+  durationDays         Int                @default(7)
+  resultInterpretation String?
+  status               String             @default("PLANNED") // PLANNED | IN_PROGRESS | COMPLETED | ABANDONED
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  results              ExperimentResult[]
+
+  @@map("experiments")
+}
+
+model ExperimentResult {
+  id              String     @id @default(cuid())
+  experimentId    String
+  experiment      Experiment @relation(fields: [experimentId], references: [id], onDelete: Cascade)
+  outcome         String     // VALIDATED | INVALIDATED | INCONCLUSIVE
+  metricsObserved String?
+  validated       Boolean    @default(false)
+  notes           String?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  @@map("experiment_results")
+}
+
+// Prototype resource catalog scoped to an idea/project. Metadata is curated,
+// not provider-verified; null license/usage fields mean "unknown", not permission.
+model LibraryResource {
+  id                    String    @id @default(cuid())
+  projectId             String
+  project               Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  category              String    // GITHUB_REPOSITORY | DATASET
+  sourceUrl             String
+  name                  String
+  description           String
+  license               String?
+  usageNotes            String?
+  metadataProvenance    String    @default("CURATED_UNVERIFIED")
+  relevanceExplanation  String
+  useCase               String
+  integrationDifficulty String    @default("UNKNOWN") // EASY | MODERATE | ADVANCED | UNKNOWN
+  limitations           String?
+  savedAt               DateTime?
+  savedStatus           String?   // CONSIDERING | TRYING | INTEGRATED; null when not saved
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@unique([projectId, sourceUrl])
+  @@index([projectId, category, createdAt])
+  @@index([projectId, savedAt])
+  @@map("library_resources")
+}

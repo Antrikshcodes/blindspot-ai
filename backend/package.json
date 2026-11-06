@@ -1,0 +1,43 @@
+{
+  "name": "blindspot-ai-backend",
+  "version": "1.0.0",
+  "description": "Backend API server, persistence layer, and AI orchestration engine for Blindspot AI",
+  "main": "dist/server.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "dev": "tsx watch src/server.ts",
+    "test": "node scripts/test.mjs",
+    "test:watch": "vitest",
+    "prisma:generate": "prisma generate",
+    "prisma:push": "prisma db push",
+    "prisma:migrate": "prisma migrate dev"
+  },
+  "keywords": [
+    "blindspot-ai",
+    "validation",
+    "express",
+    "typescript",
+    "prisma"
+  ],
+  "author": "Team Null Theory",
+  "license": "MIT",
+  "dependencies": {
+    "@prisma/client": "^6.4.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.13.5",
+    "@types/supertest": "^6.0.2",
+    "prisma": "^6.4.0",
+    "supertest": "^7.0.0",
+    "tsx": "^4.19.3",
+    "typescript": "^5.7.3",
+    "vitest": "^5.1.0"
+  }
+}
