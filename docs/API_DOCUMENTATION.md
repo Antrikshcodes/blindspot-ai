@@ -1,5 +1,40 @@
 # API Documentation: Blindspot AI
 
+## Phase 02 analysis API
+
+The existing POST analyze now runs the six-stage engine and accepts optional
+`additionalContext` (1–6000 characters) as well as `marketContext` (1–4000).
+Empty `{}` remains valid. No identity, IDs, scores or statuses may be supplied.
+
+Analysis responses retain earlier fields and add version, engineVersion,
+additionalContext, providerMetadata and a richer result with decomposition,
+seven evidence-aware dimensions, assumptions, blindspots, 8–12 interview questions,
+summary/risks/missing information, competition context and evidence disclaimers.
+
+Additional implemented routes:
+
+| Method | Path | Data |
+| --- | --- | --- |
+| GET | `/api/analyses/:id/blindspots` | Linked findings, artifact availability and version |
+| GET | `/api/analyses/:id/interview-questions` | Linked questions with purpose/evidence/follow-up |
+| GET | `/api/analyses/:id/summary` | Assessments, dimensions, summary, actions and AI metadata |
+
+New analyses consider PROBLEM, CUSTOMER, DEMAND, BEHAVIOUR, WILLINGNESS_TO_PAY,
+TECHNICAL, DISTRIBUTION, BUSINESS_MODEL, COMPETITIVE and OPERATIONAL assumptions.
+Older categories remain readable.
+
+**Risk thresholds:** priority = impact × uncertainty; 20–25 CRITICAL, 13–19 HIGH,
+7–12 MEDIUM, 1–6 LOW. This replaces the older analysis thresholds below.
+Demand remains null/INSUFFICIENT_EVIDENCE in this description-only pipeline.
+New hypotheses always start UNTESTED. Interview session creation reuses the stored
+Phase 02 questions, retaining legacy assumptionId/listenFor field aliases.
+
+The new GET artifacts return `available:false` for historical Phase 01 analyses;
+they do not fabricate missing content. AI_TIMEOUT errors use HTTP 504.
+Other existing envelopes, routes, pagination and production guards remain.
+
+See [complete Phase 02 contract/examples](PHASE02_AI_ENGINE.md).
+
 ## Implemented Phase 01 API
 
 **Base: `/api`**, not the historical `/api/v1` contract below.

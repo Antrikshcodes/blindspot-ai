@@ -1,5 +1,23 @@
 # Blindspot AI
 
+## Phase 02 — Core AI analysis is implemented
+
+The existing backend now runs a six-stage idea analysis with ten assumption
+categories, deterministic risk ranking, evidence-aware assessment dimensions,
+linked blindspots and 8–12 non-leading interview questions.
+Each run is a new historical version; AI never marks generated assumptions validated.
+
+**Priority = impact × uncertainty:** 20–25 CRITICAL, 13–19 HIGH, 7–12 MEDIUM,
+1–6 LOW. A description alone never receives a verified-demand score.
+The existing API is enriched, not replaced; Resource Intelligence and feedback
+analysis were not rebuilt. This phase contains no frontend.
+
+[Phase 02 report, schemas, API examples, backend tree and limitations](docs/PHASE02_AI_ENGINE.md)
+· [API updates](docs/API_DOCUMENTATION.md#phase-02-analysis-api).
+
+The Phase 01 implementation record below remains useful for unchanged backend
+features. Phase 02 supersedes its analysis taxonomy, risk thresholds and AI call/retry behavior.
+
 ## Current implementation — Phase 01 backend
 
 The active backend now uses **Node.js / TypeScript / Express / PostgreSQL /

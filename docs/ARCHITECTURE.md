@@ -1,5 +1,14 @@
 # System Architecture: Blindspot AI
 
+## Phase 02 analysis extension
+
+The active modular monolith now includes `backend/src/phase01/analysis/`.
+Controllers delegate to IdeaAnalysisService, which orchestrates AnalysisEngine
+and atomically saves a new version. Prompts/contracts, pure risk scoring,
+grounding/evidence policy and blindspot validation have separate modules.
+No frontend, Resource Intelligence replacement or new feedback-analysis work
+was introduced. [Architecture and backend tree](PHASE02_AI_ENGINE.md).
+
 ## Implemented Phase 01 architecture
 
 The active backend is `backend/src/phase01`: Express 4, TypeScript, PostgreSQL,

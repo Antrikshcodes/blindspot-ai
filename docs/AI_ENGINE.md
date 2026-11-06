@@ -1,5 +1,17 @@
 # AI engine — implemented Phase 01
 
+## Phase 02 update
+
+Idea analysis now uses six dedicated version-controlled prompts with schema,
+grounding and ID validation. Risk scoring is separate provider-independent code.
+See [Phase 02 engine](PHASE02_AI_ENGINE.md) for the active pipeline, schemas,
+evidence policy, versioned storage, interview question reuse and tests.
+
+The provider interface now supports optional token usage reporting. Timeout is
+configurable via AI_TIMEOUT_MS (45000 default); AI_MAX_ATTEMPTS defaults to 2,
+maximum 3. SDK transport retries are disabled so retries do not multiply.
+This supersedes the older timeout/retry description below.
+
 ## Replaceable interface
 
 `LLM.generate(task, input, ZodSchema)` separates orchestration from the provider.

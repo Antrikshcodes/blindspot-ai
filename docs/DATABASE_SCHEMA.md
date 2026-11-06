@@ -1,5 +1,19 @@
 # Database schema — Phase 01
 
+## Phase 02 additions
+
+An additive migration extends the assumption enum and adds:
+`analyses.version`, `engineVersion`, `additionalContext`, `providerMetadata`;
+`assumptions.title`, `targetAudience`, `suggestedInterviewQuestion`,
+`scoreExplanation`. Complete analysis artifacts live in justified versioned JSONB,
+with the existing relational assumption/evidence relationships preserved.
+
+Historical analyses are numbered before a unique project/version index is
+created. New version allocation uses a project row lock in a short transaction.
+No existing JSON/snapshot/risk labels are overwritten. No new database namespace
+or automatic SQLite migration was introduced.
+See [Phase 02 schema and history notes](PHASE02_AI_ENGINE.md).
+
 **Active:** PostgreSQL + Drizzle, schema namespace `blindspot_phase01`.
 Source: `backend/src/phase01/db/schema.ts`.
 Versioned SQL and Drizzle snapshots: `backend/src/phase01/db/migrations/`.

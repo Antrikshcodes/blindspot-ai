@@ -1,5 +1,18 @@
 # Product Roadmap: Blindspot AI
 
+## Phase 02 status
+
+Implemented: six-stage idea decomposition/assumption/risk/blindspot/question/
+synthesis pipeline, ten-category consideration, explicit evidence-aware
+assessment dimensions, deterministic risk thresholds, grounded references,
+8–12 interview questions, provider usage/retry/timeout controls and versioned
+historical analyses. Added three read endpoints and regression tests.
+
+No frontend, new Resource Intelligence or new feedback-analysis implementation
+in this phase. Public authorization, async job/status handling and semantic
+quality evaluation remain separate work.
+[Verified behavior and unresolved limits](PHASE02_AI_ENGINE.md).
+
 ## Phase 01 status
 
 ### Implemented and verified

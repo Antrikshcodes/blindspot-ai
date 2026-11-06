@@ -1,5 +1,18 @@
 # Development Setup Guide: Blindspot AI
 
+## Phase 02 setup note
+
+Run the normal `npm ci` and explicit development `npm run db:migrate` to install
+the additive analysis migration. Existing projects and historical analyses remain.
+AI_TIMEOUT_MS defaults to 45000; AI_MAX_ATTEMPTS defaults to 2. Existing AI
+provider/model/credential settings remain valid.
+
+`npm test` includes the staged analysis, provider retry/timeout and migration
+regression tests with no live services. Optional
+`node scripts/smoke-phase02.mjs` makes six REAL billed AI stage calls and removes
+its temporary project; it is not part of automated tests.
+[Phase 02 report](PHASE02_AI_ENGINE.md).
+
 ## Phase 01 setup
 
 Use **Node.js 24**, npm, and a development PostgreSQL database. Active code lives
