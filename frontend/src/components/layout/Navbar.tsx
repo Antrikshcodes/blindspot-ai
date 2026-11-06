@@ -1,19 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, ArrowUpRight } from 'lucide-react';
+import { Menu, X, ArrowUpRight, LayoutDashboard, LogIn } from 'lucide-react';
+import {
+  SignedIn,
+  SignedOut,
+  SignInButton,
+  SignUpButton,
+  UserButton,
+} from '@clerk/clerk-react';
 import { BrandLogo } from '../common/BrandLogo';
 import { MagneticButton } from '../common/MagneticButton';
 
+const CLERK_PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+
 interface NavbarProps {
   onOpenIntake: () => void;
+  onNavigateDashboard?: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ onOpenIntake }) => {
+export const Navbar: React.FC<NavbarProps> = ({ onOpenIntake, onNavigateDashboard }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<string>('');
 
-  const navLinks = [
+  const baseNavLinks = [
     { label: 'The Problem', href: '#problem' },
     { label: 'How It Works', href: '#how-it-works' },
     { label: 'Capabilities', href: '#capabilities' },
@@ -95,7 +105,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenIntake }) => {
 
           {/* Desktop Navigation Links with Framer Motion Sliding Pill Indicator */}
           <nav className="hidden md:flex items-center gap-1 bg-forest/5 p-1 rounded-full border border-forest/10" aria-label="Main Navigation">
-            {navLinks.map((link) => {
+            {baseNavLinks.map((link) => {
               const isActive = activeSection === link.href;
               return (
                 <a
@@ -118,18 +128,91 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenIntake }) => {
                 </a>
               );
             })}
+
+            {/* If signed in, show Workspace / Dashboard tab */}
+            {CLERK_PUBLISHABLE_KEY && (
+              <SignedIn>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (onNavigateDashboard) onNavigateDashboard();
+                    else onOpenIntake();
+                  }}
+                  className="relative px-3.5 py-1.5 text-xs font-semibold tracking-wider uppercase transition-colors rounded-full text-forest hover:bg-forest/10 flex items-center gap-1"
+                >
+                  <LayoutDashboard className="w-3.5 h-3.5 text-purple" />
+                  <span>Dashboard</span>
+                </button>
+              </SignedIn>
+            )}
           </nav>
 
-          {/* Right Action: Strategic Electric Purple CTA */}
-          <div className="hidden md:flex items-center gap-4">
-            <MagneticButton variant="purple" size="sm" onClick={onOpenIntake}>
-              Analyze Your Idea
-              <ArrowUpRight className="w-4 h-4 ml-0.5" />
-            </MagneticButton>
+          {/* Right Action: Clerk Authenticated / Signed Out States */}
+          <div className="hidden md:flex items-center gap-3">
+            {CLERK_PUBLISHABLE_KEY ? (
+              <>
+                <SignedOut>
+                  {/* Subtle Sign In Trigger */}
+                  <SignInButton mode="modal">
+                    <button
+                      type="button"
+                      className="px-4 py-2 text-xs font-semibold uppercase tracking-wider text-forest/80 hover:text-forest hover:bg-forest/5 rounded-full transition-colors cursor-pointer min-h-[44px] flex items-center gap-1.5 focus-visible:outline-2 focus-visible:outline-purple"
+                    >
+                      <LogIn className="w-3.5 h-3.5 text-forest/60" />
+                      Sign In
+                    </button>
+                  </SignInButton>
+
+                  {/* Primary Electric Purple CTA: Sign Up */}
+                  <SignUpButton mode="modal">
+                    <div>
+                      <MagneticButton variant="purple" size="sm">
+                        Get Started
+                        <ArrowUpRight className="w-4 h-4 ml-0.5" />
+                      </MagneticButton>
+                    </div>
+                  </SignUpButton>
+                </SignedOut>
+
+                <SignedIn>
+                  <MagneticButton variant="forest" size="sm" onClick={onOpenIntake}>
+                    Analyze Idea
+                  </MagneticButton>
+
+                  {/* Branded Clerk User Button */}
+                  <div className="pl-1">
+                    <UserButton
+                      appearance={{
+                        elements: {
+                          avatarBox: 'w-9 h-9 ring-2 ring-forest/20 hover:ring-purple transition-all',
+                        },
+                      }}
+                    />
+                  </div>
+                </SignedIn>
+              </>
+            ) : (
+              <MagneticButton variant="purple" size="sm" onClick={onOpenIntake}>
+                Analyze Your Idea
+                <ArrowUpRight className="w-4 h-4 ml-0.5" />
+              </MagneticButton>
+            )}
           </div>
 
           {/* Mobile Menu Trigger Button */}
-          <div className="md:hidden flex items-center">
+          <div className="md:hidden flex items-center gap-2">
+            {CLERK_PUBLISHABLE_KEY && (
+              <SignedIn>
+                <UserButton
+                  appearance={{
+                    elements: {
+                      avatarBox: 'w-8 h-8 ring-2 ring-forest/20',
+                    },
+                  }}
+                />
+              </SignedIn>
+            )}
+
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               type="button"
@@ -156,7 +239,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenIntake }) => {
             aria-label="Mobile Navigation"
           >
             <div className="flex flex-col gap-2.5">
-              {navLinks.map((link) => (
+              {baseNavLinks.map((link) => (
                 <a
                   key={link.label}
                   href={link.href}
@@ -169,19 +252,85 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenIntake }) => {
                   <span className="text-xs text-forest/40 font-mono tracking-widest uppercase">Inspect</span>
                 </a>
               ))}
-              <div className="pt-3 border-t border-forest/10 mt-1">
-                <MagneticButton
-                  variant="purple"
-                  size="md"
-                  className="w-full justify-center min-h-[44px]"
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    onOpenIntake();
-                  }}
-                >
-                  Analyze Your Idea
-                  <ArrowUpRight className="w-4 h-4 ml-1" />
-                </MagneticButton>
+
+              {CLERK_PUBLISHABLE_KEY && (
+                <SignedIn>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      if (onNavigateDashboard) onNavigateDashboard();
+                      else onOpenIntake();
+                    }}
+                    className="text-base font-semibold py-3 px-4 rounded-xl text-forest hover:bg-forest/5 transition-colors flex items-center justify-between min-h-[44px] text-left"
+                  >
+                    <span className="flex items-center gap-2">
+                      <LayoutDashboard className="w-4 h-4 text-purple" />
+                      Workspace Dashboard
+                    </span>
+                    <span className="text-xs text-purple font-mono tracking-widest uppercase">Open</span>
+                  </button>
+                </SignedIn>
+              )}
+
+              <div className="pt-3 border-t border-forest/10 mt-1 flex flex-col gap-2">
+                {CLERK_PUBLISHABLE_KEY ? (
+                  <>
+                    <SignedOut>
+                      <SignInButton mode="modal">
+                        <button
+                          type="button"
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="w-full py-3 px-4 rounded-full border border-forest/30 font-semibold text-forest text-center min-h-[44px] cursor-pointer"
+                        >
+                          Sign In
+                        </button>
+                      </SignInButton>
+
+                      <SignUpButton mode="modal">
+                        <div>
+                          <MagneticButton
+                            variant="purple"
+                            size="md"
+                            className="w-full justify-center min-h-[44px]"
+                            onClick={() => setMobileMenuOpen(false)}
+                          >
+                            Get Started
+                            <ArrowUpRight className="w-4 h-4 ml-1" />
+                          </MagneticButton>
+                        </div>
+                      </SignUpButton>
+                    </SignedOut>
+
+                    <SignedIn>
+                      <MagneticButton
+                        variant="purple"
+                        size="md"
+                        className="w-full justify-center min-h-[44px]"
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          onOpenIntake();
+                        }}
+                      >
+                        Analyze Your Idea
+                        <ArrowUpRight className="w-4 h-4 ml-1" />
+                      </MagneticButton>
+                    </SignedIn>
+                  </>
+                ) : (
+                  <MagneticButton
+                    variant="purple"
+                    size="md"
+                    className="w-full justify-center min-h-[44px]"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      onOpenIntake();
+                    }}
+                  >
+                    Analyze Your Idea
+                    <ArrowUpRight className="w-4 h-4 ml-1" />
+                  </MagneticButton>
+                )}
               </div>
             </div>
           </motion.div>

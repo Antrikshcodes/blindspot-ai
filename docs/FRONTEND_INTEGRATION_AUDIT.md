@@ -366,3 +366,4 @@ flowchart TD
    - Add "Analyze Customer Evidence" button triggering `useAnalyzeFeedback()` to reveal quotes and contradictions.
 6. **Phase F — Resource Intelligence Directory**:
    - Provide search interface calling `useSearchResources(projectId)` to display verified open-source repos, models, and datasets.
+

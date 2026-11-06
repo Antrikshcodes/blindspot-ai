@@ -16,11 +16,12 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
+    "types": ["vite/client", "node"],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@workspace/api-client-react": ["node_modules/@workspace/api-client-react/src/index.ts"]
     }
   },
   "include": ["src"]
 }
-
