@@ -73,6 +73,15 @@ export const searchInput = z.object({
   categories: z.array(resourceCategory).min(1).max(7)
     .default(['GITHUB_REPOSITORY', 'DATASET', 'AI_MODEL', 'API', 'DOCUMENTATION']),
   explain: z.boolean().default(true),
+  providers: z.array(z.enum(['github', 'huggingface', 'huggingface_models', 'huggingface_datasets',
+    'kaggle', 'uci', 'apis_guru', 'technical'])).min(1).max(8).optional(),
+  topics: z.array(text(40)).max(5).default([]),
+  tasks: z.array(text(60)).max(5).default([]),
+  includeArchived: z.boolean().default(false),
+  page: z.number().int().min(1).max(10000).default(1),
+  limit: z.number().int().min(1).max(100).default(20),
+  minRelevance: z.number().min(0).max(100).default(0),
+  sort: z.enum(['relevance', 'lastUpdated']).default('relevance'),
 }).strict();
 export const explanationOutput = z.object({
   recommendedUseCase: text(), explanation: text(),
@@ -90,6 +99,9 @@ export const pagination = z.object({
 }).strict();
 export const resourceQuery = pagination.extend({
   category: resourceCategory.optional(), saved: z.enum(['true', 'false']).optional(),
+  provider: z.string().regex(/^[a-z_]{1,50}$/).optional(),
+  minRelevance: z.coerce.number().min(0).max(100).default(0),
+  sort: z.enum(['relevance', 'lastUpdated']).default('relevance'),
 });
 export type AnalysisOutput = z.infer<typeof analysisOutput>;
 export type FeedbackOutput = z.infer<typeof feedbackOutput>;

@@ -7,6 +7,8 @@ export const resourceSchema = z.object({
   license: z.string().max(300).nullable(), language: z.string().max(100).nullable(),
   tags: z.array(z.string().max(200)).max(100),
   sourceUpdatedAt: z.date().nullable(), retrievedAt: z.date(),
+  sourceApiUrl: z.string().url().nullable().default(null),
+  sourceCreatedAt: z.date().nullable().default(null),
   qualitySignals: z.object({
     archived: z.boolean().nullable(), documentation: z.boolean().nullable(),
     stars: z.number().nullable(), forks: z.number().nullable(), downloads: z.number().nullable(),
@@ -14,13 +16,20 @@ export const resourceSchema = z.object({
   }).strict(),
   sourceMetadata: z.record(z.string(), z.unknown()),
 });
-export type Resource = z.infer<typeof resourceSchema>;
+// Input permits omitted new fields for third-party/legacy adapters; normalization
+// always materializes explicit nulls using the schema defaults.
+export type Resource = z.input<typeof resourceSchema>;
 export type Category = Resource['category'];
 export interface Provider {
   name: string;
   categories: Category[];
   enabled: boolean;
-  search(query: string, languages: string[]): Promise<Resource[]>;
+  identity?: string;
+  disabledReason?: string;
+  search(query: string, languages: string[], options?: ProviderOptions): Promise<Resource[]>;
+}
+export interface ProviderOptions {
+  page?: number; limit?: number; topics?: string[]; tasks?: string[]; includeArchived?: boolean;
 }
 export const unknownSignals = () => ({
   archived: null, documentation: null, stars: null, forks: null,

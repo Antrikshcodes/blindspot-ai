@@ -70,7 +70,7 @@ describe('Official provider adapters with mocked transport', () => {
       language: 'TypeScript', topics: ['validation'], archived: true,
       pushed_at: '2026-01-01T00:00:00Z', updated_at: '2026-02-01T00:00:00Z', license: null,
     }] })));
-    const values = await new GithubProvider(new HttpClient(transport as typeof fetch)).search('validation', ['TypeScript']);
+    const values = await new GithubProvider(new HttpClient(transport as typeof fetch)).search('validation', ['TypeScript'], { includeArchived: true });
     expect(values[0].license).toBeNull();
     expect(values[0].qualitySignals).toMatchObject({ archived: true, stars: 12, forks: 2 });
     expect(values[0].sourceMetadata.owner).toBe('example');
@@ -104,7 +104,8 @@ describe('Official provider adapters with mocked transport', () => {
       url: 'https://www.kaggle.com/datasets/example/fixture', licenseName: 'CC0',
       totalBytes: 1000, downloadCount: 12,
     }])));
-    const [value] = await new KaggleProvider(new HttpClient(transport as typeof fetch)).search('validation');
+    const [value] = await new KaggleProvider(new HttpClient(transport as typeof fetch),
+      { enabled: true, username: 'fixture', key: 'not-a-real-key' }).search('validation');
     expect(value.qualitySignals.sizeBytes).toBe(1000); expect(value.license).toBe('CC0');
   });
   it('only returns reachable curated official destinations, never generated URLs', async () => {
@@ -116,7 +117,7 @@ describe('Official provider adapters with mocked transport', () => {
   it('bounds retries for 429/5xx, rejects invalid JSON and refuses non-allowlisted HTTP requests', async () => {
     const transport = vi.fn(async () => new Response('limited', { status: 429 }));
     await expect(new HttpClient(transport as typeof fetch).json('https://api.github.com/search/repositories?q=x')).rejects.toMatchObject({
-      code: 'PROVIDER_HTTP_ERROR',
+      code: 'PROVIDER_RATE_LIMITED',
     });
     expect(transport).toHaveBeenCalledTimes(2);
     const invalid = new HttpClient(vi.fn(async () => new Response('<html>no JSON</html>')) as typeof fetch);

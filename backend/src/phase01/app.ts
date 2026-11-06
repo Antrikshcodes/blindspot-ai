@@ -13,6 +13,7 @@ import { ApiError, config, log } from './config.js';
 import type { LLM } from './ai/provider.js';
 import type { Provider } from './resource-intelligence/types.js';
 import { ResourceSearchService } from './resource-intelligence/search.service.js';
+import { resourceDTO } from './resource-intelligence/dto.js';
 import { ValidationService } from './validation/service.js';
 import { IdeaAnalysisService } from './analysis/service.js';
 
@@ -148,11 +149,20 @@ export function createApp(deps: {
     const id = paramId(req); await service.project(id); const query = c.resourceQuery.parse(req.query);
     return success(res, { items: await resources.list(id, query), pagination: { page: query.page, limit: query.limit } });
   }));
+  app.get('/api/projects/:id/resources/searches', route(async (req, res) => {
+    const id = paramId(req); await service.project(id); const query = c.pagination.parse(req.query);
+    return success(res, { items: await resources.history(id, query), pagination: query });
+  }));
+  app.get('/api/projects/:id/resources/saved', route(async (req, res) => {
+    const id = paramId(req); await service.project(id); const query = c.resourceQuery.parse(req.query);
+    return success(res, { items: await resources.list(id, { ...query, saved: 'true' }),
+      pagination: { page: query.page, limit: query.limit } });
+  }));
   app.get('/api/resources/:id', route(async (req, res) => {
     const id = paramId(req);
     const [resource] = await db.select().from(t.resources).where(eq(t.resources.id, id));
     if (!resource) throw new ApiError(404, 'NOT_FOUND', 'Resource not found.');
-    return success(res, resource);
+    return success(res, resourceDTO(resource));
   }));
   app.post('/api/resources/:id/save', route(async (req, res) => {
     const resourceId = paramId(req);
@@ -170,6 +180,13 @@ export function createApp(deps: {
   }));
   app.delete('/api/projects/:id/resources/:resourceId/save', route(async (req, res) => {
     const projectId = paramId(req); const resourceId = c.id.parse(req.params.resourceId);
+    await service.project(projectId);
+    await db.delete(t.saves).where(and(eq(t.saves.projectId, projectId), eq(t.saves.resourceId, resourceId)));
+    return success(res, { removedFromSaved: true });
+  }));
+  app.delete('/api/resources/:id/save', route(async (req, res) => {
+    const resourceId = paramId(req);
+    const { projectId } = z.object({ projectId: c.id }).strict().parse(req.body);
     await service.project(projectId);
     await db.delete(t.saves).where(and(eq(t.saves.projectId, projectId), eq(t.saves.resourceId, resourceId)));
     return success(res, { removedFromSaved: true });

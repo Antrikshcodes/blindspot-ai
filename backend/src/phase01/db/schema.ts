@@ -3,6 +3,7 @@ import { pgSchema, uuid, text, timestamp, jsonb, integer, boolean, index, unique
 import type { AnalysisOutput, FeedbackOutput } from '../contracts.js';
 import type { DetailedAnalysis, providerMetadataSchema } from '../analysis/contracts.js';
 import type { z } from 'zod';
+import type { Resource } from '../resource-intelligence/types.js';
 
 export const platform = pgSchema('blindspot_phase01');
 const key = () => uuid('id').primaryKey().defaultRandom();
@@ -90,15 +91,38 @@ export const searches = platform.table('resource_searches', {
   id: key(), projectId: uuid('project_id').notNull().references(() => projects.id, { onDelete: 'cascade' }),
   query: text('query').notNull(), requirements: text('requirements').array().notNull(),
   providerStatuses: jsonb('provider_statuses').notNull(), createdAt: created(),
+  analysisId: uuid('analysis_id').references(() => analyses.id, { onDelete: 'set null' }),
+  queryPlan: jsonb('query_plan'),
+  status: text('status').notNull().default('COMPLETED'),
+  partial: boolean('partial').notNull().default(false),
+  cached: boolean('cached').notNull().default(false),
+  explanationStatus: text('explanation_status').notNull().default('NOT_REQUESTED'),
 }, t => [index('resource_search_project_idx').on(t.projectId, t.createdAt)]);
+export const resourceProviders = platform.table('resource_providers', {
+  id: text('id').primaryKey(), displayName: text('display_name').notNull(),
+  categories: text('categories').array().notNull(), createdAt: created(),
+});
+export const searchQueries = platform.table('resource_search_queries', {
+  id: key(), searchId: uuid('search_id').notNull().references(() => searches.id, { onDelete: 'cascade' }),
+  providerId: text('provider_id').notNull().references(() => resourceProviders.id),
+  adapterName: text('adapter_name').notNull(), query: text('query').notNull(),
+  parameters: jsonb('parameters').notNull(), status: text('status').notNull(),
+  count: integer('result_count').notNull(), durationMs: integer('duration_ms').notNull(),
+  cached: boolean('cached').notNull(), error: text('error'), retryAfterSeconds: integer('retry_after_seconds'),
+  createdAt: created(),
+}, t => [index('resource_query_search_idx').on(t.searchId), index('resource_query_provider_idx').on(t.providerId)]);
 export const resources = platform.table('resources', {
   id: key(), category: resourceEnum('category').notNull(), provider: text('provider').notNull(),
   externalId: text('external_id').notNull(), url: text('url').notNull(), name: text('name').notNull(),
   description: text('description').notNull(), license: text('license'), language: text('language'),
   tags: text('tags').array().notNull(), sourceUpdatedAt: timestamp('source_updated_at', { withTimezone: true }),
   retrievedAt: timestamp('retrieved_at', { withTimezone: true }).notNull(),
-  qualitySignals: jsonb('quality_signals').notNull(), sourceMetadata: jsonb('source_metadata').notNull(),
-}, t => [uniqueIndex('resource_url_unique').on(t.url), index('resource_category_idx').on(t.category)]);
+  sourceApiUrl: text('source_api_url'), sourceCreatedAt: timestamp('source_created_at', { withTimezone: true }),
+  qualitySignals: jsonb('quality_signals').$type<Resource['qualitySignals']>().notNull(),
+  sourceMetadata: jsonb('source_metadata').$type<Resource['sourceMetadata']>().notNull(),
+}, t => [uniqueIndex('resource_url_unique').on(t.url), index('resource_category_idx').on(t.category),
+  index('resource_provider_external_idx').on(t.provider, t.externalId),
+  index('resource_updated_idx').on(t.sourceUpdatedAt)]);
 export const recommendations = platform.table('resource_recommendations', {
   id: key(), searchId: uuid('search_id').notNull().references(() => searches.id, { onDelete: 'cascade' }),
   resourceId: uuid('resource_id').notNull().references(() => resources.id, { onDelete: 'cascade' }),

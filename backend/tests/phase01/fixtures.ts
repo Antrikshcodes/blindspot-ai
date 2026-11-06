@@ -47,12 +47,22 @@ export class FixtureLLM implements LLM {
     if (task.startsWith('Extract concise')) return outputSchema.parse({
       keywords: ['validation', 'interview'], requirements: ['Collect interview evidence'],
     });
+    if (task.startsWith('Generate provider-specific')) {
+      const data = input as { providers: string[] };
+      return outputSchema.parse({ requirements: ['Collect interview evidence'], tasks: [],
+        queries: data.providers.map(provider => ({ provider, query: 'validation interview' })) });
+    }
     if (task.startsWith('Explain only')) {
-      const data = input as { retrievedResources: Array<{ id: string }> };
+      const data = input as { retrievedResources: Array<{ id: string; metadata: Resource }> };
       return outputSchema.parse({ explanations: data.retrievedResources.map(row => ({
         resourceId: row.id, recommendedUseCase: 'Prototype an interview experiment.',
         explanation: 'The retrieved metadata mentions validation.', integrationDifficulty: 'UNKNOWN',
         limitations: ['Inspect source and license yourself.'], alternativeResourceIds: [],
+        relevanceEstablished: true, whatItDoes: row.metadata.description || row.metadata.name,
+        supportedFunctionality: 'Interview evidence collection.',
+        integrationApproach: 'Review the retrieved implementation before prototyping.',
+        metadataCitations: [{ field: row.metadata.description ? 'description' : 'name',
+          quote: (row.metadata.description || row.metadata.name).slice(0, 200) }],
       })) });
     }
     return outputSchema.parse({ name: 'Small interview experiment', explanation: 'Observe real behavior.',

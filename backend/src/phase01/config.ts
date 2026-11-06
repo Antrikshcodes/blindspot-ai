@@ -26,6 +26,9 @@ export const config = z.object({
   API_RATE_LIMIT: z.coerce.number().int().min(1).max(10000).default(120),
   AI_RATE_LIMIT: z.coerce.number().int().min(1).max(100).default(10),
   EXTERNAL_TIMEOUT_MS: z.coerce.number().int().min(100).max(30000).default(8000),
+  PROVIDER_CONCURRENCY: z.coerce.number().int().min(1).max(4).default(3),
+  PROVIDER_PAGE_SIZE: z.coerce.number().int().min(1).max(10).default(5),
+  RESOURCE_RESULT_LIMIT: z.coerce.number().int().min(1).max(40).default(24),
   RANK_WEIGHTS: z.string().optional(),
 }).parse(process.env);
 
