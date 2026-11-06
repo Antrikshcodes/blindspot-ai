@@ -137,3 +137,22 @@ Every API response follows a deterministic contract.
 | **Feedback** | `POST` | `/api/v1/projects/:id/feedback` | Phase 6 |
 | **Contradictions** | `GET` | `/api/v1/projects/:id/contradictions` | Phase 7 |
 | **Experiments** | `POST` | `/api/v1/assumptions/:id/experiments` | Phase 8 |
+
+---
+
+## 5. Library Prototype Endpoints
+
+The resource model and development-only endpoints are implemented on the Library
+feature branch. These are not a complete recommendation engine or production API.
+All routes are disabled in production pending authenticated project authorization.
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| `GET` | `/api/v1/projects/:projectId/library` | Filter and paginate resources |
+| `POST` | `/api/v1/projects/:projectId/library/resources` | Add a curated resource |
+| `PUT` | `/api/v1/projects/:projectId/library/resources/:resourceId/save` | Save a resource |
+| `PATCH` | `/api/v1/projects/:projectId/library/resources/:resourceId/save` | Change saved status |
+| `DELETE` | `/api/v1/projects/:projectId/library/resources/:resourceId/save` | Remove from saved collection |
+
+See [Library API](docs/LIBRARY_API.md) for full request/response contracts, security
+boundaries, setup, unknown-metadata handling, and explicit out-of-scope items.
