@@ -1,5 +1,26 @@
 # API Documentation: Blindspot AI
 
+## Phase 03 resource API
+
+Existing resource endpoints retain their fields and add normalized aliases and
+source provenance. POST search now supports providers, topics, tasks,
+includeArchived, page, limit, minRelevance and sort (`relevance`/`lastUpdated`).
+Query remains optional for AI-generated provider-specific planning.
+
+Added routes:
+
+- GET `/api/projects/:id/resources/searches` — paginated history/query diagnostics.
+- GET `/api/projects/:id/resources/saved` — saved list with the existing resource filters.
+- DELETE `/api/resources/:id/save` — JSON body `{projectId}`; older project-scoped DELETE remains.
+
+GET project resources accepts category, provider, minRelevance, sort, saved, page,
+limit. POST returns generatedQueries, analysisId, providerStatuses, cached,
+partial, explanationStatus/explanationError, items and pagination.total.
+Failed searches retain HTTP 503 and persist diagnostics. Explanations never
+replace missing provider resources.
+
+[Complete Phase 03 request/response examples, contracts and limitations](PHASE03_RESOURCE_INTELLIGENCE.md).
+
 ## Phase 02 analysis API
 
 The existing POST analyze now runs the six-stage engine and accepts optional

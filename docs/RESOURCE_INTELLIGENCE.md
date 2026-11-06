@@ -1,5 +1,23 @@
 # Resource intelligence — implemented Phase 01
 
+## Current implementation: Phase 03
+
+The engine has been extended, not rebuilt. It now includes provider-specific
+query planning, APIs.guru, task-safe model filtering, credential-gated Kaggle,
+query diagnostics, source snapshots, shared bounded concurrency and request
+deduplication, richer normalization, source-cited AI explanations and additional
+history/saved-resource endpoints.
+
+[Full active Phase 03 architecture, ranking, provider details, API examples,
+normalized live sample, environment, module tree and verification](PHASE03_RESOURCE_INTELLIGENCE.md).
+
+Phase 03 supersedes the historical scoring/provider/cache behavior below:
+popularity no longer contributes to ranking/quality; Kaggle requires configured
+credentials; archived repositories are excluded by default. Existing API fields
+and save behavior are preserved.
+
+## Historical Phase 01 implementation record
+
 This is a backend discovery engine, not a directory of AI-invented links.
 No curated examples are seeded as recommendations. External content is untrusted.
 

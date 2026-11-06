@@ -1,5 +1,19 @@
 # Blindspot AI
 
+## Phase 03 — Resource Intelligence is implemented
+
+Real resource discovery now extends the existing module with provider-specific
+queries, GitHub/Hugging Face/UCI/Kaggle/APIs.guru adapters, official technical
+resources, transparent ranking without popularity-as-quality, source-cited
+explanations, retrieval caching and persisted search diagnostics.
+
+New search-history/saved-resource/remove aliases and provider/score/date filters
+preserve the existing API fields. Kaggle stays disabled without credentials.
+**121 current backend and 28 legacy tests pass.** No frontend or Phase 02 rewrite
+was included.
+
+[Phase 03 report, actual live examples, APIs, ranking and known limits](docs/PHASE03_RESOURCE_INTELLIGENCE.md).
+
 ## Phase 02 — Core AI analysis is implemented
 
 The existing backend now runs a six-stage idea analysis with ten assumption

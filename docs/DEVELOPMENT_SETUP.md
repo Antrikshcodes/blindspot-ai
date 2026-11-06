@@ -1,5 +1,18 @@
 # Development Setup Guide: Blindspot AI
 
+## Phase 03 resource setup
+
+Apply `npm run db:migrate` in backend for the additive resource query/provider
+tables and indexes. No new dependency installation is required beyond normal npm ci.
+Public provider checks work without credentials; Kaggle is disabled unless
+KAGGLE_ENABLED=true and both KAGGLE_USERNAME/KAGGLE_KEY are configured.
+
+New optional settings: PROVIDER_CONCURRENCY=3, PROVIDER_PAGE_SIZE=5,
+RESOURCE_RESULT_LIMIT=24. Existing CACHE_TTL/EXTERNAL_TIMEOUT_MS apply.
+`npm test` runs 121 current backend checks with mocked providers; test:legacy runs 28.
+`npx tsx scripts/smoke-phase03.ts` is a manual REAL HTTP/billed-AI check, not CI.
+[Full configuration and verified limits](PHASE03_RESOURCE_INTELLIGENCE.md).
+
 ## Phase 02 setup note
 
 Run the normal `npm ci` and explicit development `npm run db:migrate` to install

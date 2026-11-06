@@ -1,5 +1,15 @@
 # Database schema — Phase 01
 
+## Phase 03 additions
+
+Added resource_providers and resource_search_queries; extended resource_searches
+with linked analysis/query plan, completion/partial/cache/explanation status and
+resources with source API/creation timestamps. Added provider/external-identity,
+update-date and query-history indexes. Existing recommendation/source snapshots,
+saves and canonical URL identity remain.
+Migration: `0003_safe_squirrel_girl.sql`. No destructive deduplication or database
+replacement. [Storage and trust details](PHASE03_RESOURCE_INTELLIGENCE.md).
+
 ## Phase 02 additions
 
 An additive migration extends the assumption enum and adds:

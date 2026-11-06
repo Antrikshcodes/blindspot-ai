@@ -1,5 +1,16 @@
 # System Architecture: Blindspot AI
 
+## Phase 03 resource extension
+
+ResourceSearchService orchestrates separate query planning, bounded cached
+retrieval, normalization, deterministic ranking and source-cited explanations.
+Adapters share an official-host HTTP boundary and a common Provider interface.
+The existing tables are extended with provenance/diagnostics; resource_providers
+and resource_search_queries are added. Resources are globally reusable, while
+recommendations, search history and saves remain project-scoped.
+Phase 02 and frontend code are unchanged.
+[Pipeline, shared budgets, storage and module tree](PHASE03_RESOURCE_INTELLIGENCE.md).
+
 ## Phase 02 analysis extension
 
 The active modular monolith now includes `backend/src/phase01/analysis/`.

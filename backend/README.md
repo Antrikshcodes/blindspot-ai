@@ -1,5 +1,14 @@
 # Backend — Blindspot AI
 
+## Current Phase 03 resource extension
+
+The active entry point remains `src/phase01/server.ts`. Apply the additive
+development migration with `npm run db:migrate`; no new packages or credentials
+are required for public GitHub/Hub/UCI/APIs.guru/official-doc discovery.
+Kaggle requires explicit opt-in and configured credentials.
+See [Phase 03 report](../docs/PHASE03_RESOURCE_INTELLIGENCE.md) for APIs, ranking,
+source trust, tests, optional real smoke script and environment settings.
+
 ## Active Phase 01 backend
 
 Run `npm ci`, configure development PostgreSQL, `npm run db:migrate`, then
