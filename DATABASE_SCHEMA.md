@@ -1,5 +1,9 @@
 # Database Schema Specification: Blindspot AI
 
+**Historical Prisma/SQLite specification.** Active Phase 01 persistence is
+PostgreSQL + Drizzle in a separate namespace. See the authoritative current
+[database schema](docs/DATABASE_SCHEMA.md). The legacy data was not silently migrated.
+
 **Document:** `DATABASE_SCHEMA.md`  
 **ORM:** Prisma ORM (v6.4.0)  
 **Development Engine:** SQLite (`file:./dev.db`)  

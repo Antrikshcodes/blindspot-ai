@@ -1,163 +1,335 @@
-# 📡 API Documentation — Blindspot AI
+# API Documentation: Blindspot AI
 
-> REST API reference for the Blindspot AI backend.
+## Implemented Phase 01 API
 
-> [!NOTE]
-> This documentation will be updated as endpoints are designed and implemented. All endpoints below are **planned** and subject to change.
+**Base: `/api`**, not the historical `/api/v1` contract below.
+All UUID parameters and inputs are validated. Unknown body/query keys are rejected.
+All non-health routes are development/test-only until authenticated project
+authorization exists; production returns 503 `AUTH_NOT_READY`.
+
+### Envelopes, pagination and errors
+
+Success: `{ "success": true, "data": ... }`.
+Error: `{ "success": false, "error": { "code": "...", "message": "..." }, "requestId": "..." }`.
+Rate-limit errors use the same error structure and include rate-limit headers.
+Default pagination: `page=1&limit=20`, maximum page 10000 / limit 100.
+Lists use `{ items, pagination }`; most pagination objects report page/limit,
+not an inferred total count. An empty list is not an error.
+
+Typical status codes: 200 read/update/delete; 201 creation/analysis/search;
+400 validation or invalid evidence; 404 missing resource/project/analysis;
+409 invalid state transition; 413 body/feedback limits; 429 request/AI capacity;
+502 invalid/unavailable upstream output; 503 disabled configuration, provider
+unavailability or production authorization boundary. Errors never expose raw
+database, provider or credential details.
+
+### Project and analysis endpoints
+
+| Method | Path | Request | Response data |
+| --- | --- | --- | --- |
+| GET | `/api/health` | None | status/database/service; 503 if DB is unreachable |
+| POST | `/api/projects` | Project fields below | Created project, 201 |
+| GET | `/api/projects` | page/limit | Paginated projects |
+| GET | `/api/projects/:id` | UUID | Project |
+| PATCH | `/api/projects/:id` | Nonempty subset of project fields | Updated project; omitted fields preserved |
+| DELETE | `/api/projects/:id` | UUID | `{deleted:true,id}`; cascades project-owned records, not global sources |
+| POST | `/api/projects/:id/analyze` | `{}` or `{marketContext}` | New versioned analysis + ranked UNTESTED assumptions, 201 |
+| GET | `/api/projects/:id/analysis` | UUID | Latest analysis with assumptions; 404 before first analysis |
+| GET | `/api/analyses/:id` | UUID | That analysis and assumptions |
+| GET | `/api/analyses/:id/assumptions` | page/limit | Ranked assumptions with evidenceRecords |
+| PATCH | `/api/assumptions/:id` | `{status,evidenceIds?}` | Updated assumption; transition/evidence rules below |
+
+Project creation:
+
+```json
+{
+  "name": "Idea name",
+  "productDescription": "What the proposed product does.",
+  "problemStatement": "A specific recurring problem described in at least twenty characters.",
+  "targetAudience": "A concrete audience segment",
+  "proposedSolution": "The proposed approach.",
+  "existingAlternatives": ["Current workaround"]
+}
+```
+
+Limits: name 100, product/problem/solution 4000, audience 1000 characters.
+Alternatives default to an empty array, maximum 20 × 300 characters.
+Analysis market context is optional, maximum 4000 characters.
+Analysis clarity/assumptions/next steps come from validated AI JSON. Impact and
+uncertainty are 1–5. Server-owned risk score = impact × uncertainty; HIGH ≥16,
+MEDIUM ≥8, otherwise LOW. Initial status is always UNTESTED.
+
+Assumption transitions:
+`UNTESTED → TESTING → SUPPORTED | INVALIDATED | INCONCLUSIVE`.
+Any outcome can be reopened to TESTING. Direct untested-to-supported is 409.
+An outcome requires evidence IDs linked to that assumption; SUPPORTED requires
+at least one supporting record, INVALIDATED an invalidating record.
+The API caller is explicitly requesting review of those citations. This is a
+human judgment, not an automatic AI certification.
+
+### Interviews, feedback and experiments
+
+| Method | Path | Request | Response data |
+| --- | --- | --- | --- |
+| POST | `/api/projects/:id/interviews` | `{participant:"alias"}` | Session with non-leading mapped questions, 201 |
+| GET | `/api/projects/:id/interviews` | page/limit | Sessions |
+| POST | `/api/interviews/:id/feedback` | `{notes,assumptionIds?}` | Original feedback record, 201 |
+| POST | `/api/projects/:id/feedback/analyze` | `{}` | Versioned summary + evidenceRecords + reviewRequired, 201 |
+| GET | `/api/projects/:id/feedback/summary` | None | Latest stored summary or null |
+| POST | `/api/projects/:id/experiments` | `{assumptionId}` for AI suggestion, or manual experiment fields | Experiment, 201 |
+| GET | `/api/projects/:id/experiments` | page/limit | Experiments |
+| PATCH | `/api/experiments/:id` | `{status,observedResult?}` | Updated experiment |
+
+Participant: 1–150 characters; use an alias, not sensitive personal details.
+Notes: 10–30000 characters, up to 30 same-project assumption IDs. Manual
+associations are neutral evidence, not an inferred supporting sentiment.
+Feedback analysis requires an existing analysis and actual notes. Quote and
+reference validation happens before saving; AI analysis never changes statuses.
+Summary JSON contains themes, cited evidence, contradictions, evidence gaps and
+unsupported conclusions. Generation is limited to the latest analysis's assumptions.
+
+Manual experiment body:
+
+```json
+{
+  "assumptionId": "00000000-0000-4000-8000-000000000000",
+  "name": "Experiment name",
+  "explanation": "Why this tests the assumption.",
+  "method": "The actual procedure.",
+  "evidenceToCollect": "What will be recorded.",
+  "successCriteria": "A measurable threshold."
+}
+```
+
+The UUID above is a placeholder, not a real assumption. Use a returned UUID.
+Experiment status: PLANNED → IN_PROGRESS → COMPLETED, or ABANDONED from
+PLANNED/IN_PROGRESS. Completion requires an observed result; it never validates
+an assumption automatically.
+
+### Resource endpoints
+
+| Method | Path | Request | Response data |
+| --- | --- | --- | --- |
+| POST | `/api/projects/:id/resources/search` | query?, languages?, categories?, explain? | Search ID, provider statuses, requirements, ranked source-backed items, 201 |
+| GET | `/api/projects/:id/resources` | page/limit/category?/saved? | Latest search recommendations, or saved collection when saved=true |
+| GET | `/api/resources/:id` | UUID | Current reusable source record |
+| POST | `/api/resources/:id/save` | `{projectId,status?}` | Idempotently saved resource; status defaults CONSIDERING only on first save |
+| DELETE | `/api/projects/:id/resources/:resourceId/save` | UUIDs | Clears that project's save, not the source or recommendation |
+
+Save status: CONSIDERING, TRYING, INTEGRATED. The resource must have been retrieved
+for that project. A caller cannot attach an arbitrary global source to another
+project. `saved=false` filters unsaved recommendations from the latest search.
+`saved=true` includes older saved sources even when later searches differ.
+
+See [resource intelligence](RESOURCE_INTELLIGENCE.md) for categories, response
+fields, scoring, caching, provider limits and explicit failure semantics.
+
+### Security and operating limits
+
+JSON body 128 KB; API 120/minute and AI-triggering routes 10/minute per IP by
+default, configurable. Process-local limits/cache are not distributed infrastructure.
+AI concurrency max 2. CORS is not enabled for cross-origin browsers.
+No authentication tokens or caller-supplied identity headers bypass production
+blocking. Root `/` is intentionally not a website; use `/api/health`.
+
+## Historical planned contract — not the active API
+
+**Document Version:** 1.1.0  
+**Status:** Planned Contract Specification  
+**Architecture Alignment:** [`docs/ARCHITECTURE.md`](ARCHITECTURE.md)  
+**Maintained by:** Null Theory Engineering Team  
+
+> **Implementation Note:**  
+> All endpoints documented below represent the target API contracts to be implemented across Phase 2 (Days 3–4), Phase 3 (Days 5–9), and Phase 4 (Days 10–13). No endpoints are currently live.
 
 ---
 
-## Base URL
+## 1. Base URL
 
-```
+```text
 # Local Development
-http://localhost:3000/api
+http://localhost:3000/api/v1
 
-# Production (Replit)
-https://<repl-name>.<username>.repl.co/api
+# Production (Replit Cloud)
+https://<repl-slug>.<username>.repl.co/api/v1
 ```
 
 ---
 
-## Authentication
+## 2. Authentication Specification (Target)
 
-> Authentication method TBD — likely JWT-based Bearer tokens.
+Authenticated routes require a standard Bearer token in the HTTP Authorization header:
 
+```text
+Authorization: Bearer <jwt-token>
 ```
-Authorization: Bearer <token>
-```
-
-All endpoints except `/api/auth/login` and `/api/auth/register` require authentication.
 
 ---
 
-## Endpoint Categories
+## 3. Core Validation Engine Endpoints
 
-### 🔐 Auth
-
-| Method | Endpoint | Description | Status |
-|---|---|---|---|
-| `POST` | `/api/auth/register` | Register a new user | 🔲 Planned |
-| `POST` | `/api/auth/login` | Authenticate and receive token | 🔲 Planned |
-| `POST` | `/api/auth/logout` | Invalidate current session | 🔲 Planned |
-| `POST` | `/api/auth/refresh` | Refresh authentication token | 🔲 Planned |
-
-### 🧠 Analysis
+### 3.1 Project & Submission Management
 
 | Method | Endpoint | Description | Status |
-|---|---|---|---|
-| `POST` | `/api/analysis/create` | Submit a decision for blind spot analysis | 🔲 Planned |
-| `GET` | `/api/analysis/:id` | Retrieve analysis results | 🔲 Planned |
-| `GET` | `/api/analysis/history` | List past analyses | 🔲 Planned |
-| `DELETE` | `/api/analysis/:id` | Delete an analysis | 🔲 Planned |
+|:---|:---|:---|:---:|
+| `POST` | `/api/v1/projects` | Initialize a new founder workspace | 🔲 Planned |
+| `GET` | `/api/v1/projects/:id` | Fetch project details and metadata | 🔲 Planned |
+| `POST` | `/api/v1/projects/:id/submissions` | Submit product idea, audience, and problem statement (Step 1) | 🔲 Planned |
+| `GET` | `/api/v1/projects/:id/submissions` | Retrieve submission history and iterations | 🔲 Planned |
 
-### 👤 User
-
-| Method | Endpoint | Description | Status |
-|---|---|---|---|
-| `GET` | `/api/user/profile` | Get current user profile | 🔲 Planned |
-| `PUT` | `/api/user/profile` | Update user profile | 🔲 Planned |
-| `GET` | `/api/user/settings` | Get user preferences | 🔲 Planned |
-| `PUT` | `/api/user/settings` | Update user preferences | 🔲 Planned |
-
-### 📊 Data
-
-| Method | Endpoint | Description | Status |
-|---|---|---|---|
-| `GET` | `/api/data/stats` | Get usage statistics | 🔲 Planned |
-| `GET` | `/api/data/export` | Export analysis data | 🔲 Planned |
+#### Request Payload: `POST /api/v1/projects/:id/submissions`
+```json
+{
+  "productName": "SaaSMetrics",
+  "targetAudience": "Bootstrapped B2B SaaS founders with $1k-$10k MRR",
+  "problemStatement": "Founders spend hours manually stitching Stripe data into spreadsheets to calculate churn and LTV.",
+  "proposedSolution": "An automated background sync that alerts founders in Slack when churn spikes."
+}
+```
 
 ---
 
-## Response Format
+### 3.2 Assumption Extraction & Risk Prioritization
 
-All API responses follow a consistent JSON structure.
+| Method | Endpoint | Description | Status |
+|:---|:---|:---|:---:|
+| `POST` | `/api/v1/submissions/:id/assumptions/extract` | Trigger AI extraction of unstated assumptions (Step 2) | 🔲 Planned |
+| `GET` | `/api/v1/submissions/:id/assumptions` | Fetch categorized assumptions with risk scores (Step 3) | 🔲 Planned |
+| `PATCH` | `/api/v1/assumptions/:id` | Manually adjust assumption category or score | 🔲 Planned |
 
-### Success Response
+#### Response Payload: `GET /api/v1/submissions/:id/assumptions`
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "asm_01j8k9",
+      "category": "PROBLEM",
+      "statement": "Founders calculate churn weekly rather than waiting for monthly accountant reports.",
+      "impactScore": 4,
+      "uncertaintyScore": 5,
+      "compositeRisk": 20,
+      "isLethal": true,
+      "rationale": "If founders only look at churn once a month, real-time Slack alerts solve a non-urgent pain.",
+      "status": "UNVERIFIED"
+    }
+  ]
+}
+```
 
+---
+
+### 3.3 Customer Discovery & Interview Generation
+
+| Method | Endpoint | Description | Status |
+|:---|:---|:---|:---:|
+| `POST` | `/api/v1/assumptions/:id/interview-questions` | Generate Mom-Test-compliant discovery questions (Step 4) | 🔲 Planned |
+| `GET` | `/api/v1/projects/:id/interview-script` | Export full project interview guide | 🔲 Planned |
+
+#### Response Payload: `POST /api/v1/assumptions/:id/interview-questions`
 ```json
 {
   "success": true,
   "data": {
-    "id": "abc123",
-    "result": "..."
-  },
-  "message": "Analysis completed successfully",
-  "timestamp": "2025-01-01T00:00:00.000Z"
-}
-```
-
-### Paginated Response
-
-```json
-{
-  "success": true,
-  "data": [],
-  "pagination": {
-    "page": 1,
-    "limit": 20,
-    "total": 100,
-    "totalPages": 5
-  },
-  "timestamp": "2025-01-01T00:00:00.000Z"
+    "assumptionId": "asm_01j8k9",
+    "questions": [
+      {
+        "question": "How did you check your revenue and churn numbers last week?",
+        "probeType": "PAST_BEHAVIOR",
+        "listenFor": "Do they mention dedicated software, manual exports, or total avoidance?"
+      },
+      {
+        "question": "What tools or subscriptions do you currently pay for to monitor your business metrics?",
+        "probeType": "CURRENT_EXPENDITURE",
+        "listenFor": "Reveals whether budget is already allocated for metrics."
+      }
+    ]
+  }
 }
 ```
 
 ---
 
-## Error Handling
+### 3.4 Feedback Ingestion & Contradiction Detection
 
-All errors return a consistent format:
+| Method | Endpoint | Description | Status |
+|:---|:---|:---|:---:|
+| `POST` | `/api/v1/projects/:id/feedback` | Ingest qualitative customer interview notes (Step 5) | 🔲 Planned |
+| `GET` | `/api/v1/projects/:id/contradictions` | Analyze ingested notes for conflicting evidence (Step 6) | 🔲 Planned |
 
+#### Response Payload: `GET /api/v1/projects/:id/contradictions`
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "cnt_99x",
+      "assumptionId": "asm_01j8k9",
+      "contradictionSummary": "Conflicting feedback regarding urgency of real-time churn metrics.",
+      "evidenceA": {
+        "interviewee": "Founder #2 (5-person agency)",
+        "quote": "I check Stripe every morning, it's my first ritual."
+      },
+      "evidenceB": {
+        "interviewee": "Founder #4 (Solo dev)",
+        "quote": "I honestly only look at churn when my quarterly taxes are due."
+      },
+      "recommendation": "Segment your target audience: agencies require daily monitoring; solo builders do not."
+    }
+  ]
+}
+```
+
+---
+
+### 3.5 Experiment Recommendations
+
+| Method | Endpoint | Description | Status |
+|:---|:---|:---|:---:|
+| `POST` | `/api/v1/assumptions/:id/experiments` | Generate falsification experiments (Step 7) | 🔲 Planned |
+| `GET` | `/api/v1/projects/:id/experiments` | List all recommended validation experiments | 🔲 Planned |
+
+#### Response Payload: `POST /api/v1/assumptions/:id/experiments`
+```json
+{
+  "success": true,
+  "data": {
+    "assumptionId": "asm_01j8k9",
+    "experimentType": "CONCIERGE_TEST",
+    "title": "Manual Daily Slack Churn Digest",
+    "description": "Offer 5 target founders a free manual 7-day test where you send their daily metric summary by 9 AM.",
+    "metric": "Daily Open / Engagement Rate",
+    "falsificationThreshold": "If fewer than 3 of 5 founders respond or check the alert for 4+ days, the pain is not urgent.",
+    "estimatedDurationDays": 7
+  }
+}
+```
+
+---
+
+## 4. Standard Response Envelope
+
+All API endpoints return JSON conforming to the following envelopes:
+
+### Success Format
+```json
+{
+  "success": true,
+  "data": {},
+  "message": "Operation completed successfully",
+  "timestamp": "2026-10-31T01:00:00.000Z"
+}
+```
+
+### Error Format
 ```json
 {
   "success": false,
   "error": {
-    "code": "VALIDATION_ERROR",
-    "message": "Invalid input provided",
-    "details": [
-      {
-        "field": "decision_text",
-        "message": "Decision text is required"
-      }
-    ]
+    "code": "VALIDATION_FAILED",
+    "message": "Problem statement must contain at least 50 characters of context.",
+    "details": []
   },
-  "timestamp": "2025-01-01T00:00:00.000Z"
+  "timestamp": "2026-10-31T01:00:00.000Z"
 }
 ```
-
-### Error Codes
-
-| HTTP Status | Error Code | Description |
-|---|---|---|
-| `400` | `VALIDATION_ERROR` | Invalid request parameters |
-| `401` | `UNAUTHORIZED` | Missing or invalid authentication |
-| `403` | `FORBIDDEN` | Insufficient permissions |
-| `404` | `NOT_FOUND` | Resource not found |
-| `429` | `RATE_LIMITED` | Too many requests |
-| `500` | `INTERNAL_ERROR` | Internal server error |
-
----
-
-## Rate Limiting
-
-> [!NOTE]
-> Rate limiting details will be defined during implementation.
-
-| Tier | Limit | Window |
-|---|---|---|
-| **Unauthenticated** | TBD | TBD |
-| **Authenticated** | TBD | TBD |
-| **Analysis Endpoint** | TBD | TBD |
-
-Rate limit headers will be included in all responses:
-
-```
-X-RateLimit-Limit: 100
-X-RateLimit-Remaining: 95
-X-RateLimit-Reset: 1672531200
-```
-
----
-
-*This API documentation will be expanded as development progresses.*

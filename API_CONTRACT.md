@@ -1,5 +1,10 @@
 # API Contract Specification: Blindspot AI
 
+**Historical `/api/v1` contract.** The active Phase 01 API uses `/api` and is
+documented in [API documentation](docs/API_DOCUMENTATION.md#implemented-phase-01-api).
+The envelope/state/endpoint examples below are legacy and must not be used to
+implement a new client. The legacy entry point remains separately runnable.
+
 **Version:** 1.0.0 (Phase 1 Baseline)  
 **Base URL:** `/api/v1`  
 **Protocol:** REST / JSON  

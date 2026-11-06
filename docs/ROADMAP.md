@@ -1,84 +1,55 @@
-# 🗺️ Product Roadmap — Blindspot AI
+# Product Roadmap: Blindspot AI
 
-> Development roadmap for the CoNSTruct 2.0 hackathon (1-month timeline).
+## Phase 01 status
 
----
+### Implemented and verified
 
-## Week 1 (Days 1–7): Foundation & Planning
+- Modular backend: Express / TypeScript / PostgreSQL / Drizzle / Zod.
+- Project CRUD and versioned analysis with risk-ranked untested assumptions.
+- Structured AI adapters with schema validation and explicit failures.
+- Mapped interview questions, original notes, cited evidence, themes,
+  contradictions, evidence gaps and unsupported conclusions.
+- Explicit evidence-backed review states and measurable experiments.
+- Real-source GitHub/HF/UCI discovery; optional Kaggle; reviewed technical resources.
+- Normalization/deduplication, separate relevance/metadata signals, transparent
+  configurable ranking, TTL cache, provider statuses and project saves.
+- Versioned development migrations, isolated tests, rate limiting, bounded HTTP,
+  structured logging and fail-closed production access.
 
-> 🎯 **Goal:** Establish project foundation, finalize decisions, and set the team up for rapid development.
+### Not implemented
 
-- [x] Repository setup and documentation
-- [ ] Finalize tech stack (frontend framework, backend runtime, database)
-- [ ] Design system architecture
-- [ ] Set up development environments (local + Replit)
-- [ ] Create initial UI mockups and wireframes
+1. Real authentication and project-owner authorization; the production guard must
+   remain until this is tested.
+2. Frontend intake, analysis/evidence/interview/experiment screens and Library UI.
+3. Semantic/multi-query retrieval evaluation, more API/dataset catalogs and a
+   benchmark of recommendation usefulness.
+4. Shared cache/limits, background refresh, job queues, monitoring and a production
+   operating/release procedure.
+5. Reviewed import of existing SQLite data, if records exist in teammates' environments.
+6. Automated legal license compatibility, source code security review or proof
+   that an idea has a validated market. These are **not** claims of the product.
 
----
+Kaggle is implemented but disabled by default and was transport-mocked, not live
+credential-tested. Live smoke verification covered GitHub/HF retrieval, UCI empty
+result handling, development PostgreSQL and one real AI idea analysis.
 
-## Week 2 (Days 8–14): Core Development
+## Historical sprint plan — dates and older stack assumptions are not current status
 
-> 🎯 **Goal:** Build the core infrastructure and begin implementing key features.
-
-- [ ] Implement authentication system (register, login, sessions)
-- [ ] Build API server with core endpoints
-- [ ] Develop frontend scaffold with routing and layout
-- [ ] Set up database schema and migrations
-- [ ] Begin AI engine development (blind spot detection logic)
-
----
-
-## Week 3 (Days 15–21): Integration & Features
-
-> 🎯 **Goal:** Connect all components, complete features, and ensure quality.
-
-- [ ] Integrate frontend with backend APIs
-- [ ] Complete AI analysis features (full pipeline)
-- [ ] Implement data visualization for analysis results
-- [ ] Write unit and integration tests
-- [ ] Code review and refactoring
-
----
-
-## Week 4 (Days 22–30): Polish & Deployment
-
-> 🎯 **Goal:** Finalize the product, deploy, and prepare for presentation.
-
-- [ ] UI/UX polish and responsive design
-- [ ] Performance optimization
-- [ ] Deploy on Replit
-- [ ] Final testing (end-to-end, edge cases)
-- [ ] Prepare demo and presentation
-- [ ] Documentation finalization
+> **Notice:** This document has been superseded by the 20-day engineering sprint roadmap.  
+> Please refer to [**`docs/FEATURE_ROADMAP.md`**](FEATURE_ROADMAP.md) for detailed phase deliverables, technical objectives, expected outcomes, and acceptance criteria.
 
 ---
 
-## Milestones
+## 20-Day Sprint Schedule (Summary)
 
-| Milestone | Target Date | Deliverable | Status |
-|---|---|---|---|
-| **M1: Project Kickoff** | Day 1 | Repository, docs, and initial setup complete | ✅ Complete |
-| **M2: Tech Stack Finalized** | Day 5 | Architecture document updated with final decisions | 🔲 Pending |
-| **M3: MVP Backend** | Day 14 | Working API with auth and core endpoints | 🔲 Pending |
-| **M4: MVP Frontend** | Day 14 | Functional UI with navigation and basic views | 🔲 Pending |
-| **M5: AI Integration** | Day 18 | Blind spot analysis pipeline operational | 🔲 Pending |
-| **M6: Feature Complete** | Day 21 | All planned features implemented and integrated | 🔲 Pending |
-| **M7: Deployment** | Day 25 | Application live on Replit | 🔲 Pending |
-| **M8: Demo Ready** | Day 28 | Presentation prepared, demo rehearsed | 🔲 Pending |
-| **M9: Final Submission** | Day 30 | Project submitted to CoNSTruct 2.0 | 🔲 Pending |
+* **Phase 1 (Days 1–2):** Repository Audit & Architecture Understanding
+* **Phase 2 (Days 3–4):** Product Requirements & Technical Planning
+* **Phase 3 (Days 5–9):** Core MVP Development (Steps 1–3: Intake, Assumptions, Risk Scoring)
+* **Phase 4 (Days 10–13):** AI Intelligence & Analysis (Steps 4–7: Interviews, Feedback, Contradictions, Experiments)
+* **Phase 5 (Days 14–15):** Frontend/Backend System Integration
+* **Phase 6 (Days 16–17):** UI/UX Refinement & SaaS Polish
+* **Phase 7 (Day 18):** Testing & Bug Fixing
+* **Phase 8 (Day 19):** Deployment & Replit Production Readiness
+* **Phase 9 (Day 20):** Final Demonstration & Presentation Preparation
 
----
-
-## Risk Register
-
-| Risk | Impact | Mitigation |
-|---|---|---|
-| Scope creep | High | Strict feature prioritization; MVP-first approach |
-| AI API rate limits / costs | Medium | Implement caching; use free-tier APIs where possible |
-| Integration complexity | Medium | Define clear API contracts early; mock services |
-| Time constraints | High | Daily progress tracking; cut non-essential features early |
-
----
-
-> [!IMPORTANT]
-> This roadmap is a living document. Tasks and timelines will be adjusted based on progress and discoveries during development.
+For full milestone breakdowns and acceptance criteria, see [`docs/FEATURE_ROADMAP.md`](FEATURE_ROADMAP.md).

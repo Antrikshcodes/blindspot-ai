@@ -1,5 +1,25 @@
 # Known Issues & Technical Debt: Blindspot AI
 
+## Current Phase 01 limitations
+
+- No real authentication/ownership layer or frontend. Production fails closed.
+- Literal keyword search can miss useful repositories/datasets. Ranking is an
+  explainable heuristic, not a benchmarked relevance model.
+- Technical API/docs/tools discovery is a small reviewed catalog, not web search.
+- GitHub README presence and license compatibility/difficulty can remain unknown.
+- Provider availability/rate limits change; partial searches expose failures.
+- Cache/rate limits and AI concurrency are process-local, not horizontally shared.
+- Model interpretations can be wrong despite schema/citation validation.
+- Notes analysis has a bounded batch size and targets the latest analysis.
+- Shared legacy interfaces are not yet a client contract for the new backend.
+- Legacy SQLite data import and production release/authorization are separate work.
+- Four moderate dev-only drizzle-kit/esbuild-chain audit findings remain; high and
+  critical findings were removed with non-breaking dependency updates.
+
+See [roadmap](ROADMAP.md#phase-01-status) and [resource limitations](RESOURCE_INTELLIGENCE.md).
+
+## Historical issue register
+
 **Document Version:** 1.0.0  
 **Status:** Active  
 **Maintained by:** Null Theory Engineering Team  

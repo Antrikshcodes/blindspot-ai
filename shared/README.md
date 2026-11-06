@@ -1,5 +1,11 @@
 # Shared — Blindspot AI
 
+**Phase 01 compatibility note:** these earlier shared interfaces are retained
+for reference, not asserted to match the active backend. Runtime contracts are
+`backend/src/phase01/contracts.ts`; use the current API documentation when building
+a client. A deliberate shared-contract export/code-generation step can follow the
+frontend integration; do not silently use the older Project/Submission shapes.
+
 > Shared TypeScript data contracts, validation schemas, and constants for Blindspot AI.
 
 ---

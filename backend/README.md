@@ -1,5 +1,22 @@
 # Backend — Blindspot AI
 
+## Active Phase 01 backend
+
+Run `npm ci`, configure development PostgreSQL, `npm run db:migrate`, then
+`npm run dev`. Active entry point: `src/phase01/server.ts`; base path `/api`.
+
+See [current setup](../docs/DEVELOPMENT_SETUP.md#phase-01-setup),
+[API](../docs/API_DOCUMENTATION.md#implemented-phase-01-api),
+[schema](../docs/DATABASE_SCHEMA.md), [AI](../docs/AI_ENGINE.md) and
+[resource engine](../docs/RESOURCE_INTELLIGENCE.md).
+
+`npm test` runs the new isolated PostgreSQL-compatible suite. `npm run test:legacy`
+and `npm run dev:legacy` preserve the older SQLite prototype. They are different
+entry points; do not run legacy SQLite schema commands against PostgreSQL.
+Production non-health access is blocked pending real authorization. There is no UI.
+
+## Historical backend overview
+
 > RESTful API server, AI orchestration engine, and persistence layer for Blindspot AI.
 
 ---

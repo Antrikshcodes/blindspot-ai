@@ -1,5 +1,10 @@
 # Personalized Resource Library — Backend Foundation
 
+**Historical curated Library prototype.** It remains available through the legacy
+entry point only. The active Phase 01 engine uses `/api/projects/:id/resources/*`
+with real-source retrieval; see [resource intelligence](RESOURCE_INTELLIGENCE.md)
+and the [current API](API_DOCUMENTATION.md#implemented-phase-01-api).
+
 Related proposal: [Resource Library](https://github.com/Antrikshcodes/blindspot-ai/issues/2).
 
 ## Scope and current limitations
