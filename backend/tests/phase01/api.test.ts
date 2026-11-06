@@ -70,8 +70,11 @@ describe('Project and validation API with isolated PostgreSQL', () => {
     expect((await request(app).patch(path).send({ status: 'VERIFIED' })).status).toBe(400);
   });
   it('generates mapped interview questions and preserves real raw feedback', async () => {
+    const callsBefore = llm.calls.length;
     const interview = await request(app).post(`/api/projects/${projectId}/interviews`).send({ participant: 'Participant alias' });
     expect(interview.status).toBe(201); interviewId = interview.body.data.id;
+    expect(interview.body.data.questions).toHaveLength(8);
+    expect(llm.calls).toHaveLength(callsBefore);
     expect(interview.body.data.questions[0].assumptionId).toBe(assumptionId);
     expect((await request(app).get(`/api/projects/${projectId}/interviews`)).body.data.items).toHaveLength(1);
     expect((await request(app).post(`/api/interviews/${interviewId}/feedback`).send({ notes: 'short' })).status).toBe(400);

@@ -90,6 +90,16 @@ export class ValidationService {
   }
   async createInterview(projectId: string, input: z.infer<typeof c.interviewInput>) {
     const latest = await this.latest(projectId);
+    if (latest.engineVersion === '2.0') {
+      // Reuse the reviewed analysis questions rather than running a second,
+      // inconsistent generator. Keep the session's legacy field aliases.
+      const result = resultSchema.parse(latest.result);
+      const questions = result.interviewQuestions.map(question => ({
+        ...question, assumptionId: question.relatedAssumptionId, listenFor: question.evidenceToLookFor,
+      }));
+      const [interview] = await this.db.insert(t.interviews).values({ projectId, ...input, questions }).returning();
+      return interview;
+    }
     const output = c.interviewOutput.parse(await this.llm.generate(
       'Generate non-leading interview questions about past behavior and existing workarounds; map every question to a supplied assumption ID.',
       { project: await this.project(projectId), assumptions: latest.assumptions }, c.interviewOutput,

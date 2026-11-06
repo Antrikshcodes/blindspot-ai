@@ -2,7 +2,7 @@ import { it, expect } from 'vitest';
 import { PGlite } from '@electric-sql/pglite';
 import { readFileSync } from 'node:fs';
 
-it('numbers multiple pre-existing analyses without overwriting historical JSON or risk labels', async () => {
+it('numbers multiple pre-existing analyses without overwriting historical JSON', async () => {
   const client = new PGlite();
   const folder = 'src/phase01/db/migrations';
   try {
