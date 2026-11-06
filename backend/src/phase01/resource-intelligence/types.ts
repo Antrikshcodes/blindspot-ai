@@ -2,9 +2,10 @@ import { z } from 'zod';
 import { resourceCategory } from '../contracts.js';
 
 export const resourceSchema = z.object({
-  category: resourceCategory, provider: z.string().min(1), externalId: z.string().min(1),
-  url: z.string().url(), name: z.string().min(1).max(300), description: z.string().max(5000),
-  license: z.string().nullable(), language: z.string().nullable(), tags: z.array(z.string()).max(100),
+  category: resourceCategory, provider: z.string().min(1).max(50), externalId: z.string().min(1).max(300),
+  url: z.string().url().max(2048), name: z.string().min(1).max(300), description: z.string().max(5000),
+  license: z.string().max(300).nullable(), language: z.string().max(100).nullable(),
+  tags: z.array(z.string().max(200)).max(100),
   sourceUpdatedAt: z.date().nullable(), retrievedAt: z.date(),
   qualitySignals: z.object({
     archived: z.boolean().nullable(), documentation: z.boolean().nullable(),

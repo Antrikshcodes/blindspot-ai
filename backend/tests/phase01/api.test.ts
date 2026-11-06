@@ -208,6 +208,13 @@ describe('Operational safeguards', () => {
       expect((await request(prod)[method]('/api/projects').set('X-User-Id', projectId)).status).toBe(503);
     }
   });
+  it('stores long original feedback with mappings without exceeding PostgreSQL index limits', async () => {
+    const response = await request(app).post(`/api/interviews/${interviewId}/feedback`).send({
+      notes: 'Long verbatim participant notes. '.repeat(300), assumptionIds: [assumptionId],
+    });
+    expect(response.status).toBe(201);
+    expect(response.body.data.notes.length).toBeGreaterThan(8000);
+  });
   it('deletes project data through foreign-key cascades, not global resources', async () => {
     expect((await request(app).delete(`/api/projects/${projectId}`)).status).toBe(200);
     expect((await request(app).get(`/api/projects/${projectId}`)).status).toBe(404);

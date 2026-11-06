@@ -54,7 +54,9 @@ export const evidence = platform.table('evidence_records', {
   quote: text('quote').notNull(), sentiment: sentimentEnum('sentiment').notNull(),
   reasoning: text('reasoning').notNull(), origin: text('origin').notNull(), createdAt: created(),
 }, t => [index('evidence_assumption_idx').on(t.assumptionId), index('evidence_feedback_idx').on(t.feedbackId),
-  uniqueIndex('evidence_quote_unique').on(t.feedbackId, t.assumptionId, t.quote, t.sentiment)]);
+  // Index a fixed-size digest: indexing a whole long/multibyte interview quote
+  // exceeds PostgreSQL btree entry limits. This digest is deduplication, not security.
+  uniqueIndex('evidence_quote_unique').on(t.feedbackId, t.assumptionId, sql`md5(${t.quote})`, t.sentiment)]);
 export const assumptionEvidence = platform.table('assumption_evidence', {
   id: key(), assumptionId: uuid('assumption_id').notNull().references(() => assumptions.id, { onDelete: 'cascade' }),
   evidenceId: uuid('evidence_id').notNull().references(() => evidence.id, { onDelete: 'cascade' }),

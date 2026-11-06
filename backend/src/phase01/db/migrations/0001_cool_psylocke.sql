@@ -1,0 +1,2 @@
+DROP INDEX "blindspot_phase01"."evidence_quote_unique";--> statement-breakpoint
+CREATE UNIQUE INDEX "evidence_quote_unique" ON "blindspot_phase01"."evidence_records" USING btree ("feedback_id","assumption_id",md5("quote"),"sentiment");

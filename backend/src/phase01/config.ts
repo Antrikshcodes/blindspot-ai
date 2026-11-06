@@ -2,8 +2,9 @@ import 'dotenv/config';
 import { z } from 'zod';
 import pino from 'pino';
 
-const optionalSecret = z.string().min(1).optional();
-const optionalUrl = z.string().url().optional();
+// Empty optional placeholders in a copied .env.example must behave as omitted.
+const optionalSecret = z.preprocess(value => value === '' ? undefined : value, z.string().min(1).optional());
+const optionalUrl = z.preprocess(value => value === '' ? undefined : value, z.string().url().optional());
 export const config = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().min(1).max(65535).default(3000),

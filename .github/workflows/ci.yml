@@ -4,9 +4,9 @@ name: CI Pipeline
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, develop, "feature/**"]
   pull_request:
-    branches: [main, develop]
+    branches: [main, develop, "feature/**"]
 
 jobs:
   quality-checks:
@@ -16,6 +16,33 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install checked-in backend dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Check active TypeScript backend
+        working-directory: backend
+        run: npm run build
+
+      - name: Test Phase 01 without external credentials or services
+        working-directory: backend
+        run: npm test
+
+      - name: Preserve original backend tests
+        working-directory: backend
+        run: npm run test:legacy
+
+      - name: Check retained legacy source
+        working-directory: backend
+        run: npm run build:legacy
 
       - name: Check for .env files (security check)
         run: |
