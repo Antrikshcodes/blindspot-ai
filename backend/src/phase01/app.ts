@@ -58,7 +58,7 @@ export function createApp(deps: {
   });
   app.use('/api', limiter(deps.apiRateLimit ?? config.API_RATE_LIMIT, 60000));
   const aiLimit = limiter(deps.aiRateLimit ?? config.AI_RATE_LIMIT, 60000);
-  app.get('/api/health', route(async (_req, res) => {
+  app.get(['/api/health', '/api/healthz'], route(async (_req, res) => {
     try {
       await db.execute(sql`select 1`);
       return success(res, { status: 'ok', database: 'connected', service: 'blindspot-phase01' });
