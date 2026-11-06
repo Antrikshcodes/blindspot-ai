@@ -1,52 +1,29 @@
-# 🧪 Tests — Blindspot AI
+# Tests — Blindspot AI
 
-> Test suites for the Blindspot AI project.
+> Automated testing suites for Blindspot AI.
 
-## Status
+---
 
-🚧 **Under Development** — Testing framework to be decided.
+## Test Organization
 
-## Test Categories
+The test directory is organized into three distinct testing tiers:
 
-| Type | Description | Location |
-|---|---|---|
-| **Unit Tests** | Test individual functions and components in isolation | `tests/unit/` |
-| **Integration Tests** | Test interactions between services and modules | `tests/integration/` |
-| **End-to-End Tests** | Test complete user workflows through the full stack | `tests/e2e/` |
-
-## Running Tests
-
-```bash
-# Testing framework and commands TBD
-
-# Run all tests:
-# npm test          (Node.js)
-# pytest            (Python)
-
-# Run specific test suite:
-# npm test -- --grep "unit"
-# pytest tests/unit/
-```
-
-## Structure
-
-```
+```text
 tests/
-├── README.md
-├── unit/           (to be created)
-├── integration/    (to be created)
-└── e2e/            (to be created)
+├── unit/             # Unit tests for business logic, scoring algorithms, and schemas
+│   ├── scoring.test.ts        # Tests deterministic 2D risk calculations
+│   └── validation.test.ts     # Tests schema constraints (e.g., minimum prompt length)
+├── integration/      # Integration tests for API endpoints and database queries
+│   ├── submissions.test.ts    # Tests submission persistence and retrieval
+│   └── feedback.test.ts       # Tests customer note ingestion and quote mapping
+└── e2e/              # End-to-end tests for critical user validation journeys
+    └── validation-flow.test.ts# Full walkthrough from idea intake to experiment board
 ```
 
-## Writing Tests
+---
 
-Guidelines for writing tests will be established once the testing framework is selected. Key principles:
+## Testing Principles
 
-- **Descriptive names** — Test names should clearly describe what is being tested
-- **Arrange-Act-Assert** — Follow the AAA pattern for test structure
-- **Isolation** — Each test should be independent and not rely on other tests
-- **Coverage** — Aim for meaningful coverage of critical paths
-
-## Contributing
-
-See the [main CONTRIBUTING.md](../CONTRIBUTING.md) for guidelines.
+1. **Deterministic Logic First:** Pure functions (e.g., composite risk scoring, lethal assumption filtering) must achieve 100% test coverage.
+2. **Mock External Providers:** In automated CI environments, LLM provider calls must use deterministic mock responses to prevent test flakiness, rate limiting, and unnecessary API cost.
+3. **No Phantom Assertions:** Tests must assert against real database state and HTTP response payloads.

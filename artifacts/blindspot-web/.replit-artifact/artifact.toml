@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Blindspot AI"
+description = "Evidence-led founder workspace for testing assumptions, reviewing customer interviews and finding source-backed technical resources using the existing Blindspot API."
+version = "1.0.0"
+id = "artifacts/blindspot-web"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 21178
+
+[services.development]
+run = "pnpm --filter @workspace/blindspot-web run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/blindspot-web", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/blindspot-web/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "21178"
+BASE_PATH = "/"
