@@ -36,3 +36,4 @@ export const SectionReveal: React.FC<SectionRevealProps> = ({
     </motion.div>
   );
 };
+

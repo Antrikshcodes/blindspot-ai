@@ -8,6 +8,7 @@ import { Capabilities } from './components/sections/Capabilities';
 import { FinalCTA } from './components/sections/FinalCTA';
 import { Footer } from './components/layout/Footer';
 import { FutureFeatureModal } from './components/common/FutureFeatureModal';
+import { InteractiveBackground } from './components/common/InteractiveBackground';
 
 export const App: React.FC = () => {
   const [showIntro, setShowIntro] = useState<boolean>(true);
@@ -41,7 +42,10 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-sand text-forest relative flex flex-col selection:bg-purple/20 selection:text-forest">
+    <div className="min-h-screen bg-sand text-forest relative flex flex-col selection:bg-purple/20 selection:text-forest overflow-x-hidden">
+      {/* Dynamic Ambient Calibrated Grid & Parallax Geometry */}
+      <InteractiveBackground />
+
       {/* 3-Second Cinematic Intro Animation Overlay */}
       {showIntro && <IntroOverlay onComplete={handleIntroComplete} />}
 
@@ -82,3 +86,4 @@ export const App: React.FC = () => {
 };
 
 export default App;
+

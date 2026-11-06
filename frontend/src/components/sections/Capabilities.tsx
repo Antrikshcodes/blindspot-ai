@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
+import React from 'react';
 import {
   Brain,
   Layers,
@@ -8,13 +7,12 @@ import {
   FlaskConical,
   Database,
   ArrowUpRight,
+  ShieldCheck,
 } from 'lucide-react';
 import { SectionReveal } from '../common/SectionReveal';
+import { TiltCard } from '../common/TiltCard';
 
 export const Capabilities: React.FC = () => {
-  const shouldReduceMotion = useReducedMotion();
-  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
-
   const capabilities = [
     {
       title: 'AI Assumption Extraction',
@@ -23,7 +21,7 @@ export const Capabilities: React.FC = () => {
         'Breaks down vague pitch descriptions into 3 to 15 atomic, falsifiable premises across Problem, Customer, Demand, Behaviour, Willingness to Pay, Technical, Distribution, Business Model, Competitive, and Operational risks.',
       icon: Brain,
       tag: 'Phase 02 AI Engine',
-      meta: 'Identifies unstated assumptions',
+      meta: 'Unstated premises isolated',
     },
     {
       title: 'Deterministic Risk Scoring',
@@ -32,7 +30,7 @@ export const Capabilities: React.FC = () => {
         'Calculates a rigorous composite Priority Score = Impact (1–5) × Uncertainty (1–5). Automatically flags CRITICAL (20–25) and HIGH (13–19) lethal assumptions so founders know exactly what to test first.',
       icon: Layers,
       tag: 'Mathematical Heuristic',
-      meta: 'Zero arbitrary popularity ranks',
+      meta: 'Impact × Uncertainty scoring',
     },
     {
       title: 'The Mom Test Interview Scripts',
@@ -73,75 +71,75 @@ export const Capabilities: React.FC = () => {
   ];
 
   return (
-    <section id="capabilities" className="py-24 md:py-32 px-6 md:px-10 bg-sand border-t border-forest/15 paper-texture">
-      <div className="max-w-7xl mx-auto">
+    <section id="capabilities" className="py-28 md:py-36 px-6 md:px-10 bg-sand border-t border-forest/15 relative overflow-hidden">
+      <div className="max-w-7xl mx-auto relative z-10">
         
         {/* Section Header */}
         <SectionReveal>
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 md:mb-20">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 md:mb-20 gap-6">
             <div className="max-w-2xl">
-              <span className="inline-block text-xs font-mono font-bold uppercase tracking-wider text-forest/70 mb-3">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-forest/5 border border-forest/15 text-xs font-mono font-bold uppercase tracking-wider text-forest/75 mb-3">
+                <ShieldCheck className="w-3.5 h-3.5 text-purple" />
                 Platform Capabilities
-              </span>
-              <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-forest leading-[1.12]">
+              </div>
+              <h2 className="text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-forest leading-[1.12]">
                 An intellectual adversary, <br />
                 <span className="font-serif italic font-normal text-forest">not a cheerleader.</span>
               </h2>
             </div>
-            <p className="mt-4 md:mt-0 text-sm md:text-base text-forest/75 max-w-sm leading-relaxed">
-              Every feature is built around the scientific method: isolating hypotheses, observing customer evidence, and falsifying fatal flaws early.
+            <p className="text-sm md:text-base text-forest/75 max-w-sm leading-relaxed border-l border-forest/15 pl-4">
+              Every capability is anchored to the scientific method: isolating premises, recording unvarnished user behavior, and killing fatal flaws before building.
             </p>
           </div>
         </SectionReveal>
 
-        {/* 6 Capabilities Cards Grid */}
+        {/* 6 Capabilities Cards Grid with TiltCard */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {capabilities.map((cap, idx) => {
             const Icon = cap.icon;
-            const isHovered = hoveredIdx === idx;
 
             return (
               <SectionReveal key={cap.title} delay={idx * 0.08}>
-                <motion.div
-                  onMouseEnter={() => setHoveredIdx(idx)}
-                  onMouseLeave={() => setHoveredIdx(null)}
-                  animate={shouldReduceMotion ? {} : { y: isHovered ? -6 : 0 }}
-                  transition={{ duration: 0.25, ease: 'easeOut' }}
-                  className="h-full flex flex-col justify-between p-8 rounded-3xl bg-sand-light border border-forest/20 shadow-xs hover:border-forest/50 hover:shadow-lg transition-all duration-300 relative overflow-hidden group"
-                >
-                  <div>
-                    {/* Top Tag Row */}
-                    <div className="flex items-center justify-between pb-4 border-b border-forest/10 mb-6">
-                      <div className="w-11 h-11 rounded-2xl bg-forest/5 flex items-center justify-center text-forest group-hover:bg-purple/15 group-hover:text-purple transition-colors">
-                        <Icon className="w-5 h-5" />
+                <TiltCard maxTilt={5} className="h-full">
+                  <div className="h-full flex flex-col justify-between p-8 rounded-3xl bg-sand-light/90 backdrop-blur-xs border border-forest/20 shadow-xs hover:border-forest/50 hover:shadow-md transition-all duration-300 relative overflow-hidden group">
+                    
+                    {/* Top ambient highlight on hover */}
+                    <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                    <div>
+                      {/* Top Tag Row */}
+                      <div className="flex items-center justify-between pb-4 border-b border-forest/10 mb-6">
+                        <div className="w-11 h-11 rounded-2xl bg-forest/5 flex items-center justify-center text-forest group-hover:bg-purple/15 group-hover:text-purple transition-all duration-300 transform group-hover:scale-105">
+                          <Icon className="w-5 h-5" />
+                        </div>
+                        <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-forest/60">
+                          {cap.category}
+                        </span>
                       </div>
-                      <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-forest/60">
-                        {cap.category}
-                      </span>
+
+                      {/* Title & Tag */}
+                      <div className="mb-3">
+                        <span className="text-[10px] font-mono text-purple font-bold tracking-wider uppercase block mb-1">
+                          {cap.tag}
+                        </span>
+                        <h3 className="text-xl font-bold text-forest tracking-tight group-hover:translate-x-0.5 transition-transform duration-200">
+                          {cap.title}
+                        </h3>
+                      </div>
+
+                      {/* Description */}
+                      <p className="text-sm text-forest/80 leading-relaxed mb-6 font-sans">
+                        {cap.description}
+                      </p>
                     </div>
 
-                    {/* Title & Tag */}
-                    <div className="mb-3">
-                      <span className="text-[10px] font-mono text-purple font-bold tracking-wide uppercase block mb-1">
-                        {cap.tag}
-                      </span>
-                      <h3 className="text-xl font-bold text-forest tracking-tight">
-                        {cap.title}
-                      </h3>
+                    {/* Card Footer */}
+                    <div className="pt-4 border-t border-forest/10 flex items-center justify-between text-xs font-mono text-forest/70">
+                      <span>{cap.meta}</span>
+                      <ArrowUpRight className="w-4 h-4 text-forest/40 group-hover:text-purple group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
                     </div>
-
-                    {/* Description */}
-                    <p className="text-sm text-forest/80 leading-relaxed mb-6 font-sans">
-                      {cap.description}
-                    </p>
                   </div>
-
-                  {/* Card Footer */}
-                  <div className="pt-4 border-t border-forest/10 flex items-center justify-between text-xs font-mono text-forest/70">
-                    <span>{cap.meta}</span>
-                    <ArrowUpRight className="w-4 h-4 text-forest/40 group-hover:text-purple group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
-                  </div>
-                </motion.div>
+                </TiltCard>
               </SectionReveal>
             );
           })}

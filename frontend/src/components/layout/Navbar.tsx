@@ -11,25 +11,43 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({ onOpenIntake }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  const [activeSection, setActiveSection] = useState<string>('');
 
   const navLinks = [
     { label: 'The Problem', href: '#problem' },
     { label: 'How It Works', href: '#how-it-works' },
     { label: 'Capabilities', href: '#capabilities' },
-    { label: 'Methodology', href: '#methodology' },
   ];
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 24);
+
+      // Simple active section detection
+      const sections = ['problem', 'how-it-works', 'capabilities'];
+      let current = '';
+      for (const id of sections) {
+        const el = document.getElementById(id);
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          if (rect.top <= 200 && rect.bottom >= 200) {
+            current = `#${id}`;
+            break;
+          }
+        }
+      }
+      setActiveSection(current);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault();
     setMobileMenuOpen(false);
+    setActiveSection(href);
     const element = document.querySelector(href);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -41,32 +59,44 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenIntake }) => {
       <header
         className={`sticky top-0 z-40 w-full transition-all duration-300 ${
           isScrolled
-            ? 'bg-sand/90 backdrop-blur-md border-b border-forest/15 py-3 shadow-xs'
+            ? 'bg-sand/90 backdrop-blur-md border-b border-forest/15 py-3 shadow-sm'
             : 'bg-transparent py-5'
         }`}
       >
         <div className="max-w-7xl mx-auto px-6 md:px-10 flex items-center justify-between">
-          {/* Brand Logo */}
+          {/* Brand Logo with micro-interaction */}
           <a
             href="#"
-            className="group focus-visible:outline-2 focus-visible:outline-purple rounded-lg transition-transform"
+            className="group flex items-center focus-visible:outline-2 focus-visible:outline-purple rounded-lg transition-transform hover:scale-[1.02]"
             aria-label="Blindspot AI Home"
           >
             <BrandLogo size="md" />
           </a>
 
-          {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center gap-8" aria-label="Main Navigation">
-            {navLinks.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                onClick={(e) => handleLinkClick(e, link.href)}
-                className="text-sm font-sans font-medium text-forest/80 hover:text-forest transition-colors relative py-1 focus-visible:outline-2 focus-visible:outline-purple rounded"
-              >
-                {link.label}
-              </a>
-            ))}
+          {/* Desktop Navigation Links with Framer Motion Animated Underline Indicator */}
+          <nav className="hidden md:flex items-center gap-1 bg-forest/5 p-1 rounded-full border border-forest/10" aria-label="Main Navigation">
+            {navLinks.map((link) => {
+              const isActive = activeSection === link.href;
+              return (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  onClick={(e) => handleLinkClick(e, link.href)}
+                  className={`relative px-4 py-1.5 text-xs font-semibold tracking-wide uppercase transition-colors rounded-full focus-visible:outline-2 focus-visible:outline-purple ${
+                    isActive ? 'text-sand font-bold' : 'text-forest/75 hover:text-forest'
+                  }`}
+                >
+                  {isActive && (
+                    <motion.span
+                      layoutId="activeNavPill"
+                      className="absolute inset-0 bg-forest rounded-full -z-10 shadow-xs"
+                      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                    />
+                  )}
+                  <span className="relative z-10">{link.label}</span>
+                </a>
+              );
+            })}
           </nav>
 
           {/* Right Action: Strategic Electric Purple CTA */}
@@ -96,24 +126,27 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenIntake }) => {
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className="md:hidden fixed top-[65px] left-0 right-0 z-30 bg-sand border-b border-forest/20 shadow-xl overflow-hidden px-6 py-6"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+            className="md:hidden fixed top-[65px] left-0 right-0 z-30 bg-sand/98 backdrop-blur-lg border-b border-forest/20 shadow-xl overflow-hidden px-6 py-6"
           >
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-3">
               {navLinks.map((link) => (
                 <a
                   key={link.label}
                   href={link.href}
                   onClick={(e) => handleLinkClick(e, link.href)}
-                  className="text-lg font-sans font-medium text-forest py-2 border-b border-forest/10"
+                  className={`text-base font-semibold py-2.5 px-3 rounded-lg transition-colors flex items-center justify-between ${
+                    activeSection === link.href ? 'bg-forest text-sand' : 'text-forest hover:bg-forest/5'
+                  }`}
                 >
-                  {link.label}
+                  <span>{link.label}</span>
+                  <span className="text-xs text-forest/40 font-mono tracking-widest uppercase">Inspect</span>
                 </a>
               ))}
-              <div className="pt-2">
+              <div className="pt-3 border-t border-forest/10">
                 <MagneticButton
                   variant="purple"
                   size="md"

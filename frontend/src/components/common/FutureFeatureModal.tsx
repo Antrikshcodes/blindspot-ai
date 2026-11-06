@@ -184,3 +184,4 @@ export const FutureFeatureModal: React.FC<FutureFeatureModalProps> = ({
     </AnimatePresence>
   );
 };
+
