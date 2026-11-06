@@ -71,18 +71,18 @@ export const Capabilities: React.FC = () => {
   ];
 
   return (
-    <section id="capabilities" className="py-28 md:py-36 px-6 md:px-10 bg-sand border-t border-forest/15 relative overflow-hidden">
+    <section id="capabilities" className="py-20 sm:py-24 md:py-32 px-4 sm:px-6 md:px-10 bg-sand border-t border-forest/15 relative overflow-hidden">
       <div className="max-w-7xl mx-auto relative z-10">
         
         {/* Section Header */}
         <SectionReveal>
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 md:mb-20 gap-6">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 sm:mb-16 md:mb-20 gap-6">
             <div className="max-w-2xl">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-forest/5 border border-forest/15 text-xs font-mono font-bold uppercase tracking-wider text-forest/75 mb-3">
                 <ShieldCheck className="w-3.5 h-3.5 text-purple" />
                 Platform Capabilities
               </div>
-              <h2 className="text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-forest leading-[1.12]">
+              <h2 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-forest leading-[1.12]">
                 An intellectual adversary, <br />
                 <span className="font-serif italic font-normal text-forest">not a cheerleader.</span>
               </h2>
@@ -94,21 +94,21 @@ export const Capabilities: React.FC = () => {
         </SectionReveal>
 
         {/* 6 Capabilities Cards Grid with TiltCard */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           {capabilities.map((cap, idx) => {
             const Icon = cap.icon;
 
             return (
               <SectionReveal key={cap.title} delay={idx * 0.08}>
-                <TiltCard maxTilt={5} className="h-full">
-                  <div className="h-full flex flex-col justify-between p-8 rounded-3xl bg-sand-light/90 backdrop-blur-xs border border-forest/20 shadow-xs hover:border-forest/50 hover:shadow-md transition-all duration-300 relative overflow-hidden group">
+                <TiltCard maxTilt={4} className="h-full">
+                  <div className="h-full flex flex-col justify-between p-6 sm:p-8 rounded-3xl bg-sand-light/90 backdrop-blur-xs border border-forest/20 shadow-xs hover:border-forest/50 hover:shadow-md transition-all duration-300 relative overflow-hidden group">
                     
                     {/* Top ambient highlight on hover */}
                     <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
                     <div>
                       {/* Top Tag Row */}
-                      <div className="flex items-center justify-between pb-4 border-b border-forest/10 mb-6">
+                      <div className="flex items-center justify-between pb-4 border-b border-forest/10 mb-5 sm:mb-6">
                         <div className="w-11 h-11 rounded-2xl bg-forest/5 flex items-center justify-center text-forest group-hover:bg-purple/15 group-hover:text-purple transition-all duration-300 transform group-hover:scale-105">
                           <Icon className="w-5 h-5" />
                         </div>
@@ -122,13 +122,13 @@ export const Capabilities: React.FC = () => {
                         <span className="text-[10px] font-mono text-purple font-bold tracking-wider uppercase block mb-1">
                           {cap.tag}
                         </span>
-                        <h3 className="text-xl font-bold text-forest tracking-tight group-hover:translate-x-0.5 transition-transform duration-200">
+                        <h3 className="text-lg sm:text-xl font-bold text-forest tracking-tight group-hover:translate-x-0.5 transition-transform duration-200">
                           {cap.title}
                         </h3>
                       </div>
 
                       {/* Description */}
-                      <p className="text-sm text-forest/80 leading-relaxed mb-6 font-sans">
+                      <p className="text-xs sm:text-sm text-forest/80 leading-relaxed mb-6 font-sans">
                         {cap.description}
                       </p>
                     </div>

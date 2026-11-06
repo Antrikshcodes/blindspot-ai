@@ -38,7 +38,7 @@ export const TheProblem: React.FC = () => {
   ];
 
   return (
-    <section id="problem" className="py-28 md:py-36 px-6 md:px-10 bg-sand border-t border-forest/15 relative overflow-hidden">
+    <section id="problem" className="py-20 sm:py-24 md:py-32 px-4 sm:px-6 md:px-10 bg-sand border-t border-forest/15 relative overflow-hidden">
       {/* Subtle technical background gridline */}
       <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[radial-gradient(#1F3D2B_1px,transparent_1px)] [background-size:24px_24px]" />
 
@@ -46,13 +46,13 @@ export const TheProblem: React.FC = () => {
         
         {/* Section Header with Asymmetric Visual Weight */}
         <SectionReveal>
-          <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-16 md:mb-20 gap-8">
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-12 sm:mb-16 md:mb-20 gap-6 sm:gap-8">
             <div className="max-w-3xl">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-forest/5 border border-forest/15 text-xs font-mono font-bold uppercase tracking-wider text-forest/75 mb-4">
                 <span className="w-1.5 h-1.5 rounded-full bg-purple" />
                 The Reality Check
               </div>
-              <h2 className="text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-forest leading-[1.12]">
+              <h2 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-forest leading-[1.12]">
                 Most teams start building <br />
                 <span className="font-serif italic font-normal text-forest">before they start</span> questioning.
               </h2>
@@ -66,20 +66,20 @@ export const TheProblem: React.FC = () => {
         </SectionReveal>
 
         {/* 3 Interactive Tilt Problem Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
           {issues.map((issue, index) => {
             const Icon = issue.icon;
             return (
-              <SectionReveal key={issue.number} delay={index * 0.12}>
-                <TiltCard maxTilt={6} className="h-full">
-                  <div className="h-full flex flex-col justify-between p-8 rounded-3xl bg-sand-light/90 backdrop-blur-xs border border-forest/20 shadow-xs hover:border-forest/50 transition-colors group relative overflow-hidden">
+              <SectionReveal key={issue.number} delay={index * 0.1}>
+                <TiltCard maxTilt={5} className="h-full">
+                  <div className="h-full flex flex-col justify-between p-6 sm:p-8 rounded-3xl bg-sand-light/90 backdrop-blur-xs border border-forest/20 shadow-xs hover:border-forest/50 transition-colors group relative overflow-hidden">
                     
                     {/* Top edge subtle glow on hover */}
                     <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
                     <div>
                       {/* Number and Icon Header */}
-                      <div className="flex items-center justify-between pb-6 border-b border-forest/10 mb-6">
+                      <div className="flex items-center justify-between pb-5 border-b border-forest/10 mb-5 sm:mb-6">
                         <span className="font-mono text-2xl font-black text-forest/35 group-hover:text-forest transition-colors">
                           {issue.number}
                         </span>
@@ -89,19 +89,19 @@ export const TheProblem: React.FC = () => {
                       </div>
 
                       {/* Title and Subtitle */}
-                      <h3 className="text-xl font-bold text-forest tracking-tight mb-2 group-hover:translate-x-0.5 transition-transform duration-200">
+                      <h3 className="text-lg sm:text-xl font-bold text-forest tracking-tight mb-2 group-hover:translate-x-0.5 transition-transform duration-200">
                         {issue.title}
                       </h3>
-                      <p className="text-xs font-mono font-medium text-forest/60 uppercase tracking-wider mb-4">
+                      <p className="text-xs font-mono font-medium text-forest/60 uppercase tracking-wider mb-3 sm:mb-4">
                         {issue.subtitle}
                       </p>
-                      <p className="text-sm text-forest/80 leading-relaxed mb-6">
+                      <p className="text-xs sm:text-sm text-forest/80 leading-relaxed mb-6">
                         {issue.description}
                       </p>
                     </div>
 
                     {/* Pull Quote Box with dynamic border highlight */}
-                    <div className="mt-auto pt-5 border-t border-forest/10 relative">
+                    <div className="mt-auto pt-4 sm:pt-5 border-t border-forest/10 relative">
                       <div className="flex items-center justify-between mb-1.5">
                         <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-purple flex items-center gap-1">
                           <Sparkles className="w-2.5 h-2.5" />

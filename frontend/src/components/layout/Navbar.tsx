@@ -21,16 +21,18 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenIntake }) => {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 24);
+      setIsScrolled(window.scrollY > 20);
 
-      // Simple active section detection
+      // Robust active section detection across viewport heights
       const sections = ['problem', 'how-it-works', 'capabilities'];
       let current = '';
+      const vh = window.innerHeight;
+
       for (const id of sections) {
         const el = document.getElementById(id);
         if (el) {
           const rect = el.getBoundingClientRect();
-          if (rect.top <= 200 && rect.bottom >= 200) {
+          if (rect.top <= vh * 0.45 && rect.bottom >= vh * 0.15) {
             current = `#${id}`;
             break;
           }
@@ -44,6 +46,17 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenIntake }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Keyboard accessibility: Escape closes mobile menu
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && mobileMenuOpen) {
+        setMobileMenuOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [mobileMenuOpen]);
+
   const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault();
     setMobileMenuOpen(false);
@@ -54,26 +67,33 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenIntake }) => {
     }
   };
 
+  const handleLogoClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    setMobileMenuOpen(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <>
       <header
         className={`sticky top-0 z-40 w-full transition-all duration-300 ${
           isScrolled
-            ? 'bg-sand/90 backdrop-blur-md border-b border-forest/15 py-3 shadow-sm'
-            : 'bg-transparent py-5'
+            ? 'bg-sand/92 backdrop-blur-md border-b border-forest/15 py-2.5 sm:py-3 shadow-xs'
+            : 'bg-transparent py-4 sm:py-5'
         }`}
       >
-        <div className="max-w-7xl mx-auto px-6 md:px-10 flex items-center justify-between">
-          {/* Brand Logo with micro-interaction */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-10 flex items-center justify-between">
+          {/* Brand Logo with smooth scroll to top */}
           <a
             href="#"
+            onClick={handleLogoClick}
             className="group flex items-center focus-visible:outline-2 focus-visible:outline-purple rounded-lg transition-transform hover:scale-[1.02]"
-            aria-label="Blindspot AI Home"
+            aria-label="Blindspot AI — Scroll to top of page"
           >
             <BrandLogo size="md" />
           </a>
 
-          {/* Desktop Navigation Links with Framer Motion Animated Underline Indicator */}
+          {/* Desktop Navigation Links with Framer Motion Sliding Pill Indicator */}
           <nav className="hidden md:flex items-center gap-1 bg-forest/5 p-1 rounded-full border border-forest/10" aria-label="Main Navigation">
             {navLinks.map((link) => {
               const isActive = activeSection === link.href;
@@ -82,9 +102,10 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenIntake }) => {
                   key={link.label}
                   href={link.href}
                   onClick={(e) => handleLinkClick(e, link.href)}
-                  className={`relative px-4 py-1.5 text-xs font-semibold tracking-wide uppercase transition-colors rounded-full focus-visible:outline-2 focus-visible:outline-purple ${
+                  className={`relative px-4 py-1.5 text-xs font-semibold tracking-wider uppercase transition-colors rounded-full focus-visible:outline-2 focus-visible:outline-purple ${
                     isActive ? 'text-sand font-bold' : 'text-forest/75 hover:text-forest'
                   }`}
+                  aria-current={isActive ? 'page' : undefined}
                 >
                   {isActive && (
                     <motion.span
@@ -112,7 +133,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenIntake }) => {
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               type="button"
-              className="p-2.5 rounded-full bg-forest/5 text-forest hover:bg-forest/10 focus-visible:outline-2 focus-visible:outline-purple"
+              className="p-2.5 rounded-full bg-forest/5 text-forest hover:bg-forest/10 focus-visible:outline-2 focus-visible:outline-purple min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
               aria-expanded={mobileMenuOpen}
               aria-label="Toggle navigation menu"
             >
@@ -126,19 +147,21 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenIntake }) => {
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
+            initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.25, ease: 'easeOut' }}
-            className="md:hidden fixed top-[65px] left-0 right-0 z-30 bg-sand/98 backdrop-blur-lg border-b border-forest/20 shadow-xl overflow-hidden px-6 py-6"
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.22, ease: 'easeOut' }}
+            className="md:hidden fixed top-[60px] left-0 right-0 z-30 bg-sand/98 backdrop-blur-lg border-b border-forest/20 shadow-xl overflow-hidden px-4 sm:px-6 py-6"
+            role="dialog"
+            aria-label="Mobile Navigation"
           >
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-2.5">
               {navLinks.map((link) => (
                 <a
                   key={link.label}
                   href={link.href}
                   onClick={(e) => handleLinkClick(e, link.href)}
-                  className={`text-base font-semibold py-2.5 px-3 rounded-lg transition-colors flex items-center justify-between ${
+                  className={`text-base font-semibold py-3 px-4 rounded-xl transition-colors flex items-center justify-between min-h-[44px] ${
                     activeSection === link.href ? 'bg-forest text-sand' : 'text-forest hover:bg-forest/5'
                   }`}
                 >
@@ -146,11 +169,11 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenIntake }) => {
                   <span className="text-xs text-forest/40 font-mono tracking-widest uppercase">Inspect</span>
                 </a>
               ))}
-              <div className="pt-3 border-t border-forest/10">
+              <div className="pt-3 border-t border-forest/10 mt-1">
                 <MagneticButton
                   variant="purple"
                   size="md"
-                  className="w-full justify-center"
+                  className="w-full justify-center min-h-[44px]"
                   onClick={() => {
                     setMobileMenuOpen(false);
                     onOpenIntake();

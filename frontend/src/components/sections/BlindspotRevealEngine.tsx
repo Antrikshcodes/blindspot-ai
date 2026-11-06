@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, useReducedMotion, useSpring } from 'framer-motion';
 import { ShieldAlert, Target, Compass, CheckCircle2, ChevronRight } from 'lucide-react';
 
@@ -19,18 +19,28 @@ export const BlindspotRevealEngine: React.FC = () => {
   const shouldReduceMotion = useReducedMotion();
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeNode, setActiveNode] = useState<DiscoveryNode['id']>('assumption');
+  const [canHover, setCanHover] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(hover: hover) and (pointer: fine)');
+    setCanHover(mq.matches);
+
+    const handleChange = (e: MediaQueryListEvent) => setCanHover(e.matches);
+    mq.addEventListener('change', handleChange);
+    return () => mq.removeEventListener('change', handleChange);
+  }, []);
 
   // Smooth springs for 3D card tilt & pointer responsiveness
   const rotateX = useSpring(0, { stiffness: 220, damping: 20 });
   const rotateY = useSpring(0, { stiffness: 220, damping: 20 });
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (shouldReduceMotion || !containerRef.current) return;
+    if (shouldReduceMotion || !canHover || !containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left - rect.width / 2;
     const y = e.clientY - rect.top - rect.height / 2;
-    rotateX.set((-y / (rect.height / 2)) * 7);
-    rotateY.set((x / (rect.width / 2)) * 7);
+    rotateX.set((-y / (rect.height / 2)) * 6);
+    rotateY.set((x / (rect.width / 2)) * 6);
   };
 
   const handleMouseLeave = () => {
@@ -103,7 +113,7 @@ export const BlindspotRevealEngine: React.FC = () => {
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       style={
-        shouldReduceMotion
+        shouldReduceMotion || !canHover
           ? {}
           : {
               rotateX,
@@ -111,20 +121,20 @@ export const BlindspotRevealEngine: React.FC = () => {
               transformPerspective: 1200,
             }
       }
-      className="relative w-full max-w-xl mx-auto bg-sand-light/95 border-2 border-forest/25 rounded-3xl p-6 md:p-8 shadow-2xl backdrop-blur-md transform-gpu select-none transition-shadow hover:shadow-purple/10"
+      className="relative w-full max-w-xl mx-auto bg-sand-light/95 border-2 border-forest/25 rounded-3xl p-5 sm:p-6 md:p-8 shadow-2xl backdrop-blur-md transform-gpu select-none transition-shadow hover:shadow-purple/10"
     >
       {/* Top Status Bar with Live Diagnostics Header */}
-      <div className="flex items-center justify-between pb-4 border-b border-forest/15 mb-6">
-        <div className="flex items-center gap-2.5">
+      <div className="flex items-center justify-between pb-4 border-b border-forest/15 mb-4 sm:mb-6">
+        <div className="flex items-center gap-2">
           <span className="relative flex h-2.5 w-2.5">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple opacity-75" />
             <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-purple" />
           </span>
-          <span className="text-xs font-mono font-bold tracking-widest text-forest uppercase">
+          <span className="text-[11px] sm:text-xs font-mono font-bold tracking-widest text-forest uppercase">
             BLINDSPOT REVEAL ENGINE
           </span>
         </div>
-        <div className="flex items-center gap-2 text-[11px] font-mono text-forest/60">
+        <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] font-mono text-forest/60">
           <span className="hidden sm:inline">RADAR: ACTIVE</span>
           <span className="px-2 py-0.5 rounded-full bg-purple/15 text-purple font-bold">
             SCANNING
@@ -132,8 +142,8 @@ export const BlindspotRevealEngine: React.FC = () => {
         </div>
       </div>
 
-      {/* Main SVG Aperture Radar Engine */}
-      <div className="relative w-full aspect-square max-w-[340px] md:max-w-[380px] mx-auto flex items-center justify-center">
+      {/* Main SVG Aperture Radar Engine Container */}
+      <div className="relative w-full aspect-square max-w-[270px] sm:max-w-[340px] md:max-w-[380px] mx-auto flex items-center justify-center">
         
         {/* SVG Core Diagram */}
         <svg
@@ -141,6 +151,7 @@ export const BlindspotRevealEngine: React.FC = () => {
           viewBox="0 0 400 400"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
         >
           <defs>
             {/* Dynamic Purple Beam Gradient */}
@@ -170,7 +181,6 @@ export const BlindspotRevealEngine: React.FC = () => {
             style={{ transformOrigin: '200px 200px' }}
           >
             <circle cx="200" cy="200" r="170" stroke="#1F3D2B" strokeWidth="1.5" strokeDasharray="6 12" opacity="0.3" />
-            {/* 4 Cardinal Tick Marks */}
             <circle cx="200" cy="30" r="2.5" fill="#1F3D2B" />
             <circle cx="370" cy="200" r="2.5" fill="#1F3D2B" />
             <circle cx="200" cy="370" r="2.5" fill="#1F3D2B" />
@@ -183,7 +193,6 @@ export const BlindspotRevealEngine: React.FC = () => {
             transition={{ duration: 80, repeat: Infinity, ease: 'linear' }}
             style={{ transformOrigin: '200px 200px' }}
           >
-            {/* The Incomplete Gap Represents The Overlooked Risk */}
             <path
               d="M200 55 A145 145 0 1 1 70 270"
               stroke="#1F3D2B"
@@ -191,7 +200,6 @@ export const BlindspotRevealEngine: React.FC = () => {
               strokeLinecap="round"
               opacity="0.45"
             />
-            {/* Dashed Orbital Trail */}
             <path
               d="M70 270 A145 145 0 0 1 200 55"
               stroke="#8B5CF6"
@@ -231,7 +239,6 @@ export const BlindspotRevealEngine: React.FC = () => {
           
           <g>
             <circle cx="200" cy="200" r="32" fill="#E8DCC4" stroke="#1F3D2B" strokeWidth="2.5" />
-            {/* Center Reticle Cross */}
             <line x1="200" y1="176" x2="200" y2="224" stroke="#1F3D2B" strokeWidth="1.5" opacity="0.6" />
             <line x1="176" y1="200" x2="224" y2="200" stroke="#1F3D2B" strokeWidth="1.5" opacity="0.6" />
             <circle cx="200" cy="200" r="8" fill="#1F3D2B" />
@@ -242,8 +249,7 @@ export const BlindspotRevealEngine: React.FC = () => {
             animate={{ x: targetX, y: targetY }}
             transition={{ type: 'spring', stiffness: 260, damping: 24 }}
           >
-            {/* Animated Target Ring */}
-            <circle cx="0" cy="0" r="16" stroke="#8B5CF6" strokeWidth="2" strokeDasharray="8 4" className="animate-spin-slow" />
+            <circle cx="0" cy="0" r="16" stroke="#8B5CF6" strokeWidth="2" strokeDasharray="8 4" />
             <circle cx="0" cy="0" r="6" fill="#8B5CF6" />
             <circle cx="0" cy="0" r="2" fill="#FFFFFF" />
           </motion.g>
@@ -252,7 +258,6 @@ export const BlindspotRevealEngine: React.FC = () => {
         {/* 4 Interactive Node Buttons Mounted Around the Orbit */}
         {nodes.map((node) => {
           const rad = (node.angle * Math.PI) / 180;
-          // Scale from 400x400 SVG box to CSS percentage
           const percentX = 50 + (Math.cos(rad) * 145 * 100) / 400;
           const percentY = 50 + (Math.sin(rad) * 145 * 100) / 400;
           const isSelected = activeNode === node.id;
@@ -270,19 +275,21 @@ export const BlindspotRevealEngine: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setActiveNode(node.id)}
-                onMouseEnter={() => setActiveNode(node.id)}
-                className={`group relative flex items-center justify-center w-11 h-11 md:w-12 md:h-12 rounded-full transition-all duration-300 cursor-pointer focus-visible:outline-2 focus-visible:outline-purple ${
+                onMouseEnter={() => {
+                  if (canHover) setActiveNode(node.id);
+                }}
+                className={`group relative flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-full transition-all duration-300 cursor-pointer focus-visible:outline-2 focus-visible:outline-purple min-h-[40px] min-w-[40px] ${
                   isSelected
                     ? 'bg-purple text-white shadow-lg shadow-purple/30 scale-110 ring-4 ring-purple/20'
                     : 'bg-sand border-2 border-forest/40 text-forest hover:border-forest hover:scale-105 shadow-sm'
                 }`}
-                aria-label={`Inspect ${node.label}`}
+                aria-label={`Inspect ${node.label}: ${node.finding}`}
               >
-                <NodeIcon className="w-5 h-5 transition-transform group-hover:rotate-6" />
+                <NodeIcon className="w-4 h-4 sm:w-5 sm:h-5 transition-transform group-hover:rotate-6" />
 
-                {/* Floating Interactive Micro-Badge */}
+                {/* Micro-Badge indicator visible on hover / active */}
                 <span
-                  className={`absolute -bottom-6 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-md text-[10px] font-mono font-bold tracking-wider uppercase whitespace-nowrap transition-all duration-200 pointer-events-none shadow-xs ${
+                  className={`absolute -bottom-6 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-md text-[9px] sm:text-[10px] font-mono font-bold tracking-wider uppercase whitespace-nowrap transition-all duration-200 pointer-events-none shadow-xs hidden sm:block ${
                     isSelected
                       ? 'bg-purple text-white opacity-100 translate-y-0'
                       : 'bg-sand-light border border-forest/20 text-forest/70 opacity-0 group-hover:opacity-100 group-hover:translate-y-0.5'
@@ -297,44 +304,44 @@ export const BlindspotRevealEngine: React.FC = () => {
       </div>
 
       {/* Dynamic Contextual Output Card (The Uncovered Truth) */}
-      <div className="mt-8 pt-4 border-t border-forest/15">
+      <div className="mt-6 sm:mt-8 pt-4 border-t border-forest/15">
         <motion.div
           key={currentNode.id}
-          initial={{ opacity: 0, y: 10 }}
+          initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
-          className="p-5 rounded-2xl bg-sand border border-forest/20 shadow-inner space-y-3"
+          transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+          className="p-4 sm:p-5 rounded-2xl bg-sand border border-forest/20 shadow-xs space-y-2.5 sm:space-y-3"
         >
           {/* Tag and Domain Header */}
-          <div className="flex items-center justify-between text-xs">
-            <span className="font-mono font-bold uppercase tracking-wider text-purple flex items-center gap-1.5">
-              <CurrentIcon className="w-4 h-4" />
+          <div className="flex items-center justify-between text-xs gap-2">
+            <span className="font-mono font-bold uppercase tracking-wider text-purple flex items-center gap-1.5 truncate">
+              <CurrentIcon className="w-4 h-4 shrink-0" />
               {currentNode.tag}
             </span>
-            <span className="font-mono text-forest/60 text-[11px] bg-forest/5 px-2 py-0.5 rounded-full font-semibold">
+            <span className="font-mono text-forest/60 text-[10px] sm:text-[11px] bg-forest/5 px-2 py-0.5 rounded-full font-semibold shrink-0">
               {currentNode.domain}
             </span>
           </div>
 
           {/* Finding Narrative */}
-          <p className="text-sm font-semibold text-forest leading-relaxed">
+          <p className="text-xs sm:text-sm font-semibold text-forest leading-relaxed">
             {currentNode.finding}
           </p>
 
           {/* Bottom Analytical Metric Bar */}
-          <div className="pt-2 border-t border-forest/10 flex items-center justify-between text-xs font-mono">
+          <div className="pt-2 border-t border-forest/10 flex flex-wrap items-center justify-between text-[11px] sm:text-xs font-mono gap-1">
             <span className="text-forest/70 font-medium">
               Metric: <strong className="text-forest">{currentNode.metric}</strong>
             </span>
-            <span className="px-2 py-0.5 rounded-md bg-purple/10 text-purple font-bold text-[11px]">
+            <span className="px-2 py-0.5 rounded-md bg-purple/10 text-purple font-bold text-[10px] sm:text-[11px]">
               {currentNode.status}
             </span>
           </div>
         </motion.div>
 
         {/* Interaction Hint */}
-        <div className="mt-3 text-center flex items-center justify-center gap-1 text-[11px] font-mono text-forest/50">
-          <span>Click or hover nodes around the aperture to reveal hidden assumptions</span>
+        <div className="mt-2.5 text-center flex items-center justify-center gap-1 text-[10px] sm:text-[11px] font-mono text-forest/50">
+          <span>Tap or hover aperture nodes to inspect assumptions</span>
           <ChevronRight className="w-3 h-3" />
         </div>
       </div>

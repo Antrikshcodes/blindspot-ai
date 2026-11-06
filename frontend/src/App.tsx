@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { AnimatePresence } from 'framer-motion';
 import { IntroOverlay } from './components/intro/IntroOverlay';
 import { Navbar } from './components/layout/Navbar';
 import { Hero } from './components/sections/Hero';
@@ -11,20 +12,16 @@ import { FutureFeatureModal } from './components/common/FutureFeatureModal';
 import { InteractiveBackground } from './components/common/InteractiveBackground';
 
 export const App: React.FC = () => {
-  const [showIntro, setShowIntro] = useState<boolean>(true);
-  const [modalOpen, setModalOpen] = useState<boolean>(false);
-
-  useEffect(() => {
-    // Check if the user has already seen the intro during this session
+  // Synchronously initialize intro state from sessionStorage to eliminate any transition flash
+  const [showIntro, setShowIntro] = useState<boolean>(() => {
     try {
-      const hasSeen = sessionStorage.getItem('blindspot_has_seen_intro');
-      if (hasSeen === 'true') {
-        setShowIntro(false);
-      }
+      return sessionStorage.getItem('blindspot_has_seen_intro') !== 'true';
     } catch {
-      // In restricted environments, run intro normally
+      return true;
     }
-  }, []);
+  });
+
+  const [modalOpen, setModalOpen] = useState<boolean>(false);
 
   const handleIntroComplete = () => {
     setShowIntro(false);
@@ -47,15 +44,21 @@ export const App: React.FC = () => {
       <InteractiveBackground />
 
       {/* 3-Second Cinematic Intro Animation Overlay */}
-      {showIntro && <IntroOverlay onComplete={handleIntroComplete} />}
+      <AnimatePresence mode="wait">
+        {showIntro && <IntroOverlay onComplete={handleIntroComplete} />}
+      </AnimatePresence>
 
       {/* Main Website Structure */}
-      <div className={`flex flex-col min-h-screen transition-opacity duration-500 ${showIntro ? 'opacity-0' : 'opacity-100'}`}>
+      <div
+        className={`flex flex-col min-h-screen transition-opacity duration-700 ease-out ${
+          showIntro ? 'opacity-0 pointer-events-none' : 'opacity-100'
+        }`}
+      >
         {/* Navigation Bar */}
         <Navbar onOpenIntake={handleOpenIntake} />
 
         {/* Main Content Area */}
-        <main className="flex-grow">
+        <main id="main-content" className="flex-grow">
           {/* Section B: Hero with Interactive Idea Deconstruction Visual */}
           <Hero onOpenIntake={handleOpenIntake} onExploreClick={handleExploreClick} />
 
@@ -86,4 +89,3 @@ export const App: React.FC = () => {
 };
 
 export default App;
-

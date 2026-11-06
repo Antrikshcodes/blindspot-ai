@@ -13,9 +13,9 @@ export const Hero: React.FC<HeroProps> = ({ onOpenIntake, onExploreClick }) => {
   const shouldReduceMotion = useReducedMotion();
 
   return (
-    <section className="relative pt-12 pb-24 md:pt-20 md:pb-32 px-6 md:px-10 overflow-hidden">
+    <section className="relative pt-8 pb-16 sm:pt-12 sm:pb-24 md:pt-20 md:pb-32 px-4 sm:px-6 md:px-10 overflow-hidden">
       <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center">
           
           {/* Left Column: Expressive Editorial Copy */}
           <div className="lg:col-span-6 flex flex-col items-start text-left z-10">
@@ -36,14 +36,14 @@ export const Hero: React.FC<HeroProps> = ({ onOpenIntake, onExploreClick }) => {
               initial={shouldReduceMotion ? {} : { opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-              className="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-forest leading-[1.06] mb-6"
+              className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-forest leading-[1.08] mb-6"
             >
               Your next big idea <br />
               <span className="font-serif italic font-normal text-forest">has a</span>{' '}
               <span className="relative inline-block">
                 blindspot.
                 <svg
-                  className="absolute -bottom-2 left-0 w-full h-3.5 text-purple"
+                  className="absolute -bottom-1.5 left-0 w-full h-3 sm:h-3.5 text-purple"
                   viewBox="0 0 200 12"
                   fill="none"
                   preserveAspectRatio="none"
@@ -64,7 +64,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenIntake, onExploreClick }) => {
               initial={shouldReduceMotion ? {} : { opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-              className="text-lg sm:text-xl text-forest/80 font-sans max-w-xl leading-relaxed mb-10"
+              className="text-base sm:text-lg md:text-xl text-forest/80 font-sans max-w-xl leading-relaxed mb-8 sm:mb-10"
             >
               Discover hidden assumptions, challenge risky decisions, and validate what matters before you build.
             </motion.p>
@@ -74,7 +74,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenIntake, onExploreClick }) => {
               initial={shouldReduceMotion ? {} : { opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="flex flex-wrap items-center gap-4 w-full sm:w-auto"
+              className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 w-full sm:w-auto"
             >
               <MagneticButton
                 variant="purple"
@@ -92,7 +92,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenIntake, onExploreClick }) => {
                 onClick={onExploreClick}
                 className="w-full sm:w-auto"
               >
-                <Compass className="w-4 h-4 mr-1 text-forest/70" />
+                <Compass className="w-4 h-4 mr-1.5 text-forest/70" />
                 Explore How It Works
               </MagneticButton>
             </motion.div>
@@ -102,22 +102,22 @@ export const Hero: React.FC<HeroProps> = ({ onOpenIntake, onExploreClick }) => {
               initial={shouldReduceMotion ? {} : { opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.8, delay: 0.45 }}
-              className="mt-10 pt-6 border-t border-forest/15 flex flex-wrap items-center gap-6 text-xs font-mono text-forest/70"
+              className="mt-8 sm:mt-10 pt-6 border-t border-forest/15 flex flex-wrap items-center gap-4 sm:gap-6 text-xs font-mono text-forest/70"
             >
               <span className="flex items-center gap-1.5 font-medium">
-                <CheckCircle2 className="w-3.5 h-3.5 text-forest" /> The Mom Test Logic
+                <CheckCircle2 className="w-3.5 h-3.5 text-forest shrink-0" /> The Mom Test Logic
               </span>
               <span className="flex items-center gap-1.5 font-medium">
-                <CheckCircle2 className="w-3.5 h-3.5 text-forest" /> Zero Confirmation Bias
+                <CheckCircle2 className="w-3.5 h-3.5 text-forest shrink-0" /> Zero Confirmation Bias
               </span>
               <span className="flex items-center gap-1.5 font-medium">
-                <CheckCircle2 className="w-3.5 h-3.5 text-forest" /> 10-Domain Risk Matrix
+                <CheckCircle2 className="w-3.5 h-3.5 text-forest shrink-0" /> 10-Domain Risk Matrix
               </span>
             </motion.div>
           </div>
 
           {/* Right Column: The Blindspot Reveal Engine */}
-          <div className="lg:col-span-6 relative flex items-center justify-center z-10">
+          <div className="lg:col-span-6 relative flex items-center justify-center z-10 w-full">
             <BlindspotRevealEngine />
           </div>
 

@@ -94,7 +94,7 @@ export const HowItWorks: React.FC = () => {
   const CurrentIcon = current.icon;
 
   return (
-    <section id="how-it-works" className="py-28 md:py-36 px-6 md:px-10 bg-sand-light border-t border-forest/15 relative overflow-hidden">
+    <section id="how-it-works" className="py-20 sm:py-24 md:py-32 px-4 sm:px-6 md:px-10 bg-sand-light border-t border-forest/15 relative overflow-hidden">
       {/* Background Section Accent */}
       <div className="absolute top-0 right-0 w-96 h-96 rounded-full bg-forest/[0.02] pointer-events-none" />
 
@@ -102,15 +102,15 @@ export const HowItWorks: React.FC = () => {
         
         {/* Section Header */}
         <SectionReveal>
-          <div className="text-center max-w-2xl mx-auto mb-14 md:mb-16">
+          <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14 md:mb-16">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-forest/5 border border-forest/15 text-xs font-mono font-bold uppercase tracking-wider text-forest/75 mb-3">
               <span className="w-1.5 h-1.5 rounded-full bg-purple" />
               The Validation Protocol
             </div>
-            <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-forest leading-[1.15] mb-4">
+            <h2 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-forest leading-[1.15] mb-4">
               How Blindspot AI works.
             </h2>
-            <p className="text-base text-forest/80 leading-relaxed">
+            <p className="text-sm sm:text-base text-forest/80 leading-relaxed">
               From unexamined concept to battle-tested evidence through four disciplined, systematic phases.
             </p>
           </div>
@@ -118,8 +118,8 @@ export const HowItWorks: React.FC = () => {
 
         {/* Visual Journey Rail: IDEA ──► ASSUMPTIONS ──► EVIDENCE ──► EXPERIMENT */}
         <SectionReveal delay={0.1}>
-          <div className="mb-14 p-4 md:p-6 rounded-3xl bg-sand border border-forest/20 shadow-xs">
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 relative">
+          <div className="mb-10 sm:mb-14 p-3 sm:p-5 md:p-6 rounded-3xl bg-sand border border-forest/20 shadow-xs">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-3 relative">
               {/* Connecting line behind items on desktop */}
               <div className="hidden sm:block absolute left-8 right-8 top-1/2 -translate-y-1/2 h-[2px] bg-forest/10 -z-0" />
               
@@ -132,12 +132,13 @@ export const HowItWorks: React.FC = () => {
                     key={step.label}
                     type="button"
                     onClick={() => setActiveStep(idx)}
-                    onMouseEnter={() => setActiveStep(idx)}
-                    className={`relative z-10 flex-1 flex sm:flex-col items-center justify-between sm:justify-center p-3 sm:py-4 sm:px-3 rounded-2xl transition-all cursor-pointer select-none text-left sm:text-center group ${
+                    className={`relative z-10 flex-1 flex sm:flex-col items-center justify-between sm:justify-center p-3 sm:py-4 sm:px-3 rounded-2xl transition-all cursor-pointer select-none text-left sm:text-center group min-h-[48px] focus-visible:outline-2 focus-visible:outline-purple ${
                       isActive
                         ? 'bg-forest text-sand shadow-md'
                         : 'bg-sand hover:bg-forest/5 text-forest border border-forest/10'
                     }`}
+                    aria-label={`Step ${idx + 1}: ${step.label}`}
+                    aria-pressed={isActive}
                   >
                     <div className="flex items-center sm:flex-col gap-3 sm:gap-1.5">
                       {/* Node Indicator */}
@@ -171,7 +172,7 @@ export const HowItWorks: React.FC = () => {
         </SectionReveal>
 
         {/* Interactive Stepper Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start">
           
           {/* Left Column: Interactive Step Cards */}
           <div className="lg:col-span-5 flex flex-col gap-3">
@@ -182,11 +183,12 @@ export const HowItWorks: React.FC = () => {
                   key={item.step}
                   type="button"
                   onClick={() => setActiveStep(idx)}
-                  className={`text-left p-5 rounded-2xl border transition-all cursor-pointer select-none text-forest focus-visible:outline-2 focus-visible:outline-purple ${
+                  className={`text-left p-4 sm:p-5 rounded-2xl border transition-all cursor-pointer select-none text-forest focus-visible:outline-2 focus-visible:outline-purple min-h-[48px] ${
                     isSelected
-                      ? 'bg-sand border-forest shadow-md translate-x-1'
+                      ? 'bg-sand border-forest shadow-md sm:translate-x-1'
                       : 'bg-transparent border-forest/15 hover:bg-sand/60 hover:border-forest/40'
                   }`}
+                  aria-pressed={isSelected}
                 >
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs font-mono font-bold tracking-wider text-forest/50">
@@ -200,7 +202,7 @@ export const HowItWorks: React.FC = () => {
                       {item.action}
                     </span>
                   </div>
-                  <h3 className="text-lg font-bold text-forest tracking-tight">
+                  <h3 className="text-base sm:text-lg font-bold text-forest tracking-tight">
                     {item.title}
                   </h3>
                 </button>
@@ -210,8 +212,8 @@ export const HowItWorks: React.FC = () => {
 
           {/* Right Column: Dynamic Stage Visualizer with TiltCard */}
           <div className="lg:col-span-7">
-            <TiltCard maxTilt={4}>
-              <div className="bg-sand border-2 border-forest/20 rounded-3xl p-8 md:p-10 shadow-lg min-h-[440px] flex flex-col justify-between relative overflow-hidden">
+            <TiltCard maxTilt={3}>
+              <div className="bg-sand border-2 border-forest/20 rounded-3xl p-6 sm:p-8 md:p-10 shadow-lg min-h-[400px] flex flex-col justify-between relative overflow-hidden">
                 
                 {/* Visual Ambient Reticle in background */}
                 <div className="absolute -bottom-16 -right-16 w-48 h-48 rounded-full border border-forest/10 border-dashed pointer-events-none" />
@@ -219,23 +221,23 @@ export const HowItWorks: React.FC = () => {
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={current.step}
-                    initial={shouldReduceMotion ? {} : { opacity: 0, x: 18 }}
+                    initial={shouldReduceMotion ? {} : { opacity: 0, x: 14 }}
                     animate={{ opacity: 1, x: 0 }}
-                    exit={shouldReduceMotion ? {} : { opacity: 0, x: -18 }}
-                    transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-                    className="space-y-6"
+                    exit={shouldReduceMotion ? {} : { opacity: 0, x: -14 }}
+                    transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                    className="space-y-5 sm:space-y-6"
                   >
                     {/* Top Stage Header */}
-                    <div className="flex items-center justify-between border-b border-forest/15 pb-4">
+                    <div className="flex flex-wrap items-center justify-between border-b border-forest/15 pb-4 gap-3">
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-2xl bg-forest text-sand flex items-center justify-center shadow-xs">
-                          <CurrentIcon className="w-6 h-6" />
+                        <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-forest text-sand flex items-center justify-center shadow-xs shrink-0">
+                          <CurrentIcon className="w-5 h-5 sm:w-6 sm:h-6" />
                         </div>
                         <div>
                           <span className="text-xs font-mono font-bold uppercase tracking-wider text-forest/60">
                             Stage {current.step} of 04 // {current.phaseName}
                           </span>
-                          <h4 className="text-2xl font-extrabold text-forest tracking-tight">
+                          <h4 className="text-xl sm:text-2xl font-extrabold text-forest tracking-tight">
                             {current.title}
                           </h4>
                         </div>
@@ -246,18 +248,18 @@ export const HowItWorks: React.FC = () => {
                     </div>
 
                     {/* Stage Narrative Description */}
-                    <p className="text-base text-forest/80 leading-relaxed font-sans">
+                    <p className="text-sm sm:text-base text-forest/80 leading-relaxed font-sans">
                       {current.description}
                     </p>
 
                     {/* Detailed Protocol Output Preview */}
-                    <div className="p-6 rounded-2xl bg-sand-light border border-forest/15 space-y-3">
+                    <div className="p-4 sm:p-6 rounded-2xl bg-sand-light border border-forest/15 space-y-3">
                       <div className="text-xs font-mono font-bold uppercase tracking-wider text-forest/70">
                         {current.mockData.headline}
                       </div>
-                      <ul className="space-y-2.5">
+                      <ul className="space-y-2 sm:space-y-2.5">
                         {current.mockData.items.map((point) => (
-                          <li key={point} className="flex items-start gap-2.5 text-xs md:text-sm text-forest font-medium">
+                          <li key={point} className="flex items-start gap-2.5 text-xs sm:text-sm text-forest font-medium">
                             <Check className="w-4 h-4 text-purple mt-0.5 shrink-0" />
                             <span>{point}</span>
                           </li>
@@ -268,7 +270,7 @@ export const HowItWorks: React.FC = () => {
                 </AnimatePresence>
 
                 {/* Bottom Quick Switcher */}
-                <div className="pt-6 border-t border-forest/10 flex items-center justify-between mt-6">
+                <div className="pt-5 sm:pt-6 border-t border-forest/10 flex items-center justify-between mt-6">
                   <span className="text-xs font-mono text-forest/60">
                     Step {activeStep + 1} / {steps.length}
                   </span>
@@ -277,7 +279,7 @@ export const HowItWorks: React.FC = () => {
                       type="button"
                       disabled={activeStep === 0}
                       onClick={() => setActiveStep((prev) => Math.max(0, prev - 1))}
-                      className="px-3 py-1.5 text-xs font-mono rounded-lg border border-forest/20 text-forest disabled:opacity-30 disabled:cursor-not-allowed hover:bg-forest/5 cursor-pointer"
+                      className="px-3 py-2 text-xs font-mono rounded-lg border border-forest/20 text-forest disabled:opacity-30 disabled:cursor-not-allowed hover:bg-forest/5 cursor-pointer min-h-[36px]"
                     >
                       Previous
                     </button>
@@ -285,7 +287,7 @@ export const HowItWorks: React.FC = () => {
                       type="button"
                       disabled={activeStep === steps.length - 1}
                       onClick={() => setActiveStep((prev) => Math.min(steps.length - 1, prev + 1))}
-                      className="px-3.5 py-1.5 text-xs font-mono rounded-lg bg-forest text-sand disabled:opacity-30 disabled:cursor-not-allowed hover:bg-forest-dark cursor-pointer flex items-center gap-1.5 font-semibold"
+                      className="px-3.5 py-2 text-xs font-mono rounded-lg bg-forest text-sand disabled:opacity-30 disabled:cursor-not-allowed hover:bg-forest-dark cursor-pointer flex items-center gap-1.5 font-semibold min-h-[36px]"
                     >
                       Next <ArrowRight className="w-3 h-3" />
                     </button>
