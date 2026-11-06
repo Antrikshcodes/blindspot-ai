@@ -12,8 +12,11 @@ import { Footer } from './components/layout/Footer';
 import { FutureFeatureModal } from './components/common/FutureFeatureModal';
 import { InteractiveBackground } from './components/common/InteractiveBackground';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
-import { DashboardPlaceholder } from './routes/DashboardPlaceholder';
-import { GenericProtectedPlaceholder } from './routes/GenericProtectedPlaceholder';
+import { AppLayout } from './components/layout/AppLayout';
+import { DashboardOverview } from './views/DashboardOverview';
+import { ProjectList } from './views/ProjectList';
+import { CreateProject } from './views/CreateProject';
+import { ProjectDetails } from './views/ProjectDetails';
 
 export const LandingPage: React.FC<{
   showIntro: boolean;
@@ -119,27 +122,45 @@ export const App: React.FC = () => {
           path="/dashboard"
           element={
             <ProtectedRoute>
-              <DashboardPlaceholder />
+              <AppLayout>
+                <DashboardOverview />
+              </AppLayout>
             </ProtectedRoute>
           }
         />
 
-        {/* Protected Projects Route */}
+        {/* Protected Projects Directory Route */}
         <Route
           path="/projects"
           element={
             <ProtectedRoute>
-              <GenericProtectedPlaceholder viewName="Projects Collection" />
+              <AppLayout>
+                <ProjectList />
+              </AppLayout>
             </ProtectedRoute>
           }
         />
 
-        {/* Protected Project Detail Route */}
+        {/* Protected Project Creation Route */}
+        <Route
+          path="/projects/new"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <CreateProject />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Protected Project Workspace / Detail Route */}
         <Route
           path="/projects/:projectId"
           element={
             <ProtectedRoute>
-              <GenericProtectedPlaceholder viewName="Project Workspace" />
+              <AppLayout>
+                <ProjectDetails />
+              </AppLayout>
             </ProtectedRoute>
           }
         />
