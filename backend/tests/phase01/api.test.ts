@@ -50,7 +50,7 @@ describe('Project and validation API with isolated PostgreSQL', () => {
     expect(response.status).toBe(201); analysisId = response.body.data.id;
     assumptionId = response.body.data.assumptions[0].id;
     expect(response.body.data.assumptions).toHaveLength(3);
-    expect(response.body.data.assumptions[0]).toMatchObject({ status: 'UNTESTED', riskScore: 20, riskLevel: 'HIGH' });
+    expect(response.body.data.assumptions[0]).toMatchObject({ status: 'UNTESTED', riskScore: 20, riskLevel: 'CRITICAL' });
     expect((await request(app).get(`/api/projects/${projectId}/analysis`)).body.data.id).toBe(analysisId);
     expect((await request(app).get(`/api/analyses/${analysisId}`)).status).toBe(200);
     expect((await request(app).get(`/api/analyses/${analysisId}/assumptions`)).body.data.items).toHaveLength(3);

@@ -2,7 +2,11 @@ import { z } from 'zod';
 
 export const text = (max = 2000) => z.string().trim().min(1).max(max);
 export const id = z.string().uuid();
-export const category = z.enum(['PROBLEM', 'CUSTOMER', 'SOLUTION', 'MONETIZATION']);
+// Keep legacy values readable while supporting the complete Phase 02 taxonomy.
+export const category = z.enum([
+  'PROBLEM', 'CUSTOMER', 'SOLUTION', 'MONETIZATION', 'DEMAND', 'BEHAVIOUR',
+  'WILLINGNESS_TO_PAY', 'TECHNICAL', 'DISTRIBUTION', 'BUSINESS_MODEL', 'COMPETITIVE', 'OPERATIONAL',
+]);
 export const assumptionStatus = z.enum(['UNTESTED', 'TESTING', 'SUPPORTED', 'INVALIDATED', 'INCONCLUSIVE']);
 export const resourceCategory = z.enum([
   'GITHUB_REPOSITORY', 'DATASET', 'AI_MODEL', 'API', 'DOCUMENTATION', 'OPEN_SOURCE_TOOL', 'LEARNING_RESOURCE',
@@ -17,7 +21,9 @@ export const projectInput = z.object({
 export const projectPatch = projectInput.omit({ existingAlternatives: true }).partial().extend({
   existingAlternatives: z.array(text(300)).max(20).optional(),
 }).strict().refine(value => Object.keys(value).length > 0);
-export const analysisInput = z.object({ marketContext: text(4000).optional() }).strict();
+export const analysisInput = z.object({
+  marketContext: text(4000).optional(), additionalContext: text(6000).optional(),
+}).strict();
 export const assumptionDraft = z.object({
   description: text(), category,
   impact: z.number().int().min(1).max(5), uncertainty: z.number().int().min(1).max(5),

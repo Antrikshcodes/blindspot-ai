@@ -14,6 +14,7 @@ import type { LLM } from './ai/provider.js';
 import type { Provider } from './resource-intelligence/types.js';
 import { ResourceSearchService } from './resource-intelligence/search.service.js';
 import { ValidationService } from './validation/service.js';
+import { IdeaAnalysisService } from './analysis/service.js';
 
 const success = (res: Response, data: unknown, status = 200) => res.status(status).json({ success: true, data });
 type Handler = (req: Request, res: Response) => Promise<unknown>;
@@ -28,6 +29,7 @@ export function createApp(deps: {
 }) {
   const { db, llm, providers } = deps;
   const service = new ValidationService(db, llm);
+  const analysisService = new IdeaAnalysisService(db, llm);
   const resources = new ResourceSearchService(db, llm, providers);
   const app = express();
   app.disable('x-powered-by');
@@ -91,6 +93,12 @@ export function createApp(deps: {
     success(res, await service.analyze(paramId(req), c.analysisInput.parse(req.body ?? {})), 201)));
   app.get('/api/projects/:id/analysis', route(async (req, res) => success(res, await service.latest(paramId(req)))));
   app.get('/api/analyses/:id', route(async (req, res) => success(res, await service.analysis(paramId(req)))));
+  app.get('/api/analyses/:id/blindspots', route(async (req, res) =>
+    success(res, await analysisService.artifact(paramId(req), 'blindspots'))));
+  app.get('/api/analyses/:id/interview-questions', route(async (req, res) =>
+    success(res, await analysisService.artifact(paramId(req), 'interviewQuestions'))));
+  app.get('/api/analyses/:id/summary', route(async (req, res) =>
+    success(res, await analysisService.artifact(paramId(req), 'summary'))));
   app.get('/api/analyses/:id/assumptions', route(async (req, res) => {
     const id = paramId(req); const query = c.pagination.parse(req.query);
     const analysis = await service.analysis(id);

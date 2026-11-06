@@ -1,13 +1,18 @@
 import { sql } from 'drizzle-orm';
 import { pgSchema, uuid, text, timestamp, jsonb, integer, boolean, index, uniqueIndex, check } from 'drizzle-orm/pg-core';
 import type { AnalysisOutput, FeedbackOutput } from '../contracts.js';
+import type { DetailedAnalysis, providerMetadataSchema } from '../analysis/contracts.js';
+import type { z } from 'zod';
 
 export const platform = pgSchema('blindspot_phase01');
 const key = () => uuid('id').primaryKey().defaultRandom();
 const created = () => timestamp('created_at', { withTimezone: true }).notNull().defaultNow();
 const updated = () => timestamp('updated_at', { withTimezone: true }).notNull().defaultNow();
 export const statusEnum = platform.enum('assumption_status', ['UNTESTED', 'TESTING', 'SUPPORTED', 'INVALIDATED', 'INCONCLUSIVE']);
-export const categoryEnum = platform.enum('assumption_category', ['PROBLEM', 'CUSTOMER', 'SOLUTION', 'MONETIZATION']);
+export const categoryEnum = platform.enum('assumption_category', [
+  'PROBLEM', 'CUSTOMER', 'SOLUTION', 'MONETIZATION', 'DEMAND', 'BEHAVIOUR',
+  'WILLINGNESS_TO_PAY', 'TECHNICAL', 'DISTRIBUTION', 'BUSINESS_MODEL', 'COMPETITIVE', 'OPERATIONAL',
+]);
 export const resourceEnum = platform.enum('resource_category', [
   'GITHUB_REPOSITORY', 'DATASET', 'AI_MODEL', 'API', 'DOCUMENTATION', 'OPEN_SOURCE_TOOL', 'LEARNING_RESOURCE',
 ]);
@@ -24,11 +29,18 @@ export const projects = platform.table('projects', {
 export const analyses = platform.table('analyses', {
   id: key(), projectId: uuid('project_id').notNull().references(() => projects.id, { onDelete: 'cascade' }),
   projectSnapshot: jsonb('project_snapshot').notNull(), marketContext: text('market_context'),
-  result: jsonb('result').$type<AnalysisOutput>().notNull(), model: text('model').notNull(), createdAt: created(),
-}, t => [index('analysis_project_idx').on(t.projectId, t.createdAt)]);
+  result: jsonb('result').$type<AnalysisOutput | DetailedAnalysis>().notNull(),
+  version: integer('version').notNull().default(1), engineVersion: text('engine_version').notNull().default('1'),
+  additionalContext: text('additional_context'),
+  providerMetadata: jsonb('provider_metadata').$type<z.infer<typeof providerMetadataSchema>>(),
+  model: text('model').notNull(), createdAt: created(),
+}, t => [index('analysis_project_idx').on(t.projectId, t.createdAt),
+  uniqueIndex('analysis_project_version_unique').on(t.projectId, t.version)]);
 export const assumptions = platform.table('assumptions', {
   id: key(), analysisId: uuid('analysis_id').notNull().references(() => analyses.id, { onDelete: 'cascade' }),
   description: text('description').notNull(), category: categoryEnum('category').notNull(),
+  title: text('title'), targetAudience: text('target_audience'),
+  suggestedInterviewQuestion: text('suggested_interview_question'), scoreExplanation: jsonb('score_explanation'),
   impact: integer('impact').notNull(), uncertainty: integer('uncertainty').notNull(),
   riskScore: integer('risk_score').notNull(), riskLevel: text('risk_level').notNull(),
   explanation: text('explanation').notNull(), evidenceRequired: text('evidence_required').notNull(),

@@ -4,7 +4,9 @@ import type { Database } from '../db/client.js';
 import type { LLM } from '../ai/provider.js';
 import * as t from '../db/schema.js';
 import * as c from '../contracts.js';
-import { ApiError, config } from '../config.js';
+import { ApiError } from '../config.js';
+import { IdeaAnalysisService } from '../analysis/service.js';
+import { resultSchema } from '../analysis/contracts.js';
 
 export class ValidationService {
   constructor(private db: Database, private llm: LLM) {}
@@ -16,36 +18,22 @@ export class ValidationService {
   async analysis(id: string) {
     const [analysis] = await this.db.select().from(t.analyses).where(eq(t.analyses.id, id));
     if (!analysis) throw new ApiError(404, 'NOT_FOUND', 'Analysis not found.');
+    if (analysis.engineVersion === '2.0' && !resultSchema.safeParse(analysis.result).success) {
+      throw new ApiError(500, 'ANALYSIS_DATA_INVALID', 'Stored analysis failed response validation.');
+    }
     const assumptions = await this.db.select().from(t.assumptions).where(eq(t.assumptions.analysisId, id))
       .orderBy(desc(t.assumptions.riskScore), t.assumptions.id);
-    return { ...analysis, assumptions };
+    return { ...analysis, assumptions: assumptions.map(row => ({ ...row, priorityScore: row.riskScore })) };
   }
   async latest(projectId: string) {
     await this.project(projectId);
     const [analysis] = await this.db.select().from(t.analyses).where(eq(t.analyses.projectId, projectId))
-      .orderBy(desc(t.analyses.createdAt), desc(t.analyses.id)).limit(1);
+      .orderBy(desc(t.analyses.version)).limit(1);
     if (!analysis) throw new ApiError(404, 'ANALYSIS_NOT_FOUND', 'Analyze the project first.');
     return this.analysis(analysis.id);
   }
   async analyze(projectId: string, input: z.infer<typeof c.analysisInput>) {
-    const project = await this.project(projectId);
-    const output = c.analysisOutput.parse(await this.llm.generate(
-      'Identify risky assumptions, not conclusions. Assess problem and audience clarity. Cover problem, customer, solution and monetization risks. Score impact and uncertainty independently 1-5. Specify measurable evidence required and a non-leading validation method.',
-      { project, marketContext: input.marketContext ?? null }, c.analysisOutput,
-    ));
-    const analysisId = await this.db.transaction(async tx => {
-      const [analysis] = await tx.insert(t.analyses).values({
-        projectId, projectSnapshot: project, marketContext: input.marketContext ?? null,
-        result: output, model: `${config.AI_PROVIDER}:${config.AI_MODEL}`,
-      }).returning();
-      await tx.insert(t.assumptions).values(output.assumptions.map(assumption => {
-        const riskScore = assumption.impact * assumption.uncertainty;
-        return { ...assumption, analysisId: analysis.id, riskScore,
-          riskLevel: riskScore >= 16 ? 'HIGH' : riskScore >= 8 ? 'MEDIUM' : 'LOW',
-          status: 'UNTESTED' as const };
-      }));
-      return analysis.id;
-    });
+    const analysisId = await new IdeaAnalysisService(this.db, this.llm).analyze(projectId, input);
     return this.analysis(analysisId);
   }
   async assumption(id: string) {

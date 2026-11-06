@@ -7,6 +7,7 @@ import * as schema from '../../src/phase01/db/schema.js';
 import type { LLM } from '../../src/phase01/ai/provider.js';
 import type { Resource } from '../../src/phase01/resource-intelligence/types.js';
 import { unknownSignals } from '../../src/phase01/resource-intelligence/types.js';
+import { stageFixture } from './analysis.fixtures.js';
 
 export const projectInput = {
   name: 'Test fixture project', productDescription: 'A test-only idea validation fixture.',
@@ -27,6 +28,7 @@ export class FixtureLLM implements LLM {
   calls: Array<{ task: string; input: any }> = [];
   async generate<T>(task: string, input: unknown, outputSchema: z.ZodType<T>): Promise<T> {
     this.calls.push({ task, input });
+    if (task.includes('TASK:')) return outputSchema.parse(stageFixture(task, input));
     if (task.startsWith('Identify risky')) return outputSchema.parse(analysisFixture);
     if (task.startsWith('Generate non-leading')) {
       const data = input as { assumptions: Array<{ id: string }> };

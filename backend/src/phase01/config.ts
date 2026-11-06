@@ -13,6 +13,8 @@ export const config = z.object({
   AI_API_KEY: optionalSecret,
   AI_BASE_URL: optionalUrl,
   AI_MODEL: z.string().default('gpt-5.4-mini'),
+  AI_TIMEOUT_MS: z.coerce.number().int().min(100).max(120000).default(45000),
+  AI_MAX_ATTEMPTS: z.coerce.number().int().min(1).max(3).default(2),
   AI_INTEGRATIONS_OPENAI_BASE_URL: optionalUrl,
   AI_INTEGRATIONS_OPENAI_API_KEY: optionalSecret,
   GITHUB_TOKEN: optionalSecret,
