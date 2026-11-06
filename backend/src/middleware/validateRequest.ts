@@ -1,11 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
-import { AnyZodObject, ZodError } from 'zod';
+import { ZodType, ZodError } from 'zod';
 import { sendError } from '../utils/response.js';
 
 interface RequestValidationSchema {
-  body?: AnyZodObject;
-  query?: AnyZodObject;
-  params?: AnyZodObject;
+  body?: ZodType;
+  query?: ZodType<Request['query']>;
+  params?: ZodType<Request['params']>;
 }
 
 export function validateRequest(schemas: RequestValidationSchema) {
@@ -23,7 +23,7 @@ export function validateRequest(schemas: RequestValidationSchema) {
       next();
     } catch (error) {
       if (error instanceof ZodError) {
-        const details = error.errors.map((e) => ({
+        const details = error.issues.map((e) => ({
           field: e.path.join('.'),
           message: e.message,
         }));
