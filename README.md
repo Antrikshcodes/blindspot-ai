@@ -282,6 +282,7 @@ python app.py
 - 📈 **Trend analytics** — Track how decision quality improves over time
 - 🔌 **Third-party integrations** — Connect with project management tools (Jira, Notion, etc.)
 - 🛡️ **Confidence scoring** — Risk estimation and confidence metrics for identified blind spots
+- 🧪 **Scenario simulation** — Stress-test decisions against simulated counterfactual and edge cases
 
 ---
 
