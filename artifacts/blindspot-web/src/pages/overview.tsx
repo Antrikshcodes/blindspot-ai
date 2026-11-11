@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { useLocation, useParams } from 'wouter';
+import { Link, useLocation, useParams } from 'wouter';
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
-import { Pencil, Trash2, Play } from 'lucide-react';
+import { Pencil, Trash2, Play, ArrowUpRight } from 'lucide-react';
 import {
   useAnalyzeProject,
   useGetAnalysis,
@@ -73,16 +73,19 @@ function Overview({ project }: { project: Project }) {
       </div>
       <ProjectFormDialog open={edit} onOpenChange={setEdit} project={project} />
       <DeleteProjectDialog project={project} open={del} onOpenChange={setDel} onDeleted={() => navigate('/')} />
-      <RunAnalysisDialog projectId={project.id} open={run} onOpenChange={setRun} />
+      <RunAnalysisDialog project={project} open={run} onOpenChange={setRun} />
     </div>
   );
 }
 
-function RunAnalysisDialog({ projectId, open, onOpenChange }: { projectId: string; open: boolean; onOpenChange: (o: boolean) => void }) {
-  const [ctx, setCtx] = useState('');
+function RunAnalysisDialog({ project, open, onOpenChange }: { project: Project; open: boolean; onOpenChange: (o: boolean) => void }) {
+  const [marketContext, setMarketContext] = useState('');
+  const [additionalContext, setAdditionalContext] = useState('');
   const qc = useQueryClient();
   const { toast } = useToast();
+  const [, navigate] = useLocation();
   const m = useAnalyzeProject();
+  const projectId = project.id;
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) m.reset(); onOpenChange(o); }}>
       <DialogContent className="bg-card">
@@ -91,27 +94,41 @@ function RunAnalysisDialog({ projectId, open, onOpenChange }: { projectId: strin
           <DialogTitle className="font-display text-2xl">Interrogate the idea</DialogTitle>
           <DialogDescription>Creates a new analysis version from the current brief. Earlier versions and their reviewed statuses stay intact. New hypotheses always start UNTESTED.</DialogDescription>
         </DialogHeader>
+        <section className="max-h-40 space-y-2 overflow-y-auto rounded border border-foreground/10 bg-secondary/40 p-3 text-xs" aria-label="Project information to analyze">
+          <p className="eyebrow">{project.name} · current project brief</p>
+          <p><span className="font-semibold">Problem:</span> {project.problemStatement}</p>
+          <p><span className="font-semibold">Audience:</span> {project.targetAudience}</p>
+          <p><span className="font-semibold">Proposed solution:</span> {project.proposedSolution}</p>
+        </section>
         <div className="space-y-1">
-          <div className="flex justify-between"><Label htmlFor="market-context">Market context (optional)</Label><Counter value={ctx.length} max={4000} /></div>
-          <Textarea id="market-context" value={ctx} onChange={(e) => setCtx(e.target.value)} className="min-h-28 bg-background" placeholder="Anything the model should know: pricing you have seen, regulation, a competitor that just launched." data-testid="input-market-context" />
+          <div className="flex justify-between"><Label htmlFor="market-context">Market context (optional)</Label><Counter value={marketContext.length} max={4000} /></div>
+          <Textarea id="market-context" value={marketContext} maxLength={4000} onChange={(e) => setMarketContext(e.target.value)} className="min-h-24 bg-background" placeholder="Pricing observed, market dynamics, regulation, or competitors." data-testid="input-market-context" />
+        </div>
+        <div className="space-y-1">
+          <div className="flex justify-between"><Label htmlFor="additional-context">Additional context (optional)</Label><Counter value={additionalContext.length} max={6000} /></div>
+          <Textarea id="additional-context" value={additionalContext} maxLength={6000} onChange={(e) => setAdditionalContext(e.target.value)} className="min-h-24 bg-background" placeholder="Relevant constraints or facts not captured in the project brief." data-testid="input-additional-context" />
         </div>
         <InlineError error={m.error} />
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
           <Button
-            disabled={m.isPending || ctx.length > 4000}
+            disabled={m.isPending || marketContext.length > 4000 || additionalContext.length > 6000}
             data-testid="button-run-analysis"
             onClick={() =>
               m.mutate(
-                { id: projectId, data: ctx.trim() ? { marketContext: ctx.trim() } : {} },
+                { id: projectId, data: {
+                  ...(marketContext.trim() ? { marketContext: marketContext.trim() } : {}),
+                  ...(additionalContext.trim() ? { additionalContext: additionalContext.trim() } : {}),
+                } },
                 {
                   onSuccess: (res) => {
-                    qc.setQueryData(getGetLatestAnalysisQueryKey(projectId), res);
                     qc.invalidateQueries({ queryKey: getGetLatestAnalysisQueryKey(projectId) });
                     qc.invalidateQueries({ queryKey: getListAnalysisHistoryQueryKey(projectId) });
-                    toast({ title: 'Analysis complete', description: `${res.data.assumptions.length} hypotheses ranked by risk.` });
-                    setCtx('');
+                    toast({ title: 'Analysis complete', description: 'The new report is ready for review.' });
+                    setMarketContext('');
+                    setAdditionalContext('');
                     onOpenChange(false);
+                    navigate(`/projects/${projectId}/analysis/${res.data}`);
                   },
                 },
               )
@@ -181,6 +198,13 @@ function AnalysisSection({ project, onRun }: { project: Project; onRun: () => vo
         <ErrorPanel error={older.error} onRetry={() => older.refetch()} title="Could not load that version" />
       ) : analysis ? (
         <>
+          <div className="flex justify-end">
+            <Button asChild size="sm" variant="outline">
+              <Link href={`/projects/${project.id}/analysis/${analysis.id}`} data-testid="link-analysis-report">
+                Open full analysis report <ArrowUpRight className="ml-1.5 h-3.5 w-3.5" />
+              </Link>
+            </Button>
+          </div>
           <section className="rise">
             <SectionHead eyebrow={`Analysis v${analysis.version} / ${analysis.model}`} title="Where the brief is thin" aside={<AiLabel />} />
             <div className="grid gap-3 md:grid-cols-2">

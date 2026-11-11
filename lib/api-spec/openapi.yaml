@@ -303,7 +303,8 @@
                       "type": "boolean"
                     },
                     "data": {
-                      "$ref": "#/components/schemas/Analysis"
+                      "type": "string",
+                      "format": "uuid"
                     }
                   },
                   "required": [
@@ -528,6 +529,126 @@
                         "items",
                         "pagination"
                       ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/analyses/{id}/blindspots": {
+      "get": {
+        "operationId": "getAnalysisBlindspots",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/AnalysisBlindspots"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/analyses/{id}/interview-questions": {
+      "get": {
+        "operationId": "getAnalysisInterviewQuestions",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/AnalysisInterviewQuestions"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/analyses/{id}/summary": {
+      "get": {
+        "operationId": "getAnalysisSummary",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/AnalysisSummaryResponse"
                     }
                   },
                   "required": [
@@ -1521,7 +1642,14 @@
         "type": "object",
         "properties": {
           "marketContext": {
-            "type": "string"
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          },
+          "additionalContext": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 6000
           }
         },
         "required": []
@@ -1551,9 +1679,6 @@
           "quote": {
             "type": "string"
           },
-          "sentiment": {
-            "type": "string"
-          },
           "reasoning": {
             "type": "string"
           },
@@ -1562,6 +1687,14 @@
           },
           "createdAt": {
             "type": "string"
+          },
+          "sentiment": {
+            "type": "string",
+            "enum": [
+              "SUPPORTING",
+              "INVALIDATING",
+              "NEUTRAL"
+            ]
           }
         },
         "required": [
@@ -1569,10 +1702,10 @@
           "feedbackId",
           "assumptionId",
           "quote",
-          "sentiment",
           "reasoning",
           "origin",
-          "createdAt"
+          "createdAt",
+          "sentiment"
         ]
       },
       "Assumption": {
@@ -1587,9 +1720,6 @@
           "description": {
             "type": "string"
           },
-          "category": {
-            "type": "string"
-          },
           "explanation": {
             "type": "string"
           },
@@ -1599,20 +1729,98 @@
           "validationMethod": {
             "type": "string"
           },
+          "category": {
+            "type": "string",
+            "enum": [
+              "PROBLEM",
+              "CUSTOMER",
+              "SOLUTION",
+              "MONETIZATION",
+              "DEMAND",
+              "BEHAVIOUR",
+              "WILLINGNESS_TO_PAY",
+              "TECHNICAL",
+              "DISTRIBUTION",
+              "BUSINESS_MODEL",
+              "COMPETITIVE",
+              "OPERATIONAL"
+            ]
+          },
           "riskLevel": {
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "CRITICAL",
+              "HIGH",
+              "MEDIUM",
+              "LOW"
+            ]
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "targetAudience": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "suggestedInterviewQuestion": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "scoreExplanation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ScoreExplanation"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "priorityScore": {
+            "type": "number"
           },
           "impact": {
-            "type": "number"
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
           },
           "uncertainty": {
-            "type": "number"
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
           },
           "riskScore": {
-            "type": "number"
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 25
           },
           "status": {
             "$ref": "#/components/schemas/AssumptionStatus"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
           },
           "evidenceRecords": {
             "type": "array",
@@ -1634,6 +1842,29 @@
           "uncertainty",
           "riskScore",
           "status"
+        ]
+      },
+      "ScoreExplanation": {
+        "type": "object",
+        "properties": {
+          "impactRationale": {
+            "type": "string"
+          },
+          "uncertaintyRationale": {
+            "type": "string"
+          },
+          "formula": {
+            "type": "string"
+          },
+          "probability": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "impactRationale",
+          "uncertaintyRationale",
+          "formula",
+          "probability"
         ]
       },
       "AnalysisResult": {
@@ -1743,6 +1974,535 @@
           "model",
           "createdAt",
           "version"
+        ]
+      },
+      "Blindspot": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "explanation": {
+            "type": "string"
+          },
+          "relatedAssumptionId": {
+            "type": "string"
+          },
+          "whyOverlooked": {
+            "type": "string"
+          },
+          "suggestedAction": {
+            "type": "string"
+          },
+          "evidenceRequired": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "CRITICAL",
+              "HIGH",
+              "MEDIUM",
+              "LOW"
+            ]
+          },
+          "grounding": {
+            "type": "string",
+            "enum": [
+              "SUBMITTED",
+              "UNCERTAINTY"
+            ]
+          },
+          "sourceQuote": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "explanation",
+          "relatedAssumptionId",
+          "whyOverlooked",
+          "suggestedAction",
+          "evidenceRequired",
+          "severity",
+          "grounding",
+          "sourceQuote"
+        ]
+      },
+      "InterviewQuestion": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "question": {
+            "type": "string"
+          },
+          "relatedAssumptionId": {
+            "type": "string"
+          },
+          "purpose": {
+            "type": "string"
+          },
+          "evidenceToLookFor": {
+            "type": "string"
+          },
+          "followUpQuestion": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "question",
+          "relatedAssumptionId",
+          "purpose",
+          "evidenceToLookFor",
+          "followUpQuestion"
+        ]
+      },
+      "AnalysisFinding": {
+        "type": "object",
+        "properties": {
+          "statement": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "grounding": {
+            "type": "string",
+            "enum": [
+              "SUBMITTED",
+              "UNCERTAINTY",
+              "MISSING"
+            ]
+          },
+          "sourceQuote": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "statement",
+          "grounding",
+          "sourceQuote"
+        ]
+      },
+      "ValidationDimension": {
+        "type": "object",
+        "properties": {
+          "score": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "support": {
+            "type": "string",
+            "enum": [
+              "DESCRIPTION_ONLY",
+              "INSUFFICIENT_EVIDENCE",
+              "UNASSESSED"
+            ]
+          },
+          "rationale": {
+            "type": "string"
+          },
+          "evidenceNeeded": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "score",
+          "support",
+          "rationale",
+          "evidenceNeeded"
+        ]
+      },
+      "ValidationDimensions": {
+        "type": "object",
+        "properties": {
+          "problemClarity": {
+            "$ref": "#/components/schemas/ValidationDimension"
+          },
+          "audienceSpecificity": {
+            "$ref": "#/components/schemas/ValidationDimension"
+          },
+          "solutionClarity": {
+            "$ref": "#/components/schemas/ValidationDimension"
+          },
+          "evidenceOfDemand": {
+            "$ref": "#/components/schemas/ValidationDimension"
+          },
+          "differentiation": {
+            "$ref": "#/components/schemas/ValidationDimension"
+          },
+          "technicalFeasibility": {
+            "$ref": "#/components/schemas/ValidationDimension"
+          },
+          "validationReadiness": {
+            "$ref": "#/components/schemas/ValidationDimension"
+          }
+        },
+        "required": [
+          "problemClarity",
+          "audienceSpecificity",
+          "solutionClarity",
+          "evidenceOfDemand",
+          "differentiation",
+          "technicalFeasibility",
+          "validationReadiness"
+        ]
+      },
+      "AnalysisSummary": {
+        "type": "object",
+        "properties": {
+          "problemClarity": {
+            "type": "string"
+          },
+          "audienceClarity": {
+            "type": "string"
+          },
+          "overallSummary": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "problemAssessment": {
+            "$ref": "#/components/schemas/AnalysisFinding"
+          },
+          "audienceAssessment": {
+            "$ref": "#/components/schemas/AnalysisFinding"
+          },
+          "solutionAssessment": {
+            "$ref": "#/components/schemas/AnalysisFinding"
+          },
+          "validationDimensions": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ValidationDimensions"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "strengths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "missingInformation": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "productRisks": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "marketAndDemandUncertainties": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "technicalFeasibilityConcerns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "competitiveUncertainties": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "nextSteps": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "competition": {
+            "type": "object",
+            "properties": {
+              "submittedAlternatives": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "externalResearchPerformed": {
+                "type": "boolean",
+                "enum": [
+                  false
+                ]
+              }
+            },
+            "required": [
+              "submittedAlternatives",
+              "externalResearchPerformed"
+            ]
+          },
+          "evidenceBackedValidation": {
+            "type": "object",
+            "properties": {
+              "assessed": {
+                "type": "boolean",
+                "enum": [
+                  false
+                ]
+              },
+              "verifiedEvidenceCount": {
+                "type": "integer",
+                "enum": [
+                  0
+                ]
+              },
+              "explanation": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "assessed",
+              "verifiedEvidenceCount",
+              "explanation"
+            ]
+          },
+          "assessmentType": {
+            "type": "string",
+            "enum": [
+              "AI_GENERATED_HYPOTHESES_AND_DESCRIPTION_ASSESSMENT"
+            ]
+          },
+          "disclaimer": {
+            "type": "string"
+          }
+        },
+        "required": []
+      },
+      "AnalysisBlindspots": {
+        "type": "object",
+        "properties": {
+          "analysisId": {
+            "type": "string"
+          },
+          "projectId": {
+            "type": "string"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "engineVersion": {
+            "type": "string"
+          },
+          "available": {
+            "type": "boolean"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Blindspot"
+            }
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "analysisId",
+          "projectId",
+          "version",
+          "engineVersion",
+          "available",
+          "items"
+        ]
+      },
+      "AnalysisInterviewQuestions": {
+        "type": "object",
+        "properties": {
+          "analysisId": {
+            "type": "string"
+          },
+          "projectId": {
+            "type": "string"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "engineVersion": {
+            "type": "string"
+          },
+          "available": {
+            "type": "boolean"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InterviewQuestion"
+            }
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "analysisId",
+          "projectId",
+          "version",
+          "engineVersion",
+          "available",
+          "items"
+        ]
+      },
+      "AnalysisTokenUsage": {
+        "type": "object",
+        "properties": {
+          "promptTokens": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "completionTokens": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "totalTokens": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "promptTokens",
+          "completionTokens",
+          "totalTokens"
+        ]
+      },
+      "AnalysisStageMetadata": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "durationMs": {
+            "type": "number",
+            "minimum": 0
+          },
+          "tokenUsage": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AnalysisTokenUsage"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "durationMs",
+          "tokenUsage"
+        ]
+      },
+      "AnalysisProviderMetadata": {
+        "type": "object",
+        "properties": {
+          "provider": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          },
+          "promptVersion": {
+            "type": "string"
+          },
+          "tokenUsage": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AnalysisTokenUsage"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "stages": {
+            "type": "array",
+            "minItems": 6,
+            "maxItems": 6,
+            "items": {
+              "$ref": "#/components/schemas/AnalysisStageMetadata"
+            }
+          }
+        },
+        "required": [
+          "provider",
+          "model",
+          "promptVersion",
+          "tokenUsage",
+          "stages"
+        ]
+      },
+      "AnalysisSummaryResponse": {
+        "type": "object",
+        "properties": {
+          "analysisId": {
+            "type": "string"
+          },
+          "projectId": {
+            "type": "string"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "engineVersion": {
+            "type": "string"
+          },
+          "available": {
+            "type": "boolean"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/AnalysisSummary"
+          },
+          "providerMetadata": {
+            "$ref": "#/components/schemas/AnalysisProviderMetadata"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "analysisId",
+          "projectId",
+          "version",
+          "engineVersion",
+          "available",
+          "summary"
         ]
       },
       "AssumptionUpdate": {

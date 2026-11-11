@@ -42,7 +42,7 @@ export function ProjectFrame({ id, children }: { id: string; children: (p: Proje
             <ul className="grid grid-cols-3 gap-1 sm:flex">
               {TABS.map((t) => {
                 const href = `/projects/${id}${t.seg}`;
-                const active = loc === href;
+                const active = loc === href || (t.seg === '' && loc.startsWith(`/projects/${id}/analysis/`));
                 return (
                   <li key={t.label}>
                     <Link

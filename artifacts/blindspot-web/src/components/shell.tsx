@@ -30,7 +30,8 @@ export function Brand() {
 export function AppShell({ children }: { children: ReactNode }) {
   const [loc] = useLocation();
   useEffect(() => {
-    const section = loc === '/' ? 'Projects' : /^\/projects\/[^/]+$/.test(loc)
+    const section = loc === '/' ? 'Projects' : /^\/projects\/[^/]+\/analysis\/[^/]+$/.test(loc)
+      ? 'Analysis report' : /^\/projects\/[^/]+$/.test(loc)
       ? 'Project overview' : ({
         interviews: 'Interviews', evidence: 'Evidence review', experiments: 'Experiments', resources: 'Resource intelligence',
       } as Record<string, string>)[loc.split('/').pop() ?? ''] ?? 'Page not found';

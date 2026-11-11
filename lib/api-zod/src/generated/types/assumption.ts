@@ -5,21 +5,43 @@
  * Blindspot Phase 01 browser contract. Success responses retain the backend envelope.
  * OpenAPI spec version: 0.2.0
  */
+import type { AssumptionCategory } from './assumptionCategory';
+import type { AssumptionRiskLevel } from './assumptionRiskLevel';
 import type { AssumptionStatus } from './assumptionStatus';
 import type { Evidence } from './evidence';
+import type { ScoreExplanation } from './scoreExplanation';
 
 export interface Assumption {
   id: string;
   analysisId: string;
   description: string;
-  category: string;
   explanation: string;
   evidenceRequired: string;
   validationMethod: string;
-  riskLevel: string;
+  category: AssumptionCategory;
+  riskLevel: AssumptionRiskLevel;
+  title?: string | null;
+  targetAudience?: string | null;
+  suggestedInterviewQuestion?: string | null;
+  scoreExplanation?: ScoreExplanation | null;
+  priorityScore?: number;
+  /**
+     * @minimum 1
+     * @maximum 5
+     */
   impact: number;
+  /**
+     * @minimum 1
+     * @maximum 5
+     */
   uncertainty: number;
+  /**
+     * @minimum 1
+     * @maximum 25
+     */
   riskScore: number;
   status: AssumptionStatus;
+  createdAt?: string;
+  updatedAt?: string;
   evidenceRecords?: Evidence[];
 }

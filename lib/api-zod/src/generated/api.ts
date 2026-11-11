@@ -136,54 +136,20 @@ export const AnalyzeProjectParams = zod.object({
   "id": zod.coerce.string().uuid()
 })
 
+export const analyzeProjectBodyMarketContextMax = 4000;
+
+export const analyzeProjectBodyAdditionalContextMax = 6000;
+
+
+
 export const AnalyzeProjectBody = zod.object({
-  "marketContext": zod.string().optional()
+  "marketContext": zod.string().min(1).max(analyzeProjectBodyMarketContextMax).optional(),
+  "additionalContext": zod.string().min(1).max(analyzeProjectBodyAdditionalContextMax).optional()
 })
-
-
-
 
 export const AnalyzeProjectResponse = zod.object({
   "success": zod.boolean(),
-  "data": zod.object({
-  "id": zod.string(),
-  "projectId": zod.string(),
-  "model": zod.string(),
-  "createdAt": zod.string(),
-  "version": zod.number().int().min(1),
-  "marketContext": zod.string().nullable(),
-  "projectSnapshot": zod.record(zod.string(), zod.unknown()),
-  "result": zod.object({
-  "problemClarity": zod.string(),
-  "audienceClarity": zod.string(),
-  "nextSteps": zod.array(zod.string()),
-  "assumptions": zod.array(zod.record(zod.string(), zod.unknown()))
-}),
-  "assumptions": zod.array(zod.object({
-  "id": zod.string(),
-  "analysisId": zod.string(),
-  "description": zod.string(),
-  "category": zod.string(),
-  "explanation": zod.string(),
-  "evidenceRequired": zod.string(),
-  "validationMethod": zod.string(),
-  "riskLevel": zod.string(),
-  "impact": zod.number(),
-  "uncertainty": zod.number(),
-  "riskScore": zod.number(),
-  "status": zod.enum(['UNTESTED', 'TESTING', 'SUPPORTED', 'INVALIDATED', 'INCONCLUSIVE']),
-  "evidenceRecords": zod.array(zod.object({
-  "id": zod.string(),
-  "feedbackId": zod.string(),
-  "assumptionId": zod.string(),
-  "quote": zod.string(),
-  "sentiment": zod.string(),
-  "reasoning": zod.string(),
-  "origin": zod.string(),
-  "createdAt": zod.string()
-})).optional()
-}))
-})
+  "data": zod.string().uuid()
 })
 
 
@@ -191,6 +157,12 @@ export const GetLatestAnalysisParams = zod.object({
   "id": zod.coerce.string().uuid()
 })
 
+
+export const getLatestAnalysisResponseDataAssumptionsItemImpactMax = 5;
+
+export const getLatestAnalysisResponseDataAssumptionsItemUncertaintyMax = 5;
+
+export const getLatestAnalysisResponseDataAssumptionsItemRiskScoreMax = 25;
 
 
 
@@ -214,24 +186,36 @@ export const GetLatestAnalysisResponse = zod.object({
   "id": zod.string(),
   "analysisId": zod.string(),
   "description": zod.string(),
-  "category": zod.string(),
   "explanation": zod.string(),
   "evidenceRequired": zod.string(),
   "validationMethod": zod.string(),
-  "riskLevel": zod.string(),
-  "impact": zod.number(),
-  "uncertainty": zod.number(),
-  "riskScore": zod.number(),
+  "category": zod.enum(['PROBLEM', 'CUSTOMER', 'SOLUTION', 'MONETIZATION', 'DEMAND', 'BEHAVIOUR', 'WILLINGNESS_TO_PAY', 'TECHNICAL', 'DISTRIBUTION', 'BUSINESS_MODEL', 'COMPETITIVE', 'OPERATIONAL']),
+  "riskLevel": zod.enum(['CRITICAL', 'HIGH', 'MEDIUM', 'LOW']),
+  "title": zod.union([zod.string(),zod.null()]).optional(),
+  "targetAudience": zod.union([zod.string(),zod.null()]).optional(),
+  "suggestedInterviewQuestion": zod.union([zod.string(),zod.null()]).optional(),
+  "scoreExplanation": zod.union([zod.object({
+  "impactRationale": zod.string(),
+  "uncertaintyRationale": zod.string(),
+  "formula": zod.string(),
+  "probability": zod.boolean()
+}),zod.null()]).optional(),
+  "priorityScore": zod.number().optional(),
+  "impact": zod.number().int().min(1).max(getLatestAnalysisResponseDataAssumptionsItemImpactMax),
+  "uncertainty": zod.number().int().min(1).max(getLatestAnalysisResponseDataAssumptionsItemUncertaintyMax),
+  "riskScore": zod.number().int().min(1).max(getLatestAnalysisResponseDataAssumptionsItemRiskScoreMax),
   "status": zod.enum(['UNTESTED', 'TESTING', 'SUPPORTED', 'INVALIDATED', 'INCONCLUSIVE']),
+  "createdAt": zod.string().optional(),
+  "updatedAt": zod.string().optional(),
   "evidenceRecords": zod.array(zod.object({
   "id": zod.string(),
   "feedbackId": zod.string(),
   "assumptionId": zod.string(),
   "quote": zod.string(),
-  "sentiment": zod.string(),
   "reasoning": zod.string(),
   "origin": zod.string(),
-  "createdAt": zod.string()
+  "createdAt": zod.string(),
+  "sentiment": zod.enum(['SUPPORTING', 'INVALIDATING', 'NEUTRAL'])
 })).optional()
 }))
 })
@@ -282,6 +266,12 @@ export const GetAnalysisParams = zod.object({
 })
 
 
+export const getAnalysisResponseDataAssumptionsItemImpactMax = 5;
+
+export const getAnalysisResponseDataAssumptionsItemUncertaintyMax = 5;
+
+export const getAnalysisResponseDataAssumptionsItemRiskScoreMax = 25;
+
 
 
 export const GetAnalysisResponse = zod.object({
@@ -304,24 +294,36 @@ export const GetAnalysisResponse = zod.object({
   "id": zod.string(),
   "analysisId": zod.string(),
   "description": zod.string(),
-  "category": zod.string(),
   "explanation": zod.string(),
   "evidenceRequired": zod.string(),
   "validationMethod": zod.string(),
-  "riskLevel": zod.string(),
-  "impact": zod.number(),
-  "uncertainty": zod.number(),
-  "riskScore": zod.number(),
+  "category": zod.enum(['PROBLEM', 'CUSTOMER', 'SOLUTION', 'MONETIZATION', 'DEMAND', 'BEHAVIOUR', 'WILLINGNESS_TO_PAY', 'TECHNICAL', 'DISTRIBUTION', 'BUSINESS_MODEL', 'COMPETITIVE', 'OPERATIONAL']),
+  "riskLevel": zod.enum(['CRITICAL', 'HIGH', 'MEDIUM', 'LOW']),
+  "title": zod.union([zod.string(),zod.null()]).optional(),
+  "targetAudience": zod.union([zod.string(),zod.null()]).optional(),
+  "suggestedInterviewQuestion": zod.union([zod.string(),zod.null()]).optional(),
+  "scoreExplanation": zod.union([zod.object({
+  "impactRationale": zod.string(),
+  "uncertaintyRationale": zod.string(),
+  "formula": zod.string(),
+  "probability": zod.boolean()
+}),zod.null()]).optional(),
+  "priorityScore": zod.number().optional(),
+  "impact": zod.number().int().min(1).max(getAnalysisResponseDataAssumptionsItemImpactMax),
+  "uncertainty": zod.number().int().min(1).max(getAnalysisResponseDataAssumptionsItemUncertaintyMax),
+  "riskScore": zod.number().int().min(1).max(getAnalysisResponseDataAssumptionsItemRiskScoreMax),
   "status": zod.enum(['UNTESTED', 'TESTING', 'SUPPORTED', 'INVALIDATED', 'INCONCLUSIVE']),
+  "createdAt": zod.string().optional(),
+  "updatedAt": zod.string().optional(),
   "evidenceRecords": zod.array(zod.object({
   "id": zod.string(),
   "feedbackId": zod.string(),
   "assumptionId": zod.string(),
   "quote": zod.string(),
-  "sentiment": zod.string(),
   "reasoning": zod.string(),
   "origin": zod.string(),
-  "createdAt": zod.string()
+  "createdAt": zod.string(),
+  "sentiment": zod.enum(['SUPPORTING', 'INVALIDATING', 'NEUTRAL'])
 })).optional()
 }))
 })
@@ -337,6 +339,14 @@ export const ListAssumptionsQueryParams = zod.object({
   "limit": zod.coerce.number().int().optional()
 })
 
+export const listAssumptionsResponseDataItemsItemImpactMax = 5;
+
+export const listAssumptionsResponseDataItemsItemUncertaintyMax = 5;
+
+export const listAssumptionsResponseDataItemsItemRiskScoreMax = 25;
+
+
+
 export const ListAssumptionsResponse = zod.object({
   "success": zod.boolean(),
   "data": zod.object({
@@ -344,24 +354,36 @@ export const ListAssumptionsResponse = zod.object({
   "id": zod.string(),
   "analysisId": zod.string(),
   "description": zod.string(),
-  "category": zod.string(),
   "explanation": zod.string(),
   "evidenceRequired": zod.string(),
   "validationMethod": zod.string(),
-  "riskLevel": zod.string(),
-  "impact": zod.number(),
-  "uncertainty": zod.number(),
-  "riskScore": zod.number(),
+  "category": zod.enum(['PROBLEM', 'CUSTOMER', 'SOLUTION', 'MONETIZATION', 'DEMAND', 'BEHAVIOUR', 'WILLINGNESS_TO_PAY', 'TECHNICAL', 'DISTRIBUTION', 'BUSINESS_MODEL', 'COMPETITIVE', 'OPERATIONAL']),
+  "riskLevel": zod.enum(['CRITICAL', 'HIGH', 'MEDIUM', 'LOW']),
+  "title": zod.union([zod.string(),zod.null()]).optional(),
+  "targetAudience": zod.union([zod.string(),zod.null()]).optional(),
+  "suggestedInterviewQuestion": zod.union([zod.string(),zod.null()]).optional(),
+  "scoreExplanation": zod.union([zod.object({
+  "impactRationale": zod.string(),
+  "uncertaintyRationale": zod.string(),
+  "formula": zod.string(),
+  "probability": zod.boolean()
+}),zod.null()]).optional(),
+  "priorityScore": zod.number().optional(),
+  "impact": zod.number().int().min(1).max(listAssumptionsResponseDataItemsItemImpactMax),
+  "uncertainty": zod.number().int().min(1).max(listAssumptionsResponseDataItemsItemUncertaintyMax),
+  "riskScore": zod.number().int().min(1).max(listAssumptionsResponseDataItemsItemRiskScoreMax),
   "status": zod.enum(['UNTESTED', 'TESTING', 'SUPPORTED', 'INVALIDATED', 'INCONCLUSIVE']),
+  "createdAt": zod.string().optional(),
+  "updatedAt": zod.string().optional(),
   "evidenceRecords": zod.array(zod.object({
   "id": zod.string(),
   "feedbackId": zod.string(),
   "assumptionId": zod.string(),
   "quote": zod.string(),
-  "sentiment": zod.string(),
   "reasoning": zod.string(),
   "origin": zod.string(),
-  "createdAt": zod.string()
+  "createdAt": zod.string(),
+  "sentiment": zod.enum(['SUPPORTING', 'INVALIDATING', 'NEUTRAL'])
 })).optional()
 })),
   "pagination": zod.object({
@@ -369,6 +391,225 @@ export const ListAssumptionsResponse = zod.object({
   "limit": zod.number(),
   "total": zod.number().optional()
 })
+})
+})
+
+
+export const GetAnalysisBlindspotsParams = zod.object({
+  "id": zod.coerce.string().uuid()
+})
+
+
+
+
+export const GetAnalysisBlindspotsResponse = zod.object({
+  "success": zod.boolean(),
+  "data": zod.object({
+  "analysisId": zod.string(),
+  "projectId": zod.string(),
+  "version": zod.number().int().min(1),
+  "engineVersion": zod.string(),
+  "available": zod.boolean(),
+  "items": zod.array(zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "explanation": zod.string(),
+  "relatedAssumptionId": zod.string(),
+  "whyOverlooked": zod.string(),
+  "suggestedAction": zod.string(),
+  "evidenceRequired": zod.string(),
+  "severity": zod.enum(['CRITICAL', 'HIGH', 'MEDIUM', 'LOW']),
+  "grounding": zod.enum(['SUBMITTED', 'UNCERTAINTY']),
+  "sourceQuote": zod.string().nullable()
+})),
+  "reason": zod.string().optional()
+})
+})
+
+
+export const GetAnalysisInterviewQuestionsParams = zod.object({
+  "id": zod.coerce.string().uuid()
+})
+
+
+
+
+export const GetAnalysisInterviewQuestionsResponse = zod.object({
+  "success": zod.boolean(),
+  "data": zod.object({
+  "analysisId": zod.string(),
+  "projectId": zod.string(),
+  "version": zod.number().int().min(1),
+  "engineVersion": zod.string(),
+  "available": zod.boolean(),
+  "items": zod.array(zod.object({
+  "id": zod.string(),
+  "question": zod.string(),
+  "relatedAssumptionId": zod.string(),
+  "purpose": zod.string(),
+  "evidenceToLookFor": zod.string(),
+  "followUpQuestion": zod.string()
+})),
+  "reason": zod.string().optional()
+})
+})
+
+
+export const GetAnalysisSummaryParams = zod.object({
+  "id": zod.coerce.string().uuid()
+})
+
+
+export const getAnalysisSummaryResponseDataSummaryValidationDimensionsOneProblemClarityScoreOneMin = 0;
+export const getAnalysisSummaryResponseDataSummaryValidationDimensionsOneProblemClarityScoreOneMax = 100;
+
+export const getAnalysisSummaryResponseDataSummaryValidationDimensionsOneAudienceSpecificityScoreOneMin = 0;
+export const getAnalysisSummaryResponseDataSummaryValidationDimensionsOneAudienceSpecificityScoreOneMax = 100;
+
+export const getAnalysisSummaryResponseDataSummaryValidationDimensionsOneSolutionClarityScoreOneMin = 0;
+export const getAnalysisSummaryResponseDataSummaryValidationDimensionsOneSolutionClarityScoreOneMax = 100;
+
+export const getAnalysisSummaryResponseDataSummaryValidationDimensionsOneEvidenceOfDemandScoreOneMin = 0;
+export const getAnalysisSummaryResponseDataSummaryValidationDimensionsOneEvidenceOfDemandScoreOneMax = 100;
+
+export const getAnalysisSummaryResponseDataSummaryValidationDimensionsOneDifferentiationScoreOneMin = 0;
+export const getAnalysisSummaryResponseDataSummaryValidationDimensionsOneDifferentiationScoreOneMax = 100;
+
+export const getAnalysisSummaryResponseDataSummaryValidationDimensionsOneTechnicalFeasibilityScoreOneMin = 0;
+export const getAnalysisSummaryResponseDataSummaryValidationDimensionsOneTechnicalFeasibilityScoreOneMax = 100;
+
+export const getAnalysisSummaryResponseDataSummaryValidationDimensionsOneValidationReadinessScoreOneMin = 0;
+export const getAnalysisSummaryResponseDataSummaryValidationDimensionsOneValidationReadinessScoreOneMax = 100;
+
+export const getAnalysisSummaryResponseDataProviderMetadataTokenUsageOnePromptTokensMin = 0;
+
+export const getAnalysisSummaryResponseDataProviderMetadataTokenUsageOneCompletionTokensMin = 0;
+
+export const getAnalysisSummaryResponseDataProviderMetadataTokenUsageOneTotalTokensMin = 0;
+
+export const getAnalysisSummaryResponseDataProviderMetadataStagesItemDurationMsMin = 0;
+
+export const getAnalysisSummaryResponseDataProviderMetadataStagesItemTokenUsageOnePromptTokensMin = 0;
+
+export const getAnalysisSummaryResponseDataProviderMetadataStagesItemTokenUsageOneCompletionTokensMin = 0;
+
+export const getAnalysisSummaryResponseDataProviderMetadataStagesItemTokenUsageOneTotalTokensMin = 0;
+
+export const getAnalysisSummaryResponseDataProviderMetadataStagesMin = 6;
+export const getAnalysisSummaryResponseDataProviderMetadataStagesMax = 6;
+
+
+
+export const GetAnalysisSummaryResponse = zod.object({
+  "success": zod.boolean(),
+  "data": zod.object({
+  "analysisId": zod.string(),
+  "projectId": zod.string(),
+  "version": zod.number().int().min(1),
+  "engineVersion": zod.string(),
+  "available": zod.boolean(),
+  "summary": zod.object({
+  "problemClarity": zod.string().optional(),
+  "audienceClarity": zod.string().optional(),
+  "overallSummary": zod.string().nullish(),
+  "problemAssessment": zod.object({
+  "statement": zod.string().nullable(),
+  "grounding": zod.enum(['SUBMITTED', 'UNCERTAINTY', 'MISSING']),
+  "sourceQuote": zod.string().nullable()
+}).optional(),
+  "audienceAssessment": zod.object({
+  "statement": zod.string().nullable(),
+  "grounding": zod.enum(['SUBMITTED', 'UNCERTAINTY', 'MISSING']),
+  "sourceQuote": zod.string().nullable()
+}).optional(),
+  "solutionAssessment": zod.object({
+  "statement": zod.string().nullable(),
+  "grounding": zod.enum(['SUBMITTED', 'UNCERTAINTY', 'MISSING']),
+  "sourceQuote": zod.string().nullable()
+}).optional(),
+  "validationDimensions": zod.union([zod.object({
+  "problemClarity": zod.object({
+  "score": zod.union([zod.number().int().min(getAnalysisSummaryResponseDataSummaryValidationDimensionsOneProblemClarityScoreOneMin).max(getAnalysisSummaryResponseDataSummaryValidationDimensionsOneProblemClarityScoreOneMax),zod.null()]),
+  "support": zod.enum(['DESCRIPTION_ONLY', 'INSUFFICIENT_EVIDENCE', 'UNASSESSED']),
+  "rationale": zod.string(),
+  "evidenceNeeded": zod.string()
+}),
+  "audienceSpecificity": zod.object({
+  "score": zod.union([zod.number().int().min(getAnalysisSummaryResponseDataSummaryValidationDimensionsOneAudienceSpecificityScoreOneMin).max(getAnalysisSummaryResponseDataSummaryValidationDimensionsOneAudienceSpecificityScoreOneMax),zod.null()]),
+  "support": zod.enum(['DESCRIPTION_ONLY', 'INSUFFICIENT_EVIDENCE', 'UNASSESSED']),
+  "rationale": zod.string(),
+  "evidenceNeeded": zod.string()
+}),
+  "solutionClarity": zod.object({
+  "score": zod.union([zod.number().int().min(getAnalysisSummaryResponseDataSummaryValidationDimensionsOneSolutionClarityScoreOneMin).max(getAnalysisSummaryResponseDataSummaryValidationDimensionsOneSolutionClarityScoreOneMax),zod.null()]),
+  "support": zod.enum(['DESCRIPTION_ONLY', 'INSUFFICIENT_EVIDENCE', 'UNASSESSED']),
+  "rationale": zod.string(),
+  "evidenceNeeded": zod.string()
+}),
+  "evidenceOfDemand": zod.object({
+  "score": zod.union([zod.number().int().min(getAnalysisSummaryResponseDataSummaryValidationDimensionsOneEvidenceOfDemandScoreOneMin).max(getAnalysisSummaryResponseDataSummaryValidationDimensionsOneEvidenceOfDemandScoreOneMax),zod.null()]),
+  "support": zod.enum(['DESCRIPTION_ONLY', 'INSUFFICIENT_EVIDENCE', 'UNASSESSED']),
+  "rationale": zod.string(),
+  "evidenceNeeded": zod.string()
+}),
+  "differentiation": zod.object({
+  "score": zod.union([zod.number().int().min(getAnalysisSummaryResponseDataSummaryValidationDimensionsOneDifferentiationScoreOneMin).max(getAnalysisSummaryResponseDataSummaryValidationDimensionsOneDifferentiationScoreOneMax),zod.null()]),
+  "support": zod.enum(['DESCRIPTION_ONLY', 'INSUFFICIENT_EVIDENCE', 'UNASSESSED']),
+  "rationale": zod.string(),
+  "evidenceNeeded": zod.string()
+}),
+  "technicalFeasibility": zod.object({
+  "score": zod.union([zod.number().int().min(getAnalysisSummaryResponseDataSummaryValidationDimensionsOneTechnicalFeasibilityScoreOneMin).max(getAnalysisSummaryResponseDataSummaryValidationDimensionsOneTechnicalFeasibilityScoreOneMax),zod.null()]),
+  "support": zod.enum(['DESCRIPTION_ONLY', 'INSUFFICIENT_EVIDENCE', 'UNASSESSED']),
+  "rationale": zod.string(),
+  "evidenceNeeded": zod.string()
+}),
+  "validationReadiness": zod.object({
+  "score": zod.union([zod.number().int().min(getAnalysisSummaryResponseDataSummaryValidationDimensionsOneValidationReadinessScoreOneMin).max(getAnalysisSummaryResponseDataSummaryValidationDimensionsOneValidationReadinessScoreOneMax),zod.null()]),
+  "support": zod.enum(['DESCRIPTION_ONLY', 'INSUFFICIENT_EVIDENCE', 'UNASSESSED']),
+  "rationale": zod.string(),
+  "evidenceNeeded": zod.string()
+})
+}),zod.null()]).optional(),
+  "strengths": zod.array(zod.string()).optional(),
+  "missingInformation": zod.array(zod.string()).optional(),
+  "productRisks": zod.array(zod.string()).optional(),
+  "marketAndDemandUncertainties": zod.array(zod.string()).optional(),
+  "technicalFeasibilityConcerns": zod.array(zod.string()).optional(),
+  "competitiveUncertainties": zod.array(zod.string()).optional(),
+  "nextSteps": zod.array(zod.string()).optional(),
+  "competition": zod.object({
+  "submittedAlternatives": zod.array(zod.string()),
+  "externalResearchPerformed": zod.literal(false)
+}).optional(),
+  "evidenceBackedValidation": zod.object({
+  "assessed": zod.literal(false),
+  "verifiedEvidenceCount": zod.literal(0),
+  "explanation": zod.string()
+}).optional(),
+  "assessmentType": zod.enum(['AI_GENERATED_HYPOTHESES_AND_DESCRIPTION_ASSESSMENT']).optional(),
+  "disclaimer": zod.string().optional()
+}),
+  "providerMetadata": zod.object({
+  "provider": zod.string(),
+  "model": zod.string(),
+  "promptVersion": zod.string(),
+  "tokenUsage": zod.union([zod.object({
+  "promptTokens": zod.number().int().min(getAnalysisSummaryResponseDataProviderMetadataTokenUsageOnePromptTokensMin),
+  "completionTokens": zod.number().int().min(getAnalysisSummaryResponseDataProviderMetadataTokenUsageOneCompletionTokensMin),
+  "totalTokens": zod.number().int().min(getAnalysisSummaryResponseDataProviderMetadataTokenUsageOneTotalTokensMin)
+}),zod.null()]),
+  "stages": zod.array(zod.object({
+  "name": zod.string(),
+  "durationMs": zod.number().min(getAnalysisSummaryResponseDataProviderMetadataStagesItemDurationMsMin),
+  "tokenUsage": zod.union([zod.object({
+  "promptTokens": zod.number().int().min(getAnalysisSummaryResponseDataProviderMetadataStagesItemTokenUsageOnePromptTokensMin),
+  "completionTokens": zod.number().int().min(getAnalysisSummaryResponseDataProviderMetadataStagesItemTokenUsageOneCompletionTokensMin),
+  "totalTokens": zod.number().int().min(getAnalysisSummaryResponseDataProviderMetadataStagesItemTokenUsageOneTotalTokensMin)
+}),zod.null()])
+})).min(getAnalysisSummaryResponseDataProviderMetadataStagesMin).max(getAnalysisSummaryResponseDataProviderMetadataStagesMax)
+}).optional(),
+  "reason": zod.string().optional()
 })
 })
 
@@ -382,30 +623,50 @@ export const UpdateAssumptionBody = zod.object({
   "evidenceIds": zod.array(zod.string()).optional()
 })
 
+export const updateAssumptionResponseDataImpactMax = 5;
+
+export const updateAssumptionResponseDataUncertaintyMax = 5;
+
+export const updateAssumptionResponseDataRiskScoreMax = 25;
+
+
+
 export const UpdateAssumptionResponse = zod.object({
   "success": zod.boolean(),
   "data": zod.object({
   "id": zod.string(),
   "analysisId": zod.string(),
   "description": zod.string(),
-  "category": zod.string(),
   "explanation": zod.string(),
   "evidenceRequired": zod.string(),
   "validationMethod": zod.string(),
-  "riskLevel": zod.string(),
-  "impact": zod.number(),
-  "uncertainty": zod.number(),
-  "riskScore": zod.number(),
+  "category": zod.enum(['PROBLEM', 'CUSTOMER', 'SOLUTION', 'MONETIZATION', 'DEMAND', 'BEHAVIOUR', 'WILLINGNESS_TO_PAY', 'TECHNICAL', 'DISTRIBUTION', 'BUSINESS_MODEL', 'COMPETITIVE', 'OPERATIONAL']),
+  "riskLevel": zod.enum(['CRITICAL', 'HIGH', 'MEDIUM', 'LOW']),
+  "title": zod.union([zod.string(),zod.null()]).optional(),
+  "targetAudience": zod.union([zod.string(),zod.null()]).optional(),
+  "suggestedInterviewQuestion": zod.union([zod.string(),zod.null()]).optional(),
+  "scoreExplanation": zod.union([zod.object({
+  "impactRationale": zod.string(),
+  "uncertaintyRationale": zod.string(),
+  "formula": zod.string(),
+  "probability": zod.boolean()
+}),zod.null()]).optional(),
+  "priorityScore": zod.number().optional(),
+  "impact": zod.number().int().min(1).max(updateAssumptionResponseDataImpactMax),
+  "uncertainty": zod.number().int().min(1).max(updateAssumptionResponseDataUncertaintyMax),
+  "riskScore": zod.number().int().min(1).max(updateAssumptionResponseDataRiskScoreMax),
   "status": zod.enum(['UNTESTED', 'TESTING', 'SUPPORTED', 'INVALIDATED', 'INCONCLUSIVE']),
+  "createdAt": zod.string().optional(),
+  "updatedAt": zod.string().optional(),
   "evidenceRecords": zod.array(zod.object({
   "id": zod.string(),
   "feedbackId": zod.string(),
   "assumptionId": zod.string(),
   "quote": zod.string(),
-  "sentiment": zod.string(),
   "reasoning": zod.string(),
   "origin": zod.string(),
-  "createdAt": zod.string()
+  "createdAt": zod.string(),
+  "sentiment": zod.enum(['SUPPORTING', 'INVALIDATING', 'NEUTRAL'])
 })).optional()
 })
 })
@@ -540,10 +801,10 @@ export const AnalyzeFeedbackResponse = zod.object({
   "feedbackId": zod.string(),
   "assumptionId": zod.string(),
   "quote": zod.string(),
-  "sentiment": zod.string(),
   "reasoning": zod.string(),
   "origin": zod.string(),
-  "createdAt": zod.string()
+  "createdAt": zod.string(),
+  "sentiment": zod.enum(['SUPPORTING', 'INVALIDATING', 'NEUTRAL'])
 })).optional(),
   "reviewRequired": zod.boolean().optional(),
   "statusesAutomaticallyChanged": zod.boolean().optional()
@@ -573,10 +834,10 @@ export const GetFeedbackSummaryResponse = zod.object({
   "feedbackId": zod.string(),
   "assumptionId": zod.string(),
   "quote": zod.string(),
-  "sentiment": zod.string(),
   "reasoning": zod.string(),
   "origin": zod.string(),
-  "createdAt": zod.string()
+  "createdAt": zod.string(),
+  "sentiment": zod.enum(['SUPPORTING', 'INVALIDATING', 'NEUTRAL'])
 })).optional(),
   "reviewRequired": zod.boolean().optional(),
   "statusesAutomaticallyChanged": zod.boolean().optional()

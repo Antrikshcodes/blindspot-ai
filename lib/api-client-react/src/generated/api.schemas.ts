@@ -47,7 +47,16 @@ export interface Project {
 }
 
 export interface AnalysisInput {
+  /**
+     * @minLength 1
+     * @maxLength 4000
+     */
   marketContext?: string;
+  /**
+     * @minLength 1
+     * @maxLength 6000
+     */
+  additionalContext?: string;
 }
 
 export type AssumptionStatus = typeof AssumptionStatus[keyof typeof AssumptionStatus];
@@ -61,30 +70,93 @@ export const AssumptionStatus = {
   INCONCLUSIVE: 'INCONCLUSIVE',
 } as const;
 
+export type EvidenceSentiment = typeof EvidenceSentiment[keyof typeof EvidenceSentiment];
+
+
+export const EvidenceSentiment = {
+  SUPPORTING: 'SUPPORTING',
+  INVALIDATING: 'INVALIDATING',
+  NEUTRAL: 'NEUTRAL',
+} as const;
+
 export interface Evidence {
   id: string;
   feedbackId: string;
   assumptionId: string;
   quote: string;
-  sentiment: string;
   reasoning: string;
   origin: string;
   createdAt: string;
+  sentiment: EvidenceSentiment;
+}
+
+export type AssumptionCategory = typeof AssumptionCategory[keyof typeof AssumptionCategory];
+
+
+export const AssumptionCategory = {
+  PROBLEM: 'PROBLEM',
+  CUSTOMER: 'CUSTOMER',
+  SOLUTION: 'SOLUTION',
+  MONETIZATION: 'MONETIZATION',
+  DEMAND: 'DEMAND',
+  BEHAVIOUR: 'BEHAVIOUR',
+  WILLINGNESS_TO_PAY: 'WILLINGNESS_TO_PAY',
+  TECHNICAL: 'TECHNICAL',
+  DISTRIBUTION: 'DISTRIBUTION',
+  BUSINESS_MODEL: 'BUSINESS_MODEL',
+  COMPETITIVE: 'COMPETITIVE',
+  OPERATIONAL: 'OPERATIONAL',
+} as const;
+
+export type AssumptionRiskLevel = typeof AssumptionRiskLevel[keyof typeof AssumptionRiskLevel];
+
+
+export const AssumptionRiskLevel = {
+  CRITICAL: 'CRITICAL',
+  HIGH: 'HIGH',
+  MEDIUM: 'MEDIUM',
+  LOW: 'LOW',
+} as const;
+
+export interface ScoreExplanation {
+  impactRationale: string;
+  uncertaintyRationale: string;
+  formula: string;
+  probability: boolean;
 }
 
 export interface Assumption {
   id: string;
   analysisId: string;
   description: string;
-  category: string;
   explanation: string;
   evidenceRequired: string;
   validationMethod: string;
-  riskLevel: string;
+  category: AssumptionCategory;
+  riskLevel: AssumptionRiskLevel;
+  title?: string | null;
+  targetAudience?: string | null;
+  suggestedInterviewQuestion?: string | null;
+  scoreExplanation?: ScoreExplanation | null;
+  priorityScore?: number;
+  /**
+     * @minimum 1
+     * @maximum 5
+     */
   impact: number;
+  /**
+     * @minimum 1
+     * @maximum 5
+     */
   uncertainty: number;
+  /**
+     * @minimum 1
+     * @maximum 25
+     */
   riskScore: number;
   status: AssumptionStatus;
+  createdAt?: string;
+  updatedAt?: string;
   evidenceRecords?: Evidence[];
 }
 
@@ -120,6 +192,199 @@ export interface AnalysisHistoryItem {
   createdAt: string;
   /** @minimum 1 */
   version: number;
+}
+
+export type BlindspotSeverity = typeof BlindspotSeverity[keyof typeof BlindspotSeverity];
+
+
+export const BlindspotSeverity = {
+  CRITICAL: 'CRITICAL',
+  HIGH: 'HIGH',
+  MEDIUM: 'MEDIUM',
+  LOW: 'LOW',
+} as const;
+
+export type BlindspotGrounding = typeof BlindspotGrounding[keyof typeof BlindspotGrounding];
+
+
+export const BlindspotGrounding = {
+  SUBMITTED: 'SUBMITTED',
+  UNCERTAINTY: 'UNCERTAINTY',
+} as const;
+
+export interface Blindspot {
+  id: string;
+  title: string;
+  explanation: string;
+  relatedAssumptionId: string;
+  whyOverlooked: string;
+  suggestedAction: string;
+  evidenceRequired: string;
+  severity: BlindspotSeverity;
+  grounding: BlindspotGrounding;
+  /** @nullable */
+  sourceQuote: string | null;
+}
+
+export interface InterviewQuestion {
+  id: string;
+  question: string;
+  relatedAssumptionId: string;
+  purpose: string;
+  evidenceToLookFor: string;
+  followUpQuestion: string;
+}
+
+export type AnalysisFindingGrounding = typeof AnalysisFindingGrounding[keyof typeof AnalysisFindingGrounding];
+
+
+export const AnalysisFindingGrounding = {
+  SUBMITTED: 'SUBMITTED',
+  UNCERTAINTY: 'UNCERTAINTY',
+  MISSING: 'MISSING',
+} as const;
+
+export interface AnalysisFinding {
+  /** @nullable */
+  statement: string | null;
+  grounding: AnalysisFindingGrounding;
+  /** @nullable */
+  sourceQuote: string | null;
+}
+
+export type ValidationDimensionSupport = typeof ValidationDimensionSupport[keyof typeof ValidationDimensionSupport];
+
+
+export const ValidationDimensionSupport = {
+  DESCRIPTION_ONLY: 'DESCRIPTION_ONLY',
+  INSUFFICIENT_EVIDENCE: 'INSUFFICIENT_EVIDENCE',
+  UNASSESSED: 'UNASSESSED',
+} as const;
+
+export interface ValidationDimension {
+  score: number | null;
+  support: ValidationDimensionSupport;
+  rationale: string;
+  evidenceNeeded: string;
+}
+
+export interface ValidationDimensions {
+  problemClarity: ValidationDimension;
+  audienceSpecificity: ValidationDimension;
+  solutionClarity: ValidationDimension;
+  evidenceOfDemand: ValidationDimension;
+  differentiation: ValidationDimension;
+  technicalFeasibility: ValidationDimension;
+  validationReadiness: ValidationDimension;
+}
+
+export type AnalysisSummaryCompetition = {
+  submittedAlternatives: string[];
+  externalResearchPerformed: false;
+};
+
+export type AnalysisSummaryEvidenceBackedValidationVerifiedEvidenceCount = typeof AnalysisSummaryEvidenceBackedValidationVerifiedEvidenceCount[keyof typeof AnalysisSummaryEvidenceBackedValidationVerifiedEvidenceCount];
+
+
+export const AnalysisSummaryEvidenceBackedValidationVerifiedEvidenceCount = {
+  NUMBER_0: 0,
+} as const;
+
+export type AnalysisSummaryEvidenceBackedValidation = {
+  assessed: false;
+  verifiedEvidenceCount: AnalysisSummaryEvidenceBackedValidationVerifiedEvidenceCount;
+  explanation: string;
+};
+
+export type AnalysisSummaryAssessmentType = typeof AnalysisSummaryAssessmentType[keyof typeof AnalysisSummaryAssessmentType];
+
+
+export const AnalysisSummaryAssessmentType = {
+  AI_GENERATED_HYPOTHESES_AND_DESCRIPTION_ASSESSMENT: 'AI_GENERATED_HYPOTHESES_AND_DESCRIPTION_ASSESSMENT',
+} as const;
+
+export interface AnalysisSummary {
+  problemClarity?: string;
+  audienceClarity?: string;
+  /** @nullable */
+  overallSummary?: string | null;
+  problemAssessment?: AnalysisFinding;
+  audienceAssessment?: AnalysisFinding;
+  solutionAssessment?: AnalysisFinding;
+  validationDimensions?: ValidationDimensions | null;
+  strengths?: string[];
+  missingInformation?: string[];
+  productRisks?: string[];
+  marketAndDemandUncertainties?: string[];
+  technicalFeasibilityConcerns?: string[];
+  competitiveUncertainties?: string[];
+  nextSteps?: string[];
+  competition?: AnalysisSummaryCompetition;
+  evidenceBackedValidation?: AnalysisSummaryEvidenceBackedValidation;
+  assessmentType?: AnalysisSummaryAssessmentType;
+  disclaimer?: string;
+}
+
+export interface AnalysisBlindspots {
+  analysisId: string;
+  projectId: string;
+  /** @minimum 1 */
+  version: number;
+  engineVersion: string;
+  available: boolean;
+  items: Blindspot[];
+  reason?: string;
+}
+
+export interface AnalysisInterviewQuestions {
+  analysisId: string;
+  projectId: string;
+  /** @minimum 1 */
+  version: number;
+  engineVersion: string;
+  available: boolean;
+  items: InterviewQuestion[];
+  reason?: string;
+}
+
+export interface AnalysisTokenUsage {
+  /** @minimum 0 */
+  promptTokens: number;
+  /** @minimum 0 */
+  completionTokens: number;
+  /** @minimum 0 */
+  totalTokens: number;
+}
+
+export interface AnalysisStageMetadata {
+  name: string;
+  /** @minimum 0 */
+  durationMs: number;
+  tokenUsage: AnalysisTokenUsage | null;
+}
+
+export interface AnalysisProviderMetadata {
+  provider: string;
+  model: string;
+  promptVersion: string;
+  tokenUsage: AnalysisTokenUsage | null;
+  /**
+     * @minItems 6
+     * @maxItems 6
+     */
+  stages: AnalysisStageMetadata[];
+}
+
+export interface AnalysisSummaryResponse {
+  analysisId: string;
+  projectId: string;
+  /** @minimum 1 */
+  version: number;
+  engineVersion: string;
+  available: boolean;
+  summary: AnalysisSummary;
+  providerMetadata?: AnalysisProviderMetadata;
+  reason?: string;
 }
 
 export interface AssumptionUpdate {
@@ -399,7 +664,7 @@ export type DeleteProject200 = {
 
 export type AnalyzeProject201 = {
   success: boolean;
-  data: Analysis;
+  data: string;
 };
 
 export type GetLatestAnalysis200 = {
@@ -448,6 +713,21 @@ export type ListAssumptions200Data = {
 export type ListAssumptions200 = {
   success: boolean;
   data: ListAssumptions200Data;
+};
+
+export type GetAnalysisBlindspots200 = {
+  success: boolean;
+  data: AnalysisBlindspots;
+};
+
+export type GetAnalysisInterviewQuestions200 = {
+  success: boolean;
+  data: AnalysisInterviewQuestions;
+};
+
+export type GetAnalysisSummary200 = {
+  success: boolean;
+  data: AnalysisSummaryResponse;
 };
 
 export type UpdateAssumption200 = {

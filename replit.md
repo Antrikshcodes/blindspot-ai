@@ -14,11 +14,15 @@ Missing Clerk configuration must remain fail-closed in every environment;
 never simulate authentication using caller IDs. Historical ownerless projects
 remain quarantined; do not auto-claim or backfill them to a signed-in user.
 
-Phase 02 is also explicitly backend-only: extend the core AI idea analysis
-engine; do not rebuild Resource Intelligence, add feedback-analysis work or edit
-the frontend. Preserve working endpoints and historical analyses.
-**Why:** the user supplied a separate Phase 02 brief with these scope boundaries.
-Its report is `repositories/blindspot-ai/docs/PHASE02_AI_ENGINE.md`.
+Phase 02's AI analysis engine remains backend-authoritative. Its report,
+assumptions, risk matrix, blindspots, interview questions, and history belong in
+the existing `artifacts/blindspot-web` app and use the generated API client.
+Do not create a second frontend, change backend behavior, or bypass the existing
+authentication boundary. Resource Intelligence and feedback analysis remain
+outside the analysis experience.
+**Why:** the user later approved a frontend implementation brief for the
+existing app; this supersedes the earlier backend-only scope.
+The backend report remains `repositories/blindspot-ai/docs/PHASE02_AI_ENGINE.md`.
 
 Phase 03 is exclusively backend Resource Intelligence: extend the working
 providers/search/storage; do not build frontend or reimplement Phase 02.
@@ -43,6 +47,8 @@ Its report is `repositories/blindspot-ai/docs/PHASE03_RESOURCE_INTELLIGENCE.md`.
 - Managed workflow `artifacts/api-server: API Server` starts the product backend
   through the API artifact's package script. Reuse it; don't start duplicate servers.
 - Active API: `/api`; health: `/api/health`; server binds assigned PORT.
+- Use Node.js 22 for backend tests/build and API contract generation; current
+  backend tooling declares Node.js 22 or newer.
 - In `repositories/blindspot-ai/backend`:
   - `npm ci`
   - `npm run db:migrate` — explicit development-only migrations

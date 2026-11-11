@@ -5,9 +5,8 @@
  * Blindspot Phase 01 browser contract. Success responses retain the backend envelope.
  * OpenAPI spec version: 0.2.0
  */
-import type { Analysis } from './analysis';
 
 export type AnalyzeProject201 = {
   success: boolean;
-  data: Analysis;
+  data: string;
 };

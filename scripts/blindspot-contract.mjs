@@ -15,13 +15,99 @@ const schemas = {
   ProjectInput: obj({ ...strings('name productDescription problemStatement targetAudience proposedSolution'), existingAlternatives: arr(str) }),
   ProjectUpdate: obj({ ...strings('name productDescription problemStatement targetAudience proposedSolution'), existingAlternatives: arr(str) }, []),
   Project: obj({ ...strings('id ownerId name productDescription problemStatement targetAudience proposedSolution createdAt updatedAt'), existingAlternatives: arr(str) }),
-  AnalysisInput: obj({ marketContext: str }, []),
+  AnalysisInput: obj({
+    marketContext: { type: 'string', minLength: 1, maxLength: 4000 },
+    additionalContext: { type: 'string', minLength: 1, maxLength: 6000 },
+  }, []),
   AssumptionStatus: enumeration('UNTESTED TESTING SUPPORTED INVALIDATED INCONCLUSIVE'),
-  Evidence: obj({ ...strings('id feedbackId assumptionId quote sentiment reasoning origin createdAt') }),
-  Assumption: obj({ ...strings('id analysisId description category explanation evidenceRequired validationMethod riskLevel'), impact: num, uncertainty: num, riskScore: num, status: ref('AssumptionStatus'), evidenceRecords: arr('Evidence') }, ['id', 'analysisId', 'description', 'category', 'explanation', 'evidenceRequired', 'validationMethod', 'riskLevel', 'impact', 'uncertainty', 'riskScore', 'status']),
+  Evidence: obj({
+    ...strings('id feedbackId assumptionId quote reasoning origin createdAt'),
+    sentiment: enumeration('SUPPORTING INVALIDATING NEUTRAL'),
+  }),
+  Assumption: obj({
+    ...strings('id analysisId description explanation evidenceRequired validationMethod'),
+    category: enumeration('PROBLEM CUSTOMER SOLUTION MONETIZATION DEMAND BEHAVIOUR WILLINGNESS_TO_PAY TECHNICAL DISTRIBUTION BUSINESS_MODEL COMPETITIVE OPERATIONAL'),
+    riskLevel: enumeration('CRITICAL HIGH MEDIUM LOW'),
+    title: { anyOf: [str, { type: 'null' }] },
+    targetAudience: { anyOf: [str, { type: 'null' }] },
+    suggestedInterviewQuestion: { anyOf: [str, { type: 'null' }] },
+    scoreExplanation: { anyOf: [ref('ScoreExplanation'), { type: 'null' }] },
+    priorityScore: num, impact: { type: 'integer', minimum: 1, maximum: 5 },
+    uncertainty: { type: 'integer', minimum: 1, maximum: 5 },
+    riskScore: { type: 'integer', minimum: 1, maximum: 25 },
+    status: ref('AssumptionStatus'), createdAt: str, updatedAt: str,
+    evidenceRecords: arr('Evidence'),
+  }, ['id', 'analysisId', 'description', 'category', 'explanation', 'evidenceRequired', 'validationMethod', 'riskLevel', 'impact', 'uncertainty', 'riskScore', 'status']),
+  ScoreExplanation: obj({
+    ...strings('impactRationale uncertaintyRationale formula'),
+    probability: { type: 'boolean' },
+  }),
   AnalysisResult: obj({ problemClarity: str, audienceClarity: str, nextSteps: arr(str), assumptions: arr(free) }),
   Analysis: obj({ ...strings('id projectId model createdAt'), version: { type: 'integer', minimum: 1 }, marketContext: nullable, projectSnapshot: free, result: ref('AnalysisResult'), assumptions: arr('Assumption') }),
   AnalysisHistoryItem: obj({ ...strings('id projectId model createdAt'), version: { type: 'integer', minimum: 1 } }),
+  Blindspot: obj({
+    ...strings('id title explanation relatedAssumptionId whyOverlooked suggestedAction evidenceRequired'),
+    severity: enumeration('CRITICAL HIGH MEDIUM LOW'),
+    grounding: enumeration('SUBMITTED UNCERTAINTY'),
+    sourceQuote: nullable,
+  }),
+  InterviewQuestion: obj({
+    ...strings('id question relatedAssumptionId purpose evidenceToLookFor followUpQuestion'),
+  }),
+  AnalysisFinding: obj({ statement: nullable, grounding: enumeration('SUBMITTED UNCERTAINTY MISSING'), sourceQuote: nullable }),
+  ValidationDimension: obj({
+    score: { anyOf: [{ type: 'integer', minimum: 0, maximum: 100 }, { type: 'null' }] },
+    support: enumeration('DESCRIPTION_ONLY INSUFFICIENT_EVIDENCE UNASSESSED'),
+    rationale: str, evidenceNeeded: str,
+  }),
+  ValidationDimensions: obj({
+    problemClarity: ref('ValidationDimension'), audienceSpecificity: ref('ValidationDimension'),
+    solutionClarity: ref('ValidationDimension'), evidenceOfDemand: ref('ValidationDimension'),
+    differentiation: ref('ValidationDimension'), technicalFeasibility: ref('ValidationDimension'),
+    validationReadiness: ref('ValidationDimension'),
+  }),
+  AnalysisSummary: obj({
+    problemClarity: str, audienceClarity: str, overallSummary: nullable,
+    problemAssessment: ref('AnalysisFinding'), audienceAssessment: ref('AnalysisFinding'),
+    solutionAssessment: ref('AnalysisFinding'),
+    validationDimensions: { anyOf: [ref('ValidationDimensions'), { type: 'null' }] },
+    strengths: arr(str), missingInformation: arr(str), productRisks: arr(str),
+    marketAndDemandUncertainties: arr(str), technicalFeasibilityConcerns: arr(str),
+    competitiveUncertainties: arr(str), nextSteps: arr(str),
+    competition: obj({ submittedAlternatives: arr(str), externalResearchPerformed: { type: 'boolean', enum: [false] } }),
+    evidenceBackedValidation: obj({
+      assessed: { type: 'boolean', enum: [false] },
+      verifiedEvidenceCount: { type: 'integer', enum: [0] },
+      explanation: str,
+    }),
+    assessmentType: enumeration('AI_GENERATED_HYPOTHESES_AND_DESCRIPTION_ASSESSMENT'), disclaimer: str,
+  }, []),
+  AnalysisBlindspots: obj({
+    analysisId: str, projectId: str, version: { type: 'integer', minimum: 1 }, engineVersion: str,
+    available: { type: 'boolean' }, items: arr('Blindspot'), reason: str,
+  }, ['analysisId', 'projectId', 'version', 'engineVersion', 'available', 'items']),
+  AnalysisInterviewQuestions: obj({
+    analysisId: str, projectId: str, version: { type: 'integer', minimum: 1 }, engineVersion: str,
+    available: { type: 'boolean' }, items: arr('InterviewQuestion'), reason: str,
+  }, ['analysisId', 'projectId', 'version', 'engineVersion', 'available', 'items']),
+  AnalysisTokenUsage: obj({
+    promptTokens: { type: 'integer', minimum: 0 },
+    completionTokens: { type: 'integer', minimum: 0 },
+    totalTokens: { type: 'integer', minimum: 0 },
+  }),
+  AnalysisStageMetadata: obj({
+    name: str, durationMs: { type: 'number', minimum: 0 },
+    tokenUsage: { anyOf: [ref('AnalysisTokenUsage'), { type: 'null' }] },
+  }),
+  AnalysisProviderMetadata: obj({
+    ...strings('provider model promptVersion'),
+    tokenUsage: { anyOf: [ref('AnalysisTokenUsage'), { type: 'null' }] },
+    stages: { type: 'array', minItems: 6, maxItems: 6, items: ref('AnalysisStageMetadata') },
+  }),
+  AnalysisSummaryResponse: obj({
+    analysisId: str, projectId: str, version: { type: 'integer', minimum: 1 }, engineVersion: str,
+    available: { type: 'boolean' }, summary: ref('AnalysisSummary'), providerMetadata: ref('AnalysisProviderMetadata'), reason: str,
+  }, ['analysisId', 'projectId', 'version', 'engineVersion', 'available', 'summary']),
   AssumptionUpdate: obj({ status: ref('AssumptionStatus'), evidenceIds: arr(str) }, ['status']),
   InterviewInput: obj({ participant: str }),
   Question: obj(strings('assumptionId question listenFor')),
@@ -65,7 +151,7 @@ endpoint('post', '/projects', 'createProject', 'Project', 'ProjectInput');
 endpoint('get', '/projects/{id}', 'getProject', 'Project');
 endpoint('patch', '/projects/{id}', 'updateProject', 'Project', 'ProjectUpdate');
 endpoint('delete', '/projects/{id}', 'deleteProject', free);
-endpoint('post', '/projects/{id}/analyze', 'analyzeProject', 'Analysis', 'AnalysisInput');
+endpoint('post', '/projects/{id}/analyze', 'analyzeProject', { type: 'string', format: 'uuid' }, 'AnalysisInput');
 endpoint('get', '/projects/{id}/analysis', 'getLatestAnalysis', 'Analysis');
 endpoint('get', '/projects/{id}/analyses', 'listAnalysisHistory', 'AnalysisHistoryItem', null, true);
 paths['/projects/{id}/analyses'].get.parameters.filter(p => p.in === 'query').forEach(p => {
@@ -73,6 +159,9 @@ paths['/projects/{id}/analyses'].get.parameters.filter(p => p.in === 'query').fo
 });
 endpoint('get', '/analyses/{id}', 'getAnalysis', 'Analysis');
 endpoint('get', '/analyses/{id}/assumptions', 'listAssumptions', 'Assumption', null, true);
+endpoint('get', '/analyses/{id}/blindspots', 'getAnalysisBlindspots', 'AnalysisBlindspots');
+endpoint('get', '/analyses/{id}/interview-questions', 'getAnalysisInterviewQuestions', 'AnalysisInterviewQuestions');
+endpoint('get', '/analyses/{id}/summary', 'getAnalysisSummary', 'AnalysisSummaryResponse');
 endpoint('patch', '/assumptions/{id}', 'updateAssumption', 'Assumption', 'AssumptionUpdate');
 endpoint('post', '/projects/{id}/interviews', 'createInterview', 'Interview', 'InterviewInput');
 endpoint('get', '/projects/{id}/interviews', 'listInterviews', 'Interview', null, true);

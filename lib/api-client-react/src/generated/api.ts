@@ -39,6 +39,9 @@ import type {
   ExperimentUpdate,
   FeedbackInput,
   GetAnalysis200,
+  GetAnalysisBlindspots200,
+  GetAnalysisInterviewQuestions200,
+  GetAnalysisSummary200,
   GetFeedbackSummary200,
   GetLatestAnalysis200,
   GetProject200,
@@ -1104,6 +1107,291 @@ export function useListAssumptions<TData = Awaited<ReturnType<typeof listAssumpt
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getListAssumptionsQueryOptions(id,params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetAnalysisBlindspotsUrl = (id: string,) => {
+
+
+
+
+  return `/api/analyses/${id}/blindspots`
+}
+
+export const getAnalysisBlindspots = async (id: string, options?: Parameters<typeof customFetch>[1]): Promise<GetAnalysisBlindspots200> => {
+
+  return customFetch<GetAnalysisBlindspots200>(getGetAnalysisBlindspotsUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAnalysisBlindspotsQueryKey = (id: string,) => {
+    return [
+    `/api/analyses/${id}/blindspots`
+    ] as const;
+    }
+
+
+export const getGetAnalysisBlindspotsQueryOptions = <TData = Awaited<ReturnType<typeof getAnalysisBlindspots>>, TError = ErrorType<unknown>>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAnalysisBlindspots>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAnalysisBlindspotsQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAnalysisBlindspots>>> = ({ signal }) => getAnalysisBlindspots(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAnalysisBlindspots>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAnalysisBlindspotsQueryResult = NonNullable<Awaited<ReturnType<typeof getAnalysisBlindspots>>>
+export type GetAnalysisBlindspotsQueryError = ErrorType<unknown>
+
+
+export function useGetAnalysisBlindspots<TData = Awaited<ReturnType<typeof getAnalysisBlindspots>>, TError = ErrorType<unknown>>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAnalysisBlindspots>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAnalysisBlindspots>>,
+          TError,
+          Awaited<ReturnType<typeof getAnalysisBlindspots>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAnalysisBlindspots<TData = Awaited<ReturnType<typeof getAnalysisBlindspots>>, TError = ErrorType<unknown>>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAnalysisBlindspots>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAnalysisBlindspots>>,
+          TError,
+          Awaited<ReturnType<typeof getAnalysisBlindspots>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAnalysisBlindspots<TData = Awaited<ReturnType<typeof getAnalysisBlindspots>>, TError = ErrorType<unknown>>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAnalysisBlindspots>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetAnalysisBlindspots<TData = Awaited<ReturnType<typeof getAnalysisBlindspots>>, TError = ErrorType<unknown>>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAnalysisBlindspots>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAnalysisBlindspotsQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetAnalysisInterviewQuestionsUrl = (id: string,) => {
+
+
+
+
+  return `/api/analyses/${id}/interview-questions`
+}
+
+export const getAnalysisInterviewQuestions = async (id: string, options?: Parameters<typeof customFetch>[1]): Promise<GetAnalysisInterviewQuestions200> => {
+
+  return customFetch<GetAnalysisInterviewQuestions200>(getGetAnalysisInterviewQuestionsUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAnalysisInterviewQuestionsQueryKey = (id: string,) => {
+    return [
+    `/api/analyses/${id}/interview-questions`
+    ] as const;
+    }
+
+
+export const getGetAnalysisInterviewQuestionsQueryOptions = <TData = Awaited<ReturnType<typeof getAnalysisInterviewQuestions>>, TError = ErrorType<unknown>>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAnalysisInterviewQuestions>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAnalysisInterviewQuestionsQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAnalysisInterviewQuestions>>> = ({ signal }) => getAnalysisInterviewQuestions(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAnalysisInterviewQuestions>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAnalysisInterviewQuestionsQueryResult = NonNullable<Awaited<ReturnType<typeof getAnalysisInterviewQuestions>>>
+export type GetAnalysisInterviewQuestionsQueryError = ErrorType<unknown>
+
+
+export function useGetAnalysisInterviewQuestions<TData = Awaited<ReturnType<typeof getAnalysisInterviewQuestions>>, TError = ErrorType<unknown>>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAnalysisInterviewQuestions>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAnalysisInterviewQuestions>>,
+          TError,
+          Awaited<ReturnType<typeof getAnalysisInterviewQuestions>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAnalysisInterviewQuestions<TData = Awaited<ReturnType<typeof getAnalysisInterviewQuestions>>, TError = ErrorType<unknown>>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAnalysisInterviewQuestions>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAnalysisInterviewQuestions>>,
+          TError,
+          Awaited<ReturnType<typeof getAnalysisInterviewQuestions>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAnalysisInterviewQuestions<TData = Awaited<ReturnType<typeof getAnalysisInterviewQuestions>>, TError = ErrorType<unknown>>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAnalysisInterviewQuestions>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetAnalysisInterviewQuestions<TData = Awaited<ReturnType<typeof getAnalysisInterviewQuestions>>, TError = ErrorType<unknown>>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAnalysisInterviewQuestions>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAnalysisInterviewQuestionsQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetAnalysisSummaryUrl = (id: string,) => {
+
+
+
+
+  return `/api/analyses/${id}/summary`
+}
+
+export const getAnalysisSummary = async (id: string, options?: Parameters<typeof customFetch>[1]): Promise<GetAnalysisSummary200> => {
+
+  return customFetch<GetAnalysisSummary200>(getGetAnalysisSummaryUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAnalysisSummaryQueryKey = (id: string,) => {
+    return [
+    `/api/analyses/${id}/summary`
+    ] as const;
+    }
+
+
+export const getGetAnalysisSummaryQueryOptions = <TData = Awaited<ReturnType<typeof getAnalysisSummary>>, TError = ErrorType<unknown>>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAnalysisSummary>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAnalysisSummaryQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAnalysisSummary>>> = ({ signal }) => getAnalysisSummary(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAnalysisSummary>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAnalysisSummaryQueryResult = NonNullable<Awaited<ReturnType<typeof getAnalysisSummary>>>
+export type GetAnalysisSummaryQueryError = ErrorType<unknown>
+
+
+export function useGetAnalysisSummary<TData = Awaited<ReturnType<typeof getAnalysisSummary>>, TError = ErrorType<unknown>>(
+ id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAnalysisSummary>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAnalysisSummary>>,
+          TError,
+          Awaited<ReturnType<typeof getAnalysisSummary>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAnalysisSummary<TData = Awaited<ReturnType<typeof getAnalysisSummary>>, TError = ErrorType<unknown>>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAnalysisSummary>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAnalysisSummary>>,
+          TError,
+          Awaited<ReturnType<typeof getAnalysisSummary>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAnalysisSummary<TData = Awaited<ReturnType<typeof getAnalysisSummary>>, TError = ErrorType<unknown>>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAnalysisSummary>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetAnalysisSummary<TData = Awaited<ReturnType<typeof getAnalysisSummary>>, TError = ErrorType<unknown>>(
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAnalysisSummary>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAnalysisSummaryQueryOptions(id,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

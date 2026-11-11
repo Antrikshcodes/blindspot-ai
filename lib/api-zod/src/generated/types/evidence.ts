@@ -5,14 +5,15 @@
  * Blindspot Phase 01 browser contract. Success responses retain the backend envelope.
  * OpenAPI spec version: 0.2.0
  */
+import type { EvidenceSentiment } from './evidenceSentiment';
 
 export interface Evidence {
   id: string;
   feedbackId: string;
   assumptionId: string;
   quote: string;
-  sentiment: string;
   reasoning: string;
   origin: string;
   createdAt: string;
+  sentiment: EvidenceSentiment;
 }

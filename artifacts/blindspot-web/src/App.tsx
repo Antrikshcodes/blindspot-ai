@@ -12,6 +12,7 @@ import InterviewsPage from '@/pages/interviews';
 import EvidencePage from '@/pages/evidence';
 import ExperimentsPage from '@/pages/experiments';
 import ResourcesPage from '@/pages/resources';
+import AnalysisReportPage from '@/pages/analysis-report';
 import { readError } from '@/lib/api';
 
 const queryClient = new QueryClient({
@@ -33,6 +34,7 @@ function Router() {
         <Switch>
           <Route path="/" component={ProjectsPage} />
           <Route path="/projects/:id" component={OverviewPage} />
+          <Route path="/projects/:id/analysis/:analysisId" component={AnalysisReportPage} />
           <Route path="/projects/:id/interviews" component={InterviewsPage} />
           <Route path="/projects/:id/evidence" component={EvidencePage} />
           <Route path="/projects/:id/experiments" component={ExperimentsPage} />

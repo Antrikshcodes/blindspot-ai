@@ -50,6 +50,14 @@ export function OutcomeDialog({ a, projectId, open, onOpenChange }: { a: Assumpt
   const m = useAssumptionMutation(a, projectId);
   const { toast } = useToast();
   const records = (a.evidenceRecords ?? []).filter((e) => e.assumptionId === a.id);
+  const requiredSentiment = outcome === 'SUPPORTED' ? 'SUPPORT' : outcome === 'INVALIDATED' ? 'INVALID' : null;
+  const eligibleRecords = requiredSentiment
+    ? records.filter((e) => requiredSentiment === 'SUPPORT'
+      ? e.sentiment === 'SUPPORTING'
+      : e.sentiment === 'INVALIDATING')
+    : records;
+  const eligibleIds = new Set(eligibleRecords.map((e) => e.id));
+  const eligibleSelection = sel.filter((id) => eligibleIds.has(id));
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) { m.reset(); setSel([]); } onOpenChange(o); }}>
       <DialogContent className="max-h-[92dvh] max-w-2xl overflow-y-auto bg-card">
@@ -63,7 +71,7 @@ export function OutcomeDialog({ a, projectId, open, onOpenChange }: { a: Assumpt
           <div className="grid gap-2 sm:grid-cols-3" role="radiogroup">
             {OUTCOMES.map((o) => (
               <label key={o.v} className={`cursor-pointer rounded border p-2.5 text-sm transition-colors ${outcome === o.v ? 'border-accent bg-accent/5' : 'border-foreground/15 hover:border-foreground/30'}`}>
-                <input type="radio" name="outcome" value={o.v} checked={outcome === o.v} onChange={() => setOutcome(o.v)} className="sr-only" data-testid={`radio-outcome-${o.v}`} />
+                <input type="radio" name="outcome" value={o.v} checked={outcome === o.v} onChange={() => { setOutcome(o.v); setSel([]); }} className="sr-only" data-testid={`radio-outcome-${o.v}`} />
                 <Chip value={o.v}>{o.label}</Chip>
                 <span className="mt-1.5 block text-[11px] leading-snug text-muted-foreground">{o.rule}</span>
               </label>
@@ -72,10 +80,12 @@ export function OutcomeDialog({ a, projectId, open, onOpenChange }: { a: Assumpt
         </fieldset>
         <fieldset className="space-y-2">
           <legend className="mb-1 text-sm font-medium">Cite evidence linked to this hypothesis ({sel.length} selected)</legend>
-          {records.length === 0 ? (
-            <p className="rounded border border-dashed p-3 text-xs text-muted-foreground">No evidence records are linked to this hypothesis yet. Add interview notes, then run feedback analysis on the Evidence tab.</p>
+          {eligibleRecords.length === 0 ? (
+            <p className="rounded border border-dashed p-3 text-xs text-muted-foreground">
+              {requiredSentiment ? `No linked ${requiredSentiment.toLowerCase()} evidence is available for this outcome. Evidence must be linked to this hypothesis and match the selected outcome.` : 'No evidence records are linked to this hypothesis yet. Add interview notes, then review evidence before recording an outcome.'}
+            </p>
           ) : (
-            records.map((e) => {
+            eligibleRecords.map((e) => {
               const on = sel.includes(e.id);
               return (
                 <label key={e.id} className={`flex cursor-pointer gap-3 rounded border p-2.5 text-xs transition-colors ${on ? 'border-accent bg-accent/5' : 'border-foreground/10'}`}>
@@ -98,14 +108,14 @@ export function OutcomeDialog({ a, projectId, open, onOpenChange }: { a: Assumpt
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
           <Button
-            disabled={sel.length === 0 || m.isPending}
+            disabled={eligibleSelection.length === 0 || m.isPending}
             data-testid="button-submit-outcome"
             onClick={() =>
               m.mutate(
-                { id: a.id, data: { status: outcome, evidenceIds: sel } },
+                { id: a.id, data: { status: outcome, evidenceIds: eligibleSelection } },
                 {
                   onSuccess: () => {
-                    toast({ title: `Marked ${outcome.toLowerCase()}`, description: `${sel.length} citation(s) recorded. You can reopen it any time.` });
+                    toast({ title: `Marked ${outcome.toLowerCase()}`, description: `${eligibleSelection.length} citation(s) recorded. You can reopen it any time.` });
                     setSel([]);
                     onOpenChange(false);
                   },
@@ -121,7 +131,7 @@ export function OutcomeDialog({ a, projectId, open, onOpenChange }: { a: Assumpt
   );
 }
 
-export function HypothesisRow({ a, rank, projectId, readOnly }: { a: Assumption; rank: number; projectId: string; readOnly?: boolean }) {
+export function HypothesisRow({ a, rank, projectId, readOnly, selected, onSelect }: { a: Assumption; rank: number; projectId: string; readOnly?: boolean; selected?: boolean; onSelect?: () => void }) {
   const [open, setOpen] = useState(false);
   const [dlg, setDlg] = useState(false);
   const m = useAssumptionMutation(a, projectId);
@@ -132,7 +142,7 @@ export function HypothesisRow({ a, rank, projectId, readOnly }: { a: Assumption;
   const isOutcome = a.status === 'SUPPORTED' || a.status === 'INVALIDATED' || a.status === 'INCONCLUSIVE';
 
   return (
-    <li className="rise group rounded-md border border-card-border bg-card transition-colors hover:border-foreground/25" style={{ animationDelay: `${Math.min(rank, 12) * 35}ms` }} data-testid={`row-hypothesis-${a.id}`}>
+    <li id={`assumption-${a.id}`} className={`rise group rounded-md border border-card-border bg-card transition-colors hover:border-foreground/25 ${selected ? 'ring-1 ring-accent' : ''}`} style={{ animationDelay: `${Math.min(rank, 12) * 35}ms` }} data-testid={`row-hypothesis-${a.id}`}>
       <div className="flex gap-3 p-3 md:p-4">
         <div className="flex w-10 shrink-0 flex-col items-center">
           <span className="font-mono text-[10px] text-muted-foreground">#{rank}</span>
@@ -145,7 +155,7 @@ export function HypothesisRow({ a, rank, projectId, readOnly }: { a: Assumption;
             <Chip value="x">{a.category}</Chip>
             <span className="font-mono text-[10px] text-muted-foreground">impact {a.impact} x uncertainty {a.uncertainty}</span>
           </div>
-          <p className="text-[15px] leading-snug">{a.description}</p>
+          <div className="flex items-start gap-2"><p className="text-[15px] leading-snug">{a.description}</p>{onSelect && <Button size="sm" variant={selected ? 'secondary' : 'ghost'} className="ml-auto shrink-0" onClick={onSelect} aria-pressed={selected}>{selected ? 'Selected' : 'Select'}</Button>}</div>
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <button onClick={() => setOpen(!open)} aria-expanded={open} className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground" data-testid={`button-expand-${a.id}`}>
               <ChevronDown className={`h-3.5 w-3.5 transition-transform ${open ? 'rotate-180' : ''}`} /> Why it matters

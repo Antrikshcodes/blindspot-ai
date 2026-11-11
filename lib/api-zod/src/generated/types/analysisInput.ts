@@ -7,5 +7,14 @@
  */
 
 export interface AnalysisInput {
+  /**
+     * @minLength 1
+     * @maxLength 4000
+     */
   marketContext?: string;
+  /**
+     * @minLength 1
+     * @maxLength 6000
+     */
+  additionalContext?: string;
 }
