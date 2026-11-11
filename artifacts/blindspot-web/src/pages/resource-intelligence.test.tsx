@@ -121,7 +121,7 @@ describe('Resource Intelligence generated-client regressions', () => {
     mount(); await ready(); fixture.failSearch = true;
     fixture.statuses = [{ provider: 'github', status: 'FAILED', count: 0, error: 'PROVIDER_RATE_LIMITED' }];
     setQuery('a failed search'); search(); await settled();
-    expect(screen.getByTestId('text-search-failed')).toHaveTextContent('last completed search, not this query');
+    expect(screen.getByTestId('text-search-failed')).toHaveTextContent('collection is read separately from the latest completed search');
     expect(screen.getByTestId('input-resource-query')).toHaveValue('a failed search');
     expect(screen.getAllByTestId(/^resource-card-/)).toHaveLength(4);
     expect(posts()).toHaveLength(1);

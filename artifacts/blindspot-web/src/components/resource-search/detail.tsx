@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { ExternalLink, Sparkles } from 'lucide-react';
 import { useGetResource, getGetResourceQueryKey, type Explanation, type Resource, type SavedResource } from '@workspace/api-client-react';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
@@ -43,7 +44,8 @@ export function AiTag() {
   );
 }
 
-export function ResourceDetail({ selected, onClose, projectId }: { selected: Selected | null; onClose: () => void; projectId?: string }) {
+/** rankingContent: optional replacement for the default Ranking + Explanation sections. Snapshot section always renders. */
+export function ResourceDetail({ selected, onClose, projectId, rankingContent }: { selected: Selected | null; onClose: () => void; projectId?: string; rankingContent?: ReactNode }) {
   const rid = selected?.resource.id ?? '';
   const q = useGetResource(rid, { query: { enabled: !!rid, queryKey: getGetResourceQueryKey(rid) } });
   const cur = q.data?.data;
@@ -89,6 +91,7 @@ export function ResourceDetail({ selected, onClose, projectId }: { selected: Sel
               {drift && <p className="rounded border border-[#1F3D2B]/20 bg-[#E8DCC4] p-2 text-xs" data-testid="text-snapshot-drift">The current record differs from the snapshot taken at search time. Ranking below reflects the snapshot.</p>}
               {rec ? (
                 <>
+                  {rankingContent !== undefined ? rankingContent : (<>
                   <section>
                     <p className="eyebrow mb-2">Ranking at search time (heuristic, not endorsement)</p>
                     <div className="mb-2 flex flex-wrap gap-3"><ScoreBar label="Rank" v={rec.rankScore} strong /><ScoreBar label="Relevance" v={rec.relevanceScore} /><ScoreBar label="Quality" v={rec.qualityScore} /></div>
@@ -106,6 +109,7 @@ export function ResourceDetail({ selected, onClose, projectId }: { selected: Sel
                       </div>
                     ) : <p className="text-xs italic text-[#1F3D2B]/60">No explanation (off or unavailable for this search).</p>}
                   </section>
+                  </>)}
                   <section>
                     <p className="eyebrow mb-2 break-all">Snapshot from search {rec.searchId.slice(0, 8)}</p>
                     <div className="rounded-md border border-[#1F3D2B]/12 bg-[#E8DCC4]/40 p-3"><KV data={rec.sourceSnapshot} /></div>

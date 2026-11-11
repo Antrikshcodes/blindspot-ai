@@ -13,6 +13,7 @@ const TABS = [
   { seg: '/experiments', label: 'Experiments' },
   { seg: '/resources', label: 'Resource Intelligence', tid: 'resources' },
   { seg: '/library', label: 'Resource Library', tid: 'library' },
+  { seg: '/recommendations', label: 'Recommended Resources', tid: 'recommendations' },
 ];
 
 export function ProjectFrame({ id, children }: { id: string; children: (p: Project) => ReactNode }) {

@@ -45,7 +45,7 @@ export function ResourceWorkspace({ projectId }: { projectId: string }) {
           {busy && <p className="font-mono text-xs text-[#1F3D2B]/70">Querying providers. Nothing is shown until the run completes.</p>}
           {failedAfter && (
             <p role="alert" className="rounded-md border border-destructive/30 bg-destructive/5 p-3 text-xs" data-testid="text-search-failed">
-              The search attempt at {fmtWhen(run.failedAt)}{run.failedQuery ? ` for "${run.failedQuery}"` : ''} failed. Check history for any server-recorded diagnostics. The collection below still shows the last completed search, not this query.
+              The request at {fmtWhen(run.failedAt)}{run.failedQuery ? ` for "${run.failedQuery}"` : ''} failed to receive a successful response. Check history for server-recorded diagnostics. The collection is read separately from the latest completed search; it may include results whose response was lost.
             </p>
           )}
           {last && (

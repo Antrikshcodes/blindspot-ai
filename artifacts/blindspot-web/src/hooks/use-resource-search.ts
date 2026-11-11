@@ -4,6 +4,7 @@ import {
   useSearchResources,
   getListResourcesQueryKey,
   getListResourceSearchesQueryKey,
+  getGetLatestAnalysisQueryKey,
   type ResourceSearch,
 } from '@workspace/api-client-react';
 import { emptyDraft, type Draft } from '@/lib/resource-search';
@@ -41,20 +42,25 @@ export function useResourceSession(projectId: string) {
 export function useRunResourceSearch(projectId: string) {
   const qc = useQueryClient();
   const inflight = useRef(false);
+  const writeScope = useRef<unknown>(null);
   const mk = searchMutationKey(projectId);
+  const scopeIsCurrent = () => !!writeScope.current && writeScope.current === qc.getQueryCache().find({
+    queryKey: key(projectId), exact: true,
+  });
   const m = useSearchResources({
     mutation: {
       mutationKey: mk,
       retry: false,
       onSuccess: (res) => {
+        if (!scopeIsCurrent()) return;
         qc.setQueryData<Store>(key(projectId), (o) => ({
           ...(o ?? emptyStore()),
           notice: null,
           run: { last: res.data, lastAt: new Date().toISOString(), failedAt: null, failedQuery: null },
         }));
-        return qc.invalidateQueries({ queryKey: getListResourcesQueryKey(projectId) });
       },
       onError: (_e, vars) => {
+        if (!scopeIsCurrent()) return;
         qc.setQueryData<Store>(key(projectId), (o) => {
           const s = o ?? emptyStore();
           return { ...s, run: { ...s.run, failedAt: new Date().toISOString(), failedQuery: vars.data.query ?? null } };
@@ -62,13 +68,22 @@ export function useRunResourceSearch(projectId: string) {
       },
       onSettled: () => {
         inflight.current = false;
-        return qc.invalidateQueries({ queryKey: getListResourceSearchesQueryKey(projectId) });
+        if (!scopeIsCurrent()) return;
+        // A failed/lost response may still have committed a completed search.
+        return Promise.all([
+          qc.invalidateQueries({ queryKey: getListResourcesQueryKey(projectId) }),
+          qc.invalidateQueries({ queryKey: getListResourceSearchesQueryKey(projectId) }),
+          qc.invalidateQueries({ queryKey: getGetLatestAnalysisQueryKey(projectId) }),
+        ]);
       },
     },
   });
   const busy = useIsMutating({ mutationKey: mk }) > 0 || m.isPending;
   const tryLock = () => {
     if (inflight.current || qc.isMutating({ mutationKey: mk }) > 0) return false;
+    const scope = qc.getQueryCache().find({ queryKey: key(projectId), exact: true });
+    if (!scope) return false;
+    writeScope.current = scope;
     inflight.current = true;
     return true;
   };
