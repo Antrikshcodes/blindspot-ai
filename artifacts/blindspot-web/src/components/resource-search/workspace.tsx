@@ -89,7 +89,7 @@ export function ResourceWorkspace({ projectId }: { projectId: string }) {
         {tab === 'results' ? <Collection key={last?.searchId ?? 'persisted'} projectId={projectId} onOpen={setSelected} /> : <History projectId={projectId} onUseQuery={applyQueryText} />}
       </section>
 
-      <ResourceDetail selected={selected} onClose={() => setSelected(null)} />
+      <ResourceDetail projectId={projectId} selected={selected} onClose={() => setSelected(null)} />
     </div>
   );
 }

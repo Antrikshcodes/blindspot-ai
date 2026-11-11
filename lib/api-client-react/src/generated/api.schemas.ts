@@ -652,6 +652,19 @@ export interface SavedResource {
   updatedAt: string;
 }
 
+export interface SavedResourceListItem {
+  resource: Resource;
+  saved: SavedResource;
+  /** @nullable */
+  relevanceScore: number | null;
+  /** @nullable */
+  rankScore: number | null;
+}
+
+export interface ResourceRemoval {
+  removedFromSaved: boolean;
+}
+
 export interface ResourceListItem {
   resource: Resource;
   recommendation?: Recommendation;
@@ -1008,6 +1021,40 @@ export type ListResourceSearches200 = {
   data: ListResourceSearches200Data;
 };
 
+export type ListSavedResourcesParams = {
+page?: number;
+limit?: number;
+category?: ResourceCategory;
+/**
+ * @pattern ^[a-z_]{1,50}$
+ */
+provider?: string;
+/**
+ * @minimum 0
+ * @maximum 100
+ */
+minRelevance?: number;
+sort?: ListSavedResourcesSort;
+};
+
+export type ListSavedResourcesSort = typeof ListSavedResourcesSort[keyof typeof ListSavedResourcesSort];
+
+
+export const ListSavedResourcesSort = {
+  relevance: 'relevance',
+  lastUpdated: 'lastUpdated',
+} as const;
+
+export type ListSavedResources200Data = {
+  items: SavedResourceListItem[];
+  pagination: Pagination;
+};
+
+export type ListSavedResources200 = {
+  success: boolean;
+  data: ListSavedResources200Data;
+};
+
 export type GetResource200 = {
   success: boolean;
   data: Resource;
@@ -1018,10 +1065,8 @@ export type SaveResource201 = {
   data: SavedResource;
 };
 
-export type RemoveSavedResource200Data = { [key: string]: unknown };
-
 export type RemoveSavedResource200 = {
   success: boolean;
-  data: RemoveSavedResource200Data;
+  data: ResourceRemoval;
 };
 

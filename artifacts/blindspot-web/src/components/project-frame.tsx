@@ -11,7 +11,8 @@ const TABS = [
   { seg: '/interviews', label: 'Customer Discovery', tid: 'interviews' },
   { seg: '/evidence', label: 'Evidence Intelligence', tid: 'evidence' },
   { seg: '/experiments', label: 'Experiments' },
-  { seg: '/resources', label: 'Resource Intelligence' },
+  { seg: '/resources', label: 'Resource Intelligence', tid: 'resources' },
+  { seg: '/library', label: 'Resource Library', tid: 'library' },
 ];
 
 export function ProjectFrame({ id, children }: { id: string; children: (p: Project) => ReactNode }) {

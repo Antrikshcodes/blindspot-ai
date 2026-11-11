@@ -1444,6 +1444,110 @@
         }
       }
     },
+    "/projects/{id}/resources/saved": {
+      "get": {
+        "operationId": "listSavedResources",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/ResourceCategory"
+            }
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z_]{1,50}$"
+            }
+          },
+          {
+            "name": "minRelevance",
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "relevance",
+                "lastUpdated"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/SavedResourceListItem"
+                          }
+                        },
+                        "pagination": {
+                          "$ref": "#/components/schemas/Pagination"
+                        }
+                      },
+                      "required": [
+                        "items",
+                        "pagination"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/resources/{id}": {
       "get": {
         "operationId": "getResource",
@@ -1569,8 +1673,7 @@
                       "type": "boolean"
                     },
                     "data": {
-                      "type": "object",
-                      "additionalProperties": true
+                      "$ref": "#/components/schemas/ResourceRemoval"
                     }
                   },
                   "required": [
@@ -3243,6 +3346,46 @@
           "status",
           "createdAt",
           "updatedAt"
+        ]
+      },
+      "SavedResourceListItem": {
+        "type": "object",
+        "properties": {
+          "resource": {
+            "$ref": "#/components/schemas/Resource"
+          },
+          "saved": {
+            "$ref": "#/components/schemas/SavedResource"
+          },
+          "relevanceScore": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "rankScore": {
+            "type": [
+              "number",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "resource",
+          "saved",
+          "relevanceScore",
+          "rankScore"
+        ]
+      },
+      "ResourceRemoval": {
+        "type": "object",
+        "properties": {
+          "removedFromSaved": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "removedFromSaved"
         ]
       },
       "ResourceListItem": {

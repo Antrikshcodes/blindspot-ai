@@ -1200,6 +1200,70 @@ export const ListResourceSearchesResponse = zod.object({
 })
 
 
+export const ListSavedResourcesParams = zod.object({
+  "id": zod.coerce.string().uuid()
+})
+
+export const listSavedResourcesQueryProviderRegExp = new RegExp('^[a-z_]{1,50}$');
+export const listSavedResourcesQueryMinRelevanceMin = 0;
+export const listSavedResourcesQueryMinRelevanceMax = 100;
+
+
+
+export const ListSavedResourcesQueryParams = zod.object({
+  "page": zod.coerce.number().int().optional(),
+  "limit": zod.coerce.number().int().optional(),
+  "category": zod.enum(['GITHUB_REPOSITORY', 'DATASET', 'AI_MODEL', 'API', 'DOCUMENTATION', 'OPEN_SOURCE_TOOL', 'LEARNING_RESOURCE']).optional(),
+  "provider": zod.coerce.string().regex(listSavedResourcesQueryProviderRegExp).optional(),
+  "minRelevance": zod.coerce.number().min(listSavedResourcesQueryMinRelevanceMin).max(listSavedResourcesQueryMinRelevanceMax).optional(),
+  "sort": zod.enum(['relevance', 'lastUpdated']).optional()
+})
+
+export const ListSavedResourcesResponse = zod.object({
+  "success": zod.boolean(),
+  "data": zod.object({
+  "items": zod.array(zod.object({
+  "resource": zod.object({
+  "id": zod.string(),
+  "provider": zod.string(),
+  "externalId": zod.string(),
+  "url": zod.string(),
+  "name": zod.string(),
+  "description": zod.string(),
+  "retrievedAt": zod.string(),
+  "category": zod.enum(['GITHUB_REPOSITORY', 'DATASET', 'AI_MODEL', 'API', 'DOCUMENTATION', 'OPEN_SOURCE_TOOL', 'LEARNING_RESOURCE']),
+  "license": zod.string().nullable(),
+  "language": zod.string().nullable(),
+  "sourceUpdatedAt": zod.string().nullable(),
+  "tags": zod.array(zod.string()),
+  "qualitySignals": zod.record(zod.string(), zod.unknown()),
+  "sourceMetadata": zod.record(zod.string(), zod.unknown()),
+  "sourceApiUrl": zod.string().nullish(),
+  "sourceCreatedAt": zod.string().nullish(),
+  "technical_metadata": zod.record(zod.string(), zod.unknown()).optional(),
+  "popularity_metrics": zod.record(zod.string(), zod.unknown()).optional(),
+  "maintenance_signals": zod.record(zod.string(), zod.unknown()).optional()
+}),
+  "saved": zod.object({
+  "id": zod.string(),
+  "projectId": zod.string(),
+  "resourceId": zod.string(),
+  "status": zod.string(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+}),
+  "relevanceScore": zod.number().nullable(),
+  "rankScore": zod.number().nullable()
+})),
+  "pagination": zod.object({
+  "page": zod.number(),
+  "limit": zod.number(),
+  "total": zod.number().optional()
+})
+})
+})
+
+
 export const GetResourceParams = zod.object({
   "id": zod.coerce.string().uuid()
 })
@@ -1259,7 +1323,9 @@ export const RemoveSavedResourceParams = zod.object({
 
 export const RemoveSavedResourceResponse = zod.object({
   "success": zod.boolean(),
-  "data": zod.record(zod.string(), zod.unknown())
+  "data": zod.object({
+  "removedFromSaved": zod.boolean()
+})
 })
 
 

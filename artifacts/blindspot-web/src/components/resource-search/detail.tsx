@@ -1,7 +1,8 @@
 import { ExternalLink, Sparkles } from 'lucide-react';
-import { useGetResource, getGetResourceQueryKey, type Explanation, type Resource } from '@workspace/api-client-react';
+import { useGetResource, getGetResourceQueryKey, type Explanation, type Resource, type SavedResource } from '@workspace/api-client-react';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { ErrorPanel, KV, RowsSkeleton } from '@/components/kit';
+import { ResourceSaveControls } from '@/components/resource-library/save-controls';
 import { CATEGORY_META, fmtWhen, safeExternal } from '@/lib/resource-search';
 
 export type RecContext = {
@@ -13,7 +14,7 @@ export type RecContext = {
   sourceSnapshot: Record<string, unknown>;
   explanation: Explanation | null;
 };
-export type Selected = { resource: Resource; rec?: RecContext; origin: string };
+export type Selected = { resource: Resource; rec?: RecContext; origin: string; saved?: SavedResource | null };
 
 export function ExternalLinkSafe({ url, testId = 'link-resource-external' }: { url: string; testId?: string }) {
   const safe = safeExternal(url);
@@ -42,7 +43,7 @@ export function AiTag() {
   );
 }
 
-export function ResourceDetail({ selected, onClose }: { selected: Selected | null; onClose: () => void }) {
+export function ResourceDetail({ selected, onClose, projectId }: { selected: Selected | null; onClose: () => void; projectId?: string }) {
   const rid = selected?.resource.id ?? '';
   const q = useGetResource(rid, { query: { enabled: !!rid, queryKey: getGetResourceQueryKey(rid) } });
   const cur = q.data?.data;
@@ -62,6 +63,12 @@ export function ResourceDetail({ selected, onClose }: { selected: Selected | nul
               </SheetDescription>
             </SheetHeader>
             <div className="mt-5 space-y-6 text-sm">
+              {projectId && selected.saved !== undefined && cur && (
+                <section className="rounded-md border border-[#1F3D2B]/15 bg-[#E8DCC4]/50 p-3" aria-label="Project library">
+                  <p className="eyebrow mb-2">This project's library</p>
+                  <ResourceSaveControls projectId={projectId} resource={cur} knownSaved={selected.saved} />
+                </section>
+              )}
               <section>
                 <p className="eyebrow mb-2">Current source record</p>
                 {q.isLoading ? <RowsSkeleton rows={2} /> : q.isError ? <ErrorPanel error={q.error} onRetry={() => q.refetch()} title="Could not load current record" /> : cur ? (

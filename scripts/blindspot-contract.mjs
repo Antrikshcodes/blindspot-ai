@@ -143,6 +143,9 @@ const schemas = {
   Explanation: obj({ ...strings('recommendedUseCase explanation integrationDifficulty'), limitations: arr(str), alternativeResourceIds: arr(str), reviewRequired: { type: 'boolean' }, aiGenerated: { type: 'boolean' } }, ['recommendedUseCase', 'explanation', 'integrationDifficulty', 'limitations', 'alternativeResourceIds']),
   Recommendation: obj({ ...strings('id searchId resourceId'), relevanceScore: num, qualityScore: num, rankScore: num, ranking: free, sourceSnapshot: free, explanation: { anyOf: [ref('Explanation'), { type: 'null' }] } }),
   SavedResource: obj({ ...strings('id projectId resourceId status createdAt updatedAt') }),
+  SavedResourceListItem: obj({ resource: ref('Resource'), saved: ref('SavedResource'),
+    relevanceScore: { type: ['number', 'null'] }, rankScore: { type: ['number', 'null'] } }),
+  ResourceRemoval: obj({ removedFromSaved: { type: 'boolean' } }),
   ResourceListItem: obj({ resource: ref('Resource'), recommendation: ref('Recommendation'), saved: { anyOf: [ref('SavedResource'), { type: 'null' }] } }, ['resource', 'saved']),
   SearchItem: obj({ resource: ref('Resource'), ...strings('id searchId resourceId'), relevanceScore: num, qualityScore: num, rankScore: num, ranking: free, sourceSnapshot: free, explanation: { anyOf: [ref('Explanation'), { type: 'null' }] } }),
   ProviderStatus: obj({ provider: str, status: str, count: num, error: str, queries: num }, ['provider', 'status', 'count']),
@@ -213,9 +216,15 @@ endpoint('get', '/projects/{id}/resources', 'listResources', 'ResourceListItem',
   { name: 'sort', in: 'query', schema: enumeration('relevance lastUpdated') },
 ]);
 endpoint('get', '/projects/{id}/resources/searches', 'listResourceSearches', 'ResourceSearchHistory', null, true);
+endpoint('get', '/projects/{id}/resources/saved', 'listSavedResources', 'SavedResourceListItem', null, true, [
+  { name: 'category', in: 'query', schema: ref('ResourceCategory') },
+  { name: 'provider', in: 'query', schema: { type: 'string', pattern: '^[a-z_]{1,50}$' } },
+  { name: 'minRelevance', in: 'query', schema: { type: 'number', minimum: 0, maximum: 100 } },
+  { name: 'sort', in: 'query', schema: enumeration('relevance lastUpdated') },
+]);
 endpoint('get', '/resources/{id}', 'getResource', 'Resource');
 endpoint('post', '/resources/{id}/save', 'saveResource', 'SavedResource', 'ResourceSaveInput');
-endpoint('delete', '/projects/{id}/resources/{resourceId}/save', 'removeSavedResource', free);
+endpoint('delete', '/projects/{id}/resources/{resourceId}/save', 'removeSavedResource', 'ResourceRemoval');
 writeFileSync(new URL('../lib/api-spec/openapi.yaml', import.meta.url), JSON.stringify({
   openapi: '3.1.0', info: { title: 'Api', version: '0.2.0', description: 'Blindspot Phase 01 browser contract. Success responses retain the backend envelope.' },
   servers: [{ url: '/api' }], paths,

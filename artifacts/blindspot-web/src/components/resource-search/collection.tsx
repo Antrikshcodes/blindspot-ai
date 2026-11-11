@@ -11,6 +11,7 @@ import {
 import { EmptyState, ErrorPanel, Pager, RowsSkeleton } from '@/components/kit';
 import { useStagger } from '@/components/discovery/motion';
 import { CATEGORIES, CATEGORY_META, PROVIDERS, PROVIDER_META, fmtWhen } from '@/lib/resource-search';
+import { ResourceSaveControls } from '@/components/resource-library/save-controls';
 import { AiTag, ExternalLinkSafe, ScoreBar, type Selected } from './detail';
 
 const LIMIT = 20;
@@ -73,7 +74,7 @@ export function Collection({ projectId, onOpen }: { projectId: string; onOpen: (
         <ul className="grid gap-3 md:grid-cols-2">
           {items.map((it, i) => (
             <motion.li key={`${it.resource.id}-${it.recommendation?.id ?? i}`} {...stagger(i)} className="min-w-0">
-              <Card item={it} position={(page - 1) * LIMIT + i + 1} onOpen={onOpen} />
+              <Card projectId={projectId} item={it} position={(page - 1) * LIMIT + i + 1} onOpen={onOpen} />
             </motion.li>
           ))}
         </ul>
@@ -83,9 +84,9 @@ export function Collection({ projectId, onOpen }: { projectId: string; onOpen: (
   );
 }
 
-function Card({ item, position, onOpen }: { item: ResourceListItem; position: number; onOpen: (s: Selected) => void }) {
+function Card({ projectId, item, position, onOpen }: { projectId: string; item: ResourceListItem; position: number; onOpen: (s: Selected) => void }) {
   const { resource: r, recommendation: rec } = item;
-  const open = () => onOpen({ resource: r, rec, origin: 'latest completed search collection' });
+  const open = () => onOpen({ resource: r, rec, saved: item.saved, origin: 'latest completed search collection' });
   return (
     <article className="flex h-full flex-col rounded-md border border-[#1F3D2B]/12 bg-[#FBF7EE] p-3.5 transition-colors hover:border-[#1F3D2B]/35" data-testid={`resource-card-${r.id}`}>
       <div className="flex items-start gap-3">
@@ -117,7 +118,10 @@ function Card({ item, position, onOpen }: { item: ResourceListItem; position: nu
           {rec.explanation && <span className="ml-auto"><AiTag /></span>}
         </div>
       ) : <p className="mt-2 text-[11px] italic text-[#1F3D2B]/55">No ranking snapshot for this item.</p>}
-      <div className="mt-auto pt-3"><ExternalLinkSafe url={r.url} testId={`link-resource-external-${r.id}`} /></div>
+      <div className="mt-auto flex flex-wrap items-end justify-between gap-2 pt-3">
+        <ExternalLinkSafe url={r.url} testId={`link-resource-external-${r.id}`} />
+        <ResourceSaveControls projectId={projectId} resource={r} knownSaved={item.saved} compact />
+      </div>
     </article>
   );
 }

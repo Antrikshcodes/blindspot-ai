@@ -6,4 +6,6 @@
  * OpenAPI spec version: 0.2.0
  */
 
-export type RemoveSavedResource200Data = { [key: string]: unknown };
+export interface ResourceRemoval {
+  removedFromSaved: boolean;
+}

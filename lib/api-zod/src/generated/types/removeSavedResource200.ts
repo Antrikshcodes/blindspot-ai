@@ -5,9 +5,9 @@
  * Blindspot Phase 01 browser contract. Success responses retain the backend envelope.
  * OpenAPI spec version: 0.2.0
  */
-import type { RemoveSavedResource200Data } from './removeSavedResource200Data';
+import type { ResourceRemoval } from './resourceRemoval';
 
 export type RemoveSavedResource200 = {
   success: boolean;
-  data: RemoveSavedResource200Data;
+  data: ResourceRemoval;
 };

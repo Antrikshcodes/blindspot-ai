@@ -12,6 +12,7 @@ import InterviewsPage from '@/pages/interviews';
 import EvidencePage from '@/pages/evidence';
 import ExperimentsPage from '@/pages/experiments';
 import ResourcesPage from '@/pages/resources';
+import ResourceLibraryPage from '@/pages/resource-library';
 import AnalysisReportPage from '@/pages/analysis-report';
 import { readError } from '@/lib/api';
 
@@ -39,6 +40,7 @@ function Router() {
           <Route path="/projects/:id/evidence" component={EvidencePage} />
           <Route path="/projects/:id/experiments" component={ExperimentsPage} />
           <Route path="/projects/:id/resources" component={ResourcesPage} />
+          <Route path="/projects/:id/library" component={ResourceLibraryPage} />
           <Route component={NotFound} />
         </Switch>
       </RoutedErrorBoundary>

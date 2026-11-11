@@ -64,6 +64,8 @@ import type {
   ListResourceSearchesParams,
   ListResources200,
   ListResourcesParams,
+  ListSavedResources200,
+  ListSavedResourcesParams,
   ProjectInput,
   ProjectUpdate,
   RemoveSavedResource200,
@@ -2620,6 +2622,116 @@ export function useListResourceSearches<TData = Awaited<ReturnType<typeof listRe
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getListResourceSearchesQueryOptions(id,params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getListSavedResourcesUrl = (id: string,
+    params?: ListSavedResourcesParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/projects/${id}/resources/saved?${stringifiedParams}` : `/api/projects/${id}/resources/saved`
+}
+
+export const listSavedResources = async (id: string,
+    params?: ListSavedResourcesParams, options?: Parameters<typeof customFetch>[1]): Promise<ListSavedResources200> => {
+
+  return customFetch<ListSavedResources200>(getListSavedResourcesUrl(id,params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListSavedResourcesQueryKey = (id: string,
+    params?: ListSavedResourcesParams,) => {
+    return [
+    `/api/projects/${id}/resources/saved`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getListSavedResourcesQueryOptions = <TData = Awaited<ReturnType<typeof listSavedResources>>, TError = ErrorType<unknown>>(id: string,
+    params?: ListSavedResourcesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSavedResources>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListSavedResourcesQueryKey(id,params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSavedResources>>> = ({ signal }) => listSavedResources(id,params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listSavedResources>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListSavedResourcesQueryResult = NonNullable<Awaited<ReturnType<typeof listSavedResources>>>
+export type ListSavedResourcesQueryError = ErrorType<unknown>
+
+
+export function useListSavedResources<TData = Awaited<ReturnType<typeof listSavedResources>>, TError = ErrorType<unknown>>(
+ id: string,
+    params: undefined |  ListSavedResourcesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSavedResources>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listSavedResources>>,
+          TError,
+          Awaited<ReturnType<typeof listSavedResources>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListSavedResources<TData = Awaited<ReturnType<typeof listSavedResources>>, TError = ErrorType<unknown>>(
+ id: string,
+    params?: ListSavedResourcesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSavedResources>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listSavedResources>>,
+          TError,
+          Awaited<ReturnType<typeof listSavedResources>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListSavedResources<TData = Awaited<ReturnType<typeof listSavedResources>>, TError = ErrorType<unknown>>(
+ id: string,
+    params?: ListSavedResourcesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSavedResources>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useListSavedResources<TData = Awaited<ReturnType<typeof listSavedResources>>, TError = ErrorType<unknown>>(
+ id: string,
+    params?: ListSavedResourcesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listSavedResources>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getListSavedResourcesQueryOptions(id,params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
