@@ -69,7 +69,7 @@ export function safeHttps(url?: string | null): string | null {
   if (!url) return null;
   try {
     const u = new URL(url);
-    return u.protocol === 'https:' ? u.toString() : null;
+    return u.protocol === 'https:' && !u.username && !u.password ? u.toString() : null;
   } catch {
     return null;
   }

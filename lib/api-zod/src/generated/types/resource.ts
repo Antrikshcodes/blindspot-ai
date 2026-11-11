@@ -6,8 +6,11 @@
  * OpenAPI spec version: 0.2.0
  */
 import type { ResourceCategory } from './resourceCategory';
+import type { ResourceMaintenanceSignals } from './resourceMaintenanceSignals';
+import type { ResourcePopularityMetrics } from './resourcePopularityMetrics';
 import type { ResourceQualitySignals } from './resourceQualitySignals';
 import type { ResourceSourceMetadata } from './resourceSourceMetadata';
+import type { ResourceTechnicalMetadata } from './resourceTechnicalMetadata';
 
 export interface Resource {
   id: string;
@@ -27,4 +30,11 @@ export interface Resource {
   tags: string[];
   qualitySignals: ResourceQualitySignals;
   sourceMetadata: ResourceSourceMetadata;
+  /** @nullable */
+  sourceApiUrl?: string | null;
+  /** @nullable */
+  sourceCreatedAt?: string | null;
+  technical_metadata?: ResourceTechnicalMetadata;
+  popularity_metrics?: ResourcePopularityMetrics;
+  maintenance_signals?: ResourceMaintenanceSignals;
 }

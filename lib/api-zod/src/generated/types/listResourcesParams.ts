@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.2.0
  */
 import type { ListResourcesSaved } from './listResourcesSaved';
+import type { ListResourcesSort } from './listResourcesSort';
 import type { ResourceCategory } from './resourceCategory';
 
 export type ListResourcesParams = {
@@ -13,4 +14,14 @@ page?: number;
 limit?: number;
 saved?: ListResourcesSaved;
 category?: ResourceCategory;
+/**
+ * @pattern ^[a-z_]{1,50}$
+ */
+provider?: string;
+/**
+ * @minimum 0
+ * @maximum 100
+ */
+minRelevance?: number;
+sort?: ListResourcesSort;
 };

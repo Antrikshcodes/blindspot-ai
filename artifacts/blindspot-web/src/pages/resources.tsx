@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { useParams } from 'wouter';
+import { Link, useParams, useSearch } from 'wouter';
 import { skipToken, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Search, Bookmark, BookmarkX } from 'lucide-react';
 import {
@@ -25,25 +25,37 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { useToast } from '@/hooks/use-toast';
 import { ProjectFrame } from '@/components/project-frame';
+import { ResourceWorkspace } from '@/components/resource-search/workspace';
 import { AiLabel, Chip, EmptyState, ErrorPanel, InlineError, KV, Pager, RowsSkeleton, SafeLink, SectionHead } from '@/components/kit';
 import { PAGE_SIZE, fmtDate, fmtDay, humanize } from '@/lib/api';
 
 export default function ResourcesPage() {
   const { id = '' } = useParams<{ id: string }>();
-  return <ProjectFrame id={id}>{(p) => <Resources projectId={p.id} />}</ProjectFrame>;
+  const saved = new URLSearchParams(useSearch()).get('collection') === 'saved';
+  return <ProjectFrame id={id}>{(p) => saved ? (
+    <div className="space-y-4">
+      <Link href={`/projects/${p.id}/resources`} className="text-sm underline">Back to Resource Intelligence</Link>
+      <Resources projectId={p.id} initialTab="saved" />
+    </div>
+  ) : (
+    <>
+      <ResourceWorkspace key={p.id} projectId={p.id} />
+      <Link href={`/projects/${p.id}/resources?collection=saved`} className="mt-6 inline-block text-xs text-muted-foreground underline">Open existing saved collection</Link>
+    </>
+  )}</ProjectFrame>;
 }
 
 type Item = { resource: Resource; recommendation?: Recommendation; saved?: SavedResource | null };
 const CATS = Object.values(ResourceCategory);
 const SAVE_STATUSES: ResourceSaveInputStatus[] = ['CONSIDERING', 'TRYING', 'INTEGRATED'];
 
-function Resources({ projectId }: { projectId: string }) {
+function Resources({ projectId, initialTab = 'latest' }: { projectId: string; initialTab?: 'latest' | 'saved' }) {
   const [last, setLast] = useState<ResourceSearch | null>(null);
-  const [tab, setTab] = useState<'latest' | 'saved'>('latest');
+  const [tab, setTab] = useState<'latest' | 'saved'>(initialTab);
   const [detail, setDetail] = useState<Item | null>(null);
   return (
     <div className="space-y-8">
-      <SearchPanel projectId={projectId} onResult={(r) => { setLast(r); setTab('latest'); }} />
+      {initialTab !== 'saved' && <SearchPanel projectId={projectId} onResult={(r) => { setLast(r); setTab('latest'); }} />}
       {last && <SearchMeta s={last} onOpen={setDetail} projectId={projectId} />}
       <section>
         <SectionHead

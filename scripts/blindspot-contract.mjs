@@ -111,7 +111,7 @@ const schemas = {
   AssumptionUpdate: obj({ status: ref('AssumptionStatus'), evidenceIds: arr(str) }, ['status']),
   InterviewInput: obj({ participant: str }),
   Question: obj(strings('assumptionId question listenFor')),
-  Interview: obj({ ...strings('id projectId participant createdAt'), questions: arr('Question') }),
+  Interview: obj({ ...strings('id projectId participant createdAt'), sourceAnalysisVersion: { type: ['integer', 'null'], minimum: 1 }, questions: arr('Question') }),
   FeedbackInput: obj({ notes: str, assumptionIds: arr(str) }, ['notes']),
   Feedback: obj(strings('id interviewId notes createdAt')),
   FeedbackSummaryResult: obj({ themes: arr(str), evidence: arr(free), contradictions: arr(free), evidenceGaps: arr(str), unsupportedConclusions: arr(str) }),
@@ -121,15 +121,47 @@ const schemas = {
   ExperimentUpdate: obj({ status: enumeration('PLANNED IN_PROGRESS COMPLETED ABANDONED'), observedResult: str }, ['status']),
   Experiment: obj({ ...strings('id projectId assumptionId name explanation method evidenceToCollect successCriteria status createdAt updatedAt'), observedResult: nullable }),
   ResourceCategory: enumeration('GITHUB_REPOSITORY DATASET AI_MODEL API DOCUMENTATION OPEN_SOURCE_TOOL LEARNING_RESOURCE'),
-  ResourceSearchInput: obj({ query: str, languages: arr(str), categories: arr('ResourceCategory'), explain: { type: 'boolean' } }, []),
-  Resource: obj({ ...strings('id provider externalId url name description retrievedAt'), category: ref('ResourceCategory'), license: nullable, language: nullable, sourceUpdatedAt: nullable, tags: arr(str), qualitySignals: free, sourceMetadata: free }),
+  ResourceProvider: enumeration('github huggingface huggingface_models huggingface_datasets kaggle uci apis_guru technical'),
+  ResourceSearchInput: obj({
+    query: { type: 'string', minLength: 1, maxLength: 150 },
+    languages: { ...arr({ type: 'string', minLength: 1, maxLength: 40 }), maxItems: 5 },
+    categories: { ...arr('ResourceCategory'), minItems: 1, maxItems: 7 },
+    providers: { ...arr('ResourceProvider'), minItems: 1, maxItems: 8 },
+    topics: { ...arr({ type: 'string', minLength: 1, maxLength: 40 }), maxItems: 5 },
+    tasks: { ...arr({ type: 'string', minLength: 1, maxLength: 60 }), maxItems: 5 },
+    includeArchived: { type: 'boolean' }, explain: { type: 'boolean' },
+    page: { type: 'integer', minimum: 1, maximum: 10000 },
+    limit: { type: 'integer', minimum: 1, maximum: 100 },
+    minRelevance: { type: 'number', minimum: 0, maximum: 100 },
+    sort: enumeration('relevance lastUpdated'),
+  }, []),
+  Resource: obj({
+    ...strings('id provider externalId url name description retrievedAt'), category: ref('ResourceCategory'),
+    license: nullable, language: nullable, sourceUpdatedAt: nullable, tags: arr(str), qualitySignals: free, sourceMetadata: free,
+    sourceApiUrl: nullable, sourceCreatedAt: nullable, technical_metadata: free, popularity_metrics: free, maintenance_signals: free,
+  }, ['id', 'provider', 'externalId', 'url', 'name', 'description', 'retrievedAt', 'category', 'license', 'language', 'sourceUpdatedAt', 'tags', 'qualitySignals', 'sourceMetadata']),
   Explanation: obj({ ...strings('recommendedUseCase explanation integrationDifficulty'), limitations: arr(str), alternativeResourceIds: arr(str), reviewRequired: { type: 'boolean' }, aiGenerated: { type: 'boolean' } }, ['recommendedUseCase', 'explanation', 'integrationDifficulty', 'limitations', 'alternativeResourceIds']),
   Recommendation: obj({ ...strings('id searchId resourceId'), relevanceScore: num, qualityScore: num, rankScore: num, ranking: free, sourceSnapshot: free, explanation: { anyOf: [ref('Explanation'), { type: 'null' }] } }),
   SavedResource: obj({ ...strings('id projectId resourceId status createdAt updatedAt') }),
   ResourceListItem: obj({ resource: ref('Resource'), recommendation: ref('Recommendation'), saved: { anyOf: [ref('SavedResource'), { type: 'null' }] } }, ['resource', 'saved']),
   SearchItem: obj({ resource: ref('Resource'), ...strings('id searchId resourceId'), relevanceScore: num, qualityScore: num, rankScore: num, ranking: free, sourceSnapshot: free, explanation: { anyOf: [ref('Explanation'), { type: 'null' }] } }),
-  ProviderStatus: obj({ provider: str, status: str, count: num, error: str }, ['provider', 'status', 'count']),
-  ResourceSearch: obj({ ...strings('searchId projectId query explanationStatus'), requirements: arr(str), cached: { type: 'boolean' }, providerStatuses: arr('ProviderStatus'), items: arr('SearchItem') }),
+  ProviderStatus: obj({ provider: str, status: str, count: num, error: str, queries: num }, ['provider', 'status', 'count']),
+  ResourceSearch: obj({
+    ...strings('searchId projectId query explanationStatus'), requirements: arr(str), cached: { type: 'boolean' },
+    providerStatuses: arr('ProviderStatus'), items: arr('SearchItem'), pagination: ref('Pagination'),
+    partial: { type: 'boolean' }, generatedQueries: arr(free), analysisId: nullable, explanationError: nullable,
+  }, ['searchId', 'projectId', 'query', 'explanationStatus', 'requirements', 'cached', 'providerStatuses', 'items']),
+  ResourceQueryDiagnostic: obj({
+    ...strings('id searchId providerId adapterName query status'), parameters: free,
+    count: num, durationMs: num, cached: { type: 'boolean' },
+    error: nullable, retryAfterSeconds: { type: ['number', 'null'] },
+  }),
+  ResourceSearchHistory: obj({
+    ...strings('id projectId query createdAt status explanationStatus'),
+    requirements: arr(str), providerStatuses: arr('ProviderStatus'), analysisId: nullable,
+    queryPlan: { anyOf: [free, { type: 'null' }] },
+    partial: { type: 'boolean' }, cached: { type: 'boolean' }, queries: arr('ResourceQueryDiagnostic'),
+  }),
   ResourceSaveInput: obj({ projectId: str, status: enumeration('CONSIDERING TRYING INTEGRATED') }, ['projectId']),
 };
 const paths = {};
@@ -176,7 +208,11 @@ endpoint('post', '/projects/{id}/resources/search', 'searchResources', 'Resource
 endpoint('get', '/projects/{id}/resources', 'listResources', 'ResourceListItem', null, true, [
   { name: 'saved', in: 'query', schema: enumeration('true false') },
   { name: 'category', in: 'query', schema: ref('ResourceCategory') },
+  { name: 'provider', in: 'query', schema: { type: 'string', pattern: '^[a-z_]{1,50}$' } },
+  { name: 'minRelevance', in: 'query', schema: { type: 'number', minimum: 0, maximum: 100 } },
+  { name: 'sort', in: 'query', schema: enumeration('relevance lastUpdated') },
 ]);
+endpoint('get', '/projects/{id}/resources/searches', 'listResourceSearches', 'ResourceSearchHistory', null, true);
 endpoint('get', '/resources/{id}', 'getResource', 'Resource');
 endpoint('post', '/resources/{id}/save', 'saveResource', 'SavedResource', 'ResourceSaveInput');
 endpoint('delete', '/projects/{id}/resources/{resourceId}/save', 'removeSavedResource', free);

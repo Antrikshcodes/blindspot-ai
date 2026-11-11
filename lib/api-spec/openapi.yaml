@@ -1304,6 +1304,34 @@
             "schema": {
               "$ref": "#/components/schemas/ResourceCategory"
             }
+          },
+          {
+            "name": "provider",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z_]{1,50}$"
+            }
+          },
+          {
+            "name": "minRelevance",
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "relevance",
+                "lastUpdated"
+              ]
+            }
           }
         ],
         "responses": {
@@ -1324,6 +1352,75 @@
                           "type": "array",
                           "items": {
                             "$ref": "#/components/schemas/ResourceListItem"
+                          }
+                        },
+                        "pagination": {
+                          "$ref": "#/components/schemas/Pagination"
+                        }
+                      },
+                      "required": [
+                        "items",
+                        "pagination"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{id}/resources/searches": {
+      "get": {
+        "operationId": "listResourceSearches",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/ResourceSearchHistory"
                           }
                         },
                         "pagination": {
@@ -2568,7 +2665,10 @@
             "type": "string"
           },
           "sourceAnalysisVersion": {
-            "type": ["integer", "null"],
+            "type": [
+              "integer",
+              "null"
+            ],
             "minimum": 1
           },
           "questions": {
@@ -2827,26 +2927,97 @@
           "LEARNING_RESOURCE"
         ]
       },
+      "ResourceProvider": {
+        "type": "string",
+        "enum": [
+          "github",
+          "huggingface",
+          "huggingface_models",
+          "huggingface_datasets",
+          "kaggle",
+          "uci",
+          "apis_guru",
+          "technical"
+        ]
+      },
       "ResourceSearchInput": {
         "type": "object",
         "properties": {
           "query": {
-            "type": "string"
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 150
           },
           "languages": {
             "type": "array",
             "items": {
-              "type": "string"
-            }
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 40
+            },
+            "maxItems": 5
           },
           "categories": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ResourceCategory"
-            }
+            },
+            "minItems": 1,
+            "maxItems": 7
+          },
+          "providers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ResourceProvider"
+            },
+            "minItems": 1,
+            "maxItems": 8
+          },
+          "topics": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 40
+            },
+            "maxItems": 5
+          },
+          "tasks": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60
+            },
+            "maxItems": 5
+          },
+          "includeArchived": {
+            "type": "boolean"
           },
           "explain": {
             "type": "boolean"
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10000
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "minRelevance": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "sort": {
+            "type": "string",
+            "enum": [
+              "relevance",
+              "lastUpdated"
+            ]
           }
         },
         "required": []
@@ -2907,6 +3078,30 @@
             "additionalProperties": true
           },
           "sourceMetadata": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "sourceApiUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "sourceCreatedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "technical_metadata": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "popularity_metrics": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "maintenance_signals": {
             "type": "object",
             "additionalProperties": true
           }
@@ -3145,6 +3340,9 @@
           },
           "error": {
             "type": "string"
+          },
+          "queries": {
+            "type": "number"
           }
         },
         "required": [
@@ -3188,6 +3386,31 @@
             "items": {
               "$ref": "#/components/schemas/SearchItem"
             }
+          },
+          "pagination": {
+            "$ref": "#/components/schemas/Pagination"
+          },
+          "partial": {
+            "type": "boolean"
+          },
+          "generatedQueries": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "analysisId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "explanationError": {
+            "type": [
+              "string",
+              "null"
+            ]
           }
         },
         "required": [
@@ -3199,6 +3422,147 @@
           "cached",
           "providerStatuses",
           "items"
+        ]
+      },
+      "ResourceQueryDiagnostic": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "searchId": {
+            "type": "string"
+          },
+          "providerId": {
+            "type": "string"
+          },
+          "adapterName": {
+            "type": "string"
+          },
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "parameters": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "count": {
+            "type": "number"
+          },
+          "durationMs": {
+            "type": "number"
+          },
+          "cached": {
+            "type": "boolean"
+          },
+          "error": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "retryAfterSeconds": {
+            "type": [
+              "number",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "searchId",
+          "providerId",
+          "adapterName",
+          "query",
+          "status",
+          "parameters",
+          "count",
+          "durationMs",
+          "cached",
+          "error",
+          "retryAfterSeconds"
+        ]
+      },
+      "ResourceSearchHistory": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "projectId": {
+            "type": "string"
+          },
+          "query": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "explanationStatus": {
+            "type": "string"
+          },
+          "requirements": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "providerStatuses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProviderStatus"
+            }
+          },
+          "analysisId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "queryPlan": {
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": true
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "partial": {
+            "type": "boolean"
+          },
+          "cached": {
+            "type": "boolean"
+          },
+          "queries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ResourceQueryDiagnostic"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "projectId",
+          "query",
+          "createdAt",
+          "status",
+          "explanationStatus",
+          "requirements",
+          "providerStatuses",
+          "analysisId",
+          "queryPlan",
+          "partial",
+          "cached",
+          "queries"
         ]
       },
       "ResourceSaveInput": {

@@ -504,16 +504,91 @@ export const ResourceCategory = {
   LEARNING_RESOURCE: 'LEARNING_RESOURCE',
 } as const;
 
+export type ResourceProvider = typeof ResourceProvider[keyof typeof ResourceProvider];
+
+
+export const ResourceProvider = {
+  github: 'github',
+  huggingface: 'huggingface',
+  huggingface_models: 'huggingface_models',
+  huggingface_datasets: 'huggingface_datasets',
+  kaggle: 'kaggle',
+  uci: 'uci',
+  apis_guru: 'apis_guru',
+  technical: 'technical',
+} as const;
+
+export type ResourceSearchInputSort = typeof ResourceSearchInputSort[keyof typeof ResourceSearchInputSort];
+
+
+export const ResourceSearchInputSort = {
+  relevance: 'relevance',
+  lastUpdated: 'lastUpdated',
+} as const;
+
 export interface ResourceSearchInput {
+  /**
+     * @minLength 1
+     * @maxLength 150
+     */
   query?: string;
+  /**
+     * @maxItems 5
+     * @items.minLength 1
+     * @items.maxLength 40
+     */
   languages?: string[];
+  /**
+     * @minItems 1
+     * @maxItems 7
+     */
   categories?: ResourceCategory[];
+  /**
+     * @minItems 1
+     * @maxItems 8
+     */
+  providers?: ResourceProvider[];
+  /**
+     * @maxItems 5
+     * @items.minLength 1
+     * @items.maxLength 40
+     */
+  topics?: string[];
+  /**
+     * @maxItems 5
+     * @items.minLength 1
+     * @items.maxLength 60
+     */
+  tasks?: string[];
+  includeArchived?: boolean;
   explain?: boolean;
+  /**
+     * @minimum 1
+     * @maximum 10000
+     */
+  page?: number;
+  /**
+     * @minimum 1
+     * @maximum 100
+     */
+  limit?: number;
+  /**
+     * @minimum 0
+     * @maximum 100
+     */
+  minRelevance?: number;
+  sort?: ResourceSearchInputSort;
 }
 
 export type ResourceQualitySignals = { [key: string]: unknown };
 
 export type ResourceSourceMetadata = { [key: string]: unknown };
+
+export type ResourceTechnicalMetadata = { [key: string]: unknown };
+
+export type ResourcePopularityMetrics = { [key: string]: unknown };
+
+export type ResourceMaintenanceSignals = { [key: string]: unknown };
 
 export interface Resource {
   id: string;
@@ -533,6 +608,13 @@ export interface Resource {
   tags: string[];
   qualitySignals: ResourceQualitySignals;
   sourceMetadata: ResourceSourceMetadata;
+  /** @nullable */
+  sourceApiUrl?: string | null;
+  /** @nullable */
+  sourceCreatedAt?: string | null;
+  technical_metadata?: ResourceTechnicalMetadata;
+  popularity_metrics?: ResourcePopularityMetrics;
+  maintenance_signals?: ResourceMaintenanceSignals;
 }
 
 export interface Explanation {
@@ -598,7 +680,10 @@ export interface ProviderStatus {
   status: string;
   count: number;
   error?: string;
+  queries?: number;
 }
+
+export type ResourceSearchGeneratedQueriesItem = { [key: string]: unknown };
 
 export interface ResourceSearch {
   searchId: string;
@@ -609,6 +694,51 @@ export interface ResourceSearch {
   cached: boolean;
   providerStatuses: ProviderStatus[];
   items: SearchItem[];
+  pagination?: Pagination;
+  partial?: boolean;
+  generatedQueries?: ResourceSearchGeneratedQueriesItem[];
+  /** @nullable */
+  analysisId?: string | null;
+  /** @nullable */
+  explanationError?: string | null;
+}
+
+export type ResourceQueryDiagnosticParameters = { [key: string]: unknown };
+
+export interface ResourceQueryDiagnostic {
+  id: string;
+  searchId: string;
+  providerId: string;
+  adapterName: string;
+  query: string;
+  status: string;
+  parameters: ResourceQueryDiagnosticParameters;
+  count: number;
+  durationMs: number;
+  cached: boolean;
+  /** @nullable */
+  error: string | null;
+  /** @nullable */
+  retryAfterSeconds: number | null;
+}
+
+export type ResourceSearchHistoryQueryPlan = { [key: string]: unknown } | null;
+
+export interface ResourceSearchHistory {
+  id: string;
+  projectId: string;
+  query: string;
+  createdAt: string;
+  status: string;
+  explanationStatus: string;
+  requirements: string[];
+  providerStatuses: ProviderStatus[];
+  /** @nullable */
+  analysisId: string | null;
+  queryPlan: ResourceSearchHistoryQueryPlan;
+  partial: boolean;
+  cached: boolean;
+  queries: ResourceQueryDiagnostic[];
 }
 
 export type ResourceSaveInputStatus = typeof ResourceSaveInputStatus[keyof typeof ResourceSaveInputStatus];
@@ -825,6 +955,16 @@ page?: number;
 limit?: number;
 saved?: ListResourcesSaved;
 category?: ResourceCategory;
+/**
+ * @pattern ^[a-z_]{1,50}$
+ */
+provider?: string;
+/**
+ * @minimum 0
+ * @maximum 100
+ */
+minRelevance?: number;
+sort?: ListResourcesSort;
 };
 
 export type ListResourcesSaved = typeof ListResourcesSaved[keyof typeof ListResourcesSaved];
@@ -835,6 +975,14 @@ export const ListResourcesSaved = {
   false: 'false',
 } as const;
 
+export type ListResourcesSort = typeof ListResourcesSort[keyof typeof ListResourcesSort];
+
+
+export const ListResourcesSort = {
+  relevance: 'relevance',
+  lastUpdated: 'lastUpdated',
+} as const;
+
 export type ListResources200Data = {
   items: ResourceListItem[];
   pagination: Pagination;
@@ -843,6 +991,21 @@ export type ListResources200Data = {
 export type ListResources200 = {
   success: boolean;
   data: ListResources200Data;
+};
+
+export type ListResourceSearchesParams = {
+page?: number;
+limit?: number;
+};
+
+export type ListResourceSearches200Data = {
+  items: ResourceSearchHistory[];
+  pagination: Pagination;
+};
+
+export type ListResourceSearches200 = {
+  success: boolean;
+  data: ListResourceSearches200Data;
 };
 
 export type GetResource200 = {

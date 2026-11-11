@@ -5,7 +5,9 @@
  * Blindspot Phase 01 browser contract. Success responses retain the backend envelope.
  * OpenAPI spec version: 0.2.0
  */
+import type { Pagination } from './pagination';
 import type { ProviderStatus } from './providerStatus';
+import type { ResourceSearchGeneratedQueriesItem } from './resourceSearchGeneratedQueriesItem';
 import type { SearchItem } from './searchItem';
 
 export interface ResourceSearch {
@@ -17,4 +19,11 @@ export interface ResourceSearch {
   cached: boolean;
   providerStatuses: ProviderStatus[];
   items: SearchItem[];
+  pagination?: Pagination;
+  partial?: boolean;
+  generatedQueries?: ResourceSearchGeneratedQueriesItem[];
+  /** @nullable */
+  analysisId?: string | null;
+  /** @nullable */
+  explanationError?: string | null;
 }

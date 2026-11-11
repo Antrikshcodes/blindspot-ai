@@ -952,11 +952,46 @@ export const SearchResourcesParams = zod.object({
   "id": zod.coerce.string().uuid()
 })
 
+export const searchResourcesBodyQueryMax = 150;
+
+export const searchResourcesBodyLanguagesItemMax = 40;
+
+export const searchResourcesBodyLanguagesMax = 5;
+
+export const searchResourcesBodyCategoriesMax = 7;
+
+export const searchResourcesBodyProvidersMax = 8;
+
+export const searchResourcesBodyTopicsItemMax = 40;
+
+export const searchResourcesBodyTopicsMax = 5;
+
+export const searchResourcesBodyTasksItemMax = 60;
+
+export const searchResourcesBodyTasksMax = 5;
+
+export const searchResourcesBodyPageMax = 10000;
+
+export const searchResourcesBodyLimitMax = 100;
+
+export const searchResourcesBodyMinRelevanceMin = 0;
+export const searchResourcesBodyMinRelevanceMax = 100;
+
+
+
 export const SearchResourcesBody = zod.object({
-  "query": zod.string().optional(),
-  "languages": zod.array(zod.string()).optional(),
-  "categories": zod.array(zod.enum(['GITHUB_REPOSITORY', 'DATASET', 'AI_MODEL', 'API', 'DOCUMENTATION', 'OPEN_SOURCE_TOOL', 'LEARNING_RESOURCE'])).optional(),
-  "explain": zod.boolean().optional()
+  "query": zod.string().min(1).max(searchResourcesBodyQueryMax).optional(),
+  "languages": zod.array(zod.string().min(1).max(searchResourcesBodyLanguagesItemMax)).max(searchResourcesBodyLanguagesMax).optional(),
+  "categories": zod.array(zod.enum(['GITHUB_REPOSITORY', 'DATASET', 'AI_MODEL', 'API', 'DOCUMENTATION', 'OPEN_SOURCE_TOOL', 'LEARNING_RESOURCE'])).min(1).max(searchResourcesBodyCategoriesMax).optional(),
+  "providers": zod.array(zod.enum(['github', 'huggingface', 'huggingface_models', 'huggingface_datasets', 'kaggle', 'uci', 'apis_guru', 'technical'])).min(1).max(searchResourcesBodyProvidersMax).optional(),
+  "topics": zod.array(zod.string().min(1).max(searchResourcesBodyTopicsItemMax)).max(searchResourcesBodyTopicsMax).optional(),
+  "tasks": zod.array(zod.string().min(1).max(searchResourcesBodyTasksItemMax)).max(searchResourcesBodyTasksMax).optional(),
+  "includeArchived": zod.boolean().optional(),
+  "explain": zod.boolean().optional(),
+  "page": zod.number().int().min(1).max(searchResourcesBodyPageMax).optional(),
+  "limit": zod.number().int().min(1).max(searchResourcesBodyLimitMax).optional(),
+  "minRelevance": zod.number().min(searchResourcesBodyMinRelevanceMin).max(searchResourcesBodyMinRelevanceMax).optional(),
+  "sort": zod.enum(['relevance', 'lastUpdated']).optional()
 })
 
 export const SearchResourcesResponse = zod.object({
@@ -972,7 +1007,8 @@ export const SearchResourcesResponse = zod.object({
   "provider": zod.string(),
   "status": zod.string(),
   "count": zod.number(),
-  "error": zod.string().optional()
+  "error": zod.string().optional(),
+  "queries": zod.number().optional()
 })),
   "items": zod.array(zod.object({
   "resource": zod.object({
@@ -989,7 +1025,12 @@ export const SearchResourcesResponse = zod.object({
   "sourceUpdatedAt": zod.string().nullable(),
   "tags": zod.array(zod.string()),
   "qualitySignals": zod.record(zod.string(), zod.unknown()),
-  "sourceMetadata": zod.record(zod.string(), zod.unknown())
+  "sourceMetadata": zod.record(zod.string(), zod.unknown()),
+  "sourceApiUrl": zod.string().nullish(),
+  "sourceCreatedAt": zod.string().nullish(),
+  "technical_metadata": zod.record(zod.string(), zod.unknown()).optional(),
+  "popularity_metrics": zod.record(zod.string(), zod.unknown()).optional(),
+  "maintenance_signals": zod.record(zod.string(), zod.unknown()).optional()
 }),
   "id": zod.string(),
   "searchId": zod.string(),
@@ -1008,7 +1049,16 @@ export const SearchResourcesResponse = zod.object({
   "reviewRequired": zod.boolean().optional(),
   "aiGenerated": zod.boolean().optional()
 }),zod.null()])
-}))
+})),
+  "pagination": zod.object({
+  "page": zod.number(),
+  "limit": zod.number(),
+  "total": zod.number().optional()
+}).optional(),
+  "partial": zod.boolean().optional(),
+  "generatedQueries": zod.array(zod.record(zod.string(), zod.unknown())).optional(),
+  "analysisId": zod.string().nullish(),
+  "explanationError": zod.string().nullish()
 })
 })
 
@@ -1017,11 +1067,20 @@ export const ListResourcesParams = zod.object({
   "id": zod.coerce.string().uuid()
 })
 
+export const listResourcesQueryProviderRegExp = new RegExp('^[a-z_]{1,50}$');
+export const listResourcesQueryMinRelevanceMin = 0;
+export const listResourcesQueryMinRelevanceMax = 100;
+
+
+
 export const ListResourcesQueryParams = zod.object({
   "page": zod.coerce.number().int().optional(),
   "limit": zod.coerce.number().int().optional(),
   "saved": zod.enum(['true', 'false']).optional(),
-  "category": zod.enum(['GITHUB_REPOSITORY', 'DATASET', 'AI_MODEL', 'API', 'DOCUMENTATION', 'OPEN_SOURCE_TOOL', 'LEARNING_RESOURCE']).optional()
+  "category": zod.enum(['GITHUB_REPOSITORY', 'DATASET', 'AI_MODEL', 'API', 'DOCUMENTATION', 'OPEN_SOURCE_TOOL', 'LEARNING_RESOURCE']).optional(),
+  "provider": zod.coerce.string().regex(listResourcesQueryProviderRegExp).optional(),
+  "minRelevance": zod.coerce.number().min(listResourcesQueryMinRelevanceMin).max(listResourcesQueryMinRelevanceMax).optional(),
+  "sort": zod.enum(['relevance', 'lastUpdated']).optional()
 })
 
 export const ListResourcesResponse = zod.object({
@@ -1042,7 +1101,12 @@ export const ListResourcesResponse = zod.object({
   "sourceUpdatedAt": zod.string().nullable(),
   "tags": zod.array(zod.string()),
   "qualitySignals": zod.record(zod.string(), zod.unknown()),
-  "sourceMetadata": zod.record(zod.string(), zod.unknown())
+  "sourceMetadata": zod.record(zod.string(), zod.unknown()),
+  "sourceApiUrl": zod.string().nullish(),
+  "sourceCreatedAt": zod.string().nullish(),
+  "technical_metadata": zod.record(zod.string(), zod.unknown()).optional(),
+  "popularity_metrics": zod.record(zod.string(), zod.unknown()).optional(),
+  "maintenance_signals": zod.record(zod.string(), zod.unknown()).optional()
 }),
   "recommendation": zod.object({
   "id": zod.string(),
@@ -1081,6 +1145,61 @@ export const ListResourcesResponse = zod.object({
 })
 
 
+export const ListResourceSearchesParams = zod.object({
+  "id": zod.coerce.string().uuid()
+})
+
+export const ListResourceSearchesQueryParams = zod.object({
+  "page": zod.coerce.number().int().optional(),
+  "limit": zod.coerce.number().int().optional()
+})
+
+export const ListResourceSearchesResponse = zod.object({
+  "success": zod.boolean(),
+  "data": zod.object({
+  "items": zod.array(zod.object({
+  "id": zod.string(),
+  "projectId": zod.string(),
+  "query": zod.string(),
+  "createdAt": zod.string(),
+  "status": zod.string(),
+  "explanationStatus": zod.string(),
+  "requirements": zod.array(zod.string()),
+  "providerStatuses": zod.array(zod.object({
+  "provider": zod.string(),
+  "status": zod.string(),
+  "count": zod.number(),
+  "error": zod.string().optional(),
+  "queries": zod.number().optional()
+})),
+  "analysisId": zod.string().nullable(),
+  "queryPlan": zod.union([zod.record(zod.string(), zod.unknown()),zod.null()]),
+  "partial": zod.boolean(),
+  "cached": zod.boolean(),
+  "queries": zod.array(zod.object({
+  "id": zod.string(),
+  "searchId": zod.string(),
+  "providerId": zod.string(),
+  "adapterName": zod.string(),
+  "query": zod.string(),
+  "status": zod.string(),
+  "parameters": zod.record(zod.string(), zod.unknown()),
+  "count": zod.number(),
+  "durationMs": zod.number(),
+  "cached": zod.boolean(),
+  "error": zod.string().nullable(),
+  "retryAfterSeconds": zod.number().nullable()
+}))
+})),
+  "pagination": zod.object({
+  "page": zod.number(),
+  "limit": zod.number(),
+  "total": zod.number().optional()
+})
+})
+})
+
+
 export const GetResourceParams = zod.object({
   "id": zod.coerce.string().uuid()
 })
@@ -1101,7 +1220,12 @@ export const GetResourceResponse = zod.object({
   "sourceUpdatedAt": zod.string().nullable(),
   "tags": zod.array(zod.string()),
   "qualitySignals": zod.record(zod.string(), zod.unknown()),
-  "sourceMetadata": zod.record(zod.string(), zod.unknown())
+  "sourceMetadata": zod.record(zod.string(), zod.unknown()),
+  "sourceApiUrl": zod.string().nullish(),
+  "sourceCreatedAt": zod.string().nullish(),
+  "technical_metadata": zod.record(zod.string(), zod.unknown()).optional(),
+  "popularity_metrics": zod.record(zod.string(), zod.unknown()).optional(),
+  "maintenance_signals": zod.record(zod.string(), zod.unknown()).optional()
 })
 })
 

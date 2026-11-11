@@ -6,10 +6,59 @@
  * OpenAPI spec version: 0.2.0
  */
 import type { ResourceCategory } from './resourceCategory';
+import type { ResourceProvider } from './resourceProvider';
+import type { ResourceSearchInputSort } from './resourceSearchInputSort';
 
 export interface ResourceSearchInput {
+  /**
+     * @minLength 1
+     * @maxLength 150
+     */
   query?: string;
+  /**
+     * @maxItems 5
+     * @items.minLength 1
+     * @items.maxLength 40
+     */
   languages?: string[];
+  /**
+     * @minItems 1
+     * @maxItems 7
+     */
   categories?: ResourceCategory[];
+  /**
+     * @minItems 1
+     * @maxItems 8
+     */
+  providers?: ResourceProvider[];
+  /**
+     * @maxItems 5
+     * @items.minLength 1
+     * @items.maxLength 40
+     */
+  topics?: string[];
+  /**
+     * @maxItems 5
+     * @items.minLength 1
+     * @items.maxLength 60
+     */
+  tasks?: string[];
+  includeArchived?: boolean;
   explain?: boolean;
+  /**
+     * @minimum 1
+     * @maximum 10000
+     */
+  page?: number;
+  /**
+     * @minimum 1
+     * @maximum 100
+     */
+  limit?: number;
+  /**
+     * @minimum 0
+     * @maximum 100
+     */
+  minRelevance?: number;
+  sort?: ResourceSearchInputSort;
 }

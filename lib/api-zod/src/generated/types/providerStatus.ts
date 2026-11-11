@@ -11,4 +11,5 @@ export interface ProviderStatus {
   status: string;
   count: number;
   error?: string;
+  queries?: number;
 }

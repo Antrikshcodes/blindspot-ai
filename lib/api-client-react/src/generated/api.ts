@@ -60,6 +60,8 @@ import type {
   ListInterviewsParams,
   ListProjects200,
   ListProjectsParams,
+  ListResourceSearches200,
+  ListResourceSearchesParams,
   ListResources200,
   ListResourcesParams,
   ProjectInput,
@@ -2508,6 +2510,116 @@ export function useListResources<TData = Awaited<ReturnType<typeof listResources
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getListResourcesQueryOptions(id,params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getListResourceSearchesUrl = (id: string,
+    params?: ListResourceSearchesParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/projects/${id}/resources/searches?${stringifiedParams}` : `/api/projects/${id}/resources/searches`
+}
+
+export const listResourceSearches = async (id: string,
+    params?: ListResourceSearchesParams, options?: Parameters<typeof customFetch>[1]): Promise<ListResourceSearches200> => {
+
+  return customFetch<ListResourceSearches200>(getListResourceSearchesUrl(id,params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListResourceSearchesQueryKey = (id: string,
+    params?: ListResourceSearchesParams,) => {
+    return [
+    `/api/projects/${id}/resources/searches`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getListResourceSearchesQueryOptions = <TData = Awaited<ReturnType<typeof listResourceSearches>>, TError = ErrorType<unknown>>(id: string,
+    params?: ListResourceSearchesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listResourceSearches>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListResourceSearchesQueryKey(id,params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listResourceSearches>>> = ({ signal }) => listResourceSearches(id,params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listResourceSearches>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListResourceSearchesQueryResult = NonNullable<Awaited<ReturnType<typeof listResourceSearches>>>
+export type ListResourceSearchesQueryError = ErrorType<unknown>
+
+
+export function useListResourceSearches<TData = Awaited<ReturnType<typeof listResourceSearches>>, TError = ErrorType<unknown>>(
+ id: string,
+    params: undefined |  ListResourceSearchesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listResourceSearches>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listResourceSearches>>,
+          TError,
+          Awaited<ReturnType<typeof listResourceSearches>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListResourceSearches<TData = Awaited<ReturnType<typeof listResourceSearches>>, TError = ErrorType<unknown>>(
+ id: string,
+    params?: ListResourceSearchesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listResourceSearches>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listResourceSearches>>,
+          TError,
+          Awaited<ReturnType<typeof listResourceSearches>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListResourceSearches<TData = Awaited<ReturnType<typeof listResourceSearches>>, TError = ErrorType<unknown>>(
+ id: string,
+    params?: ListResourceSearchesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listResourceSearches>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useListResourceSearches<TData = Awaited<ReturnType<typeof listResourceSearches>>, TError = ErrorType<unknown>>(
+ id: string,
+    params?: ListResourceSearchesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listResourceSearches>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getListResourceSearchesQueryOptions(id,params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
