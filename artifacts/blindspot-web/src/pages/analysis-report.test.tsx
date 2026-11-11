@@ -289,4 +289,33 @@ describe('hypothesis outcome evidence gating', () => {
       expect.any(Object),
     );
   });
+
+  it('refreshes linked citations and clears prior selections as outcomes change', () => {
+    openOutcomeDialog();
+
+    expect(screen.getByTestId('checkbox-evidence-linked-support')).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('checkbox-evidence-linked-support'));
+
+    fireEvent.click(screen.getByTestId('radio-outcome-INVALIDATED'));
+    expect(screen.getByTestId('checkbox-evidence-linked-invalid')).toBeInTheDocument();
+    expect(screen.queryByTestId('checkbox-evidence-linked-support')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('checkbox-evidence-linked-neutral')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('checkbox-evidence-unlinked-support')).not.toBeInTheDocument();
+    expect(screen.getByText('Cite evidence linked to this hypothesis (0 selected)')).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('checkbox-evidence-linked-invalid'));
+
+    fireEvent.click(screen.getByTestId('radio-outcome-INCONCLUSIVE'));
+    expect(screen.getByTestId('checkbox-evidence-linked-support')).toBeInTheDocument();
+    expect(screen.getByTestId('checkbox-evidence-linked-invalid')).toBeInTheDocument();
+    expect(screen.getByTestId('checkbox-evidence-linked-neutral')).toBeInTheDocument();
+    expect(screen.queryByTestId('checkbox-evidence-unlinked-support')).not.toBeInTheDocument();
+    expect(screen.getByText('Cite evidence linked to this hypothesis (0 selected)')).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('checkbox-evidence-linked-neutral'));
+    fireEvent.click(screen.getByTestId('button-submit-outcome'));
+
+    expect(mocks.mutate).toHaveBeenCalledWith(
+      { id: 'a1', data: { status: 'INCONCLUSIVE', evidenceIds: ['linked-neutral'] } },
+      expect.any(Object),
+    );
+  });
 });
