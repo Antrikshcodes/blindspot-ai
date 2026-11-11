@@ -1,5 +1,7 @@
+@layer theme, base, clerk, components, utilities;
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400;1,9..144,600&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
 @import 'tailwindcss';
+@import '@clerk/themes/shadcn.css';
 @import 'tw-animate-css';
 @plugin "@tailwindcss/typography";
 
@@ -438,6 +440,7 @@ body::after { content:''; position:fixed; inset:0; pointer-events:none; z-index:
 .font-display { font-family: var(--app-font-serif); font-optical-sizing: auto; letter-spacing: -0.02em; }
 .font-mono { font-family: var(--app-font-mono); }
 .eyebrow { font-family: var(--app-font-mono); font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: hsl(var(--muted-foreground)); }
+.cl-formFieldInput::placeholder { color: #596b75; opacity: 1; }
 @keyframes rise { from { opacity:0; transform: translateY(8px);} to {opacity:1; transform:none;} }
 .rise { animation: rise .45s cubic-bezier(.2,.7,.2,1) both; }
 @keyframes saved { 0%{opacity:0; transform:scale(.9)} 20%{opacity:1; transform:none} 80%{opacity:1} 100%{opacity:0} }

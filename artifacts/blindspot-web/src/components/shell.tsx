@@ -1,6 +1,7 @@
 import { useEffect, type ReactNode } from 'react';
 import { Link, useLocation } from 'wouter';
 import { ShieldAlert, FolderKanban } from 'lucide-react';
+import { useClerk, useUser } from '@clerk/react';
 
 export function DevBanner() {
   return (
@@ -8,7 +9,7 @@ export function DevBanner() {
       <span className="inline-flex items-start gap-2">
         <ShieldAlert className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent" aria-hidden />
         <span>
-          <strong className="font-semibold">Development preview.</strong> Private project access requires configured sign-in and ownership checks. Use participant aliases and avoid sensitive customer details.
+          <strong className="font-semibold">Development preview.</strong> Private projects require account sign-in and ownership checks. Use participant aliases and avoid sensitive customer details.
         </span>
       </span>
     </div>
@@ -29,6 +30,8 @@ export function Brand() {
 
 export function AppShell({ children }: { children: ReactNode }) {
   const [loc] = useLocation();
+  const { signOut } = useClerk();
+  const { user } = useUser();
   useEffect(() => {
     const section = loc === '/' ? 'Projects' : /^\/projects\/[^/]+\/analysis\/[^/]+$/.test(loc)
       ? 'Analysis report' : /^\/projects\/[^/]+$/.test(loc)
@@ -52,6 +55,20 @@ export function AppShell({ children }: { children: ReactNode }) {
               <FolderKanban className="h-4 w-4" aria-hidden /> Projects
             </Link>
           </nav>
+          <div className="flex items-center gap-3 md:mt-4 md:block">
+            <div className="hidden min-w-0 text-xs text-sidebar-foreground/65 md:block">
+              <p className="truncate font-medium text-sidebar-foreground">{user?.fullName || 'Signed in'}</p>
+              <p className="truncate">{user?.primaryEmailAddress?.emailAddress}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => void signOut({ redirectUrl: '/' })}
+              className="rounded px-2 py-1.5 text-xs text-sidebar-foreground/75 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
+              data-testid="button-sign-out"
+            >
+              Sign out
+            </button>
+          </div>
           <p className="hidden text-[11px] leading-relaxed text-sidebar-foreground/55 md:mt-auto md:block">
             Blindspot argues with your idea. It records what people actually said, and never declares a market validated.
           </p>

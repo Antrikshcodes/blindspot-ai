@@ -20,6 +20,7 @@ const mocks = vi.hoisted(() => ({
   updateAssumption: vi.fn(),
   createInterview: vi.fn(),
   createInterviewMutate: vi.fn(),
+  createInterviewOptions: null as unknown,
   listInterviews: vi.fn(),
   interviewItems: [] as Array<Record<string, unknown>>,
   mutate: vi.fn(),
@@ -37,6 +38,7 @@ vi.mock('@workspace/api-client-react', () => ({
   getListAnalysisHistoryQueryKey: vi.fn(() => ['history']),
   getListInterviewsQueryKey: vi.fn(() => ['interviews']),
   getListFeedbackQueryKey: vi.fn(() => ['feedback']),
+  getGetFeedbackSummaryQueryKey: vi.fn(() => ['feedback-summary']),
   getGetProjectQueryKey: vi.fn(() => ['project']),
   useGetAnalysis: mocks.getAnalysis,
   useGetLatestAnalysis: mocks.latestAnalysis,
@@ -48,6 +50,7 @@ vi.mock('@workspace/api-client-react', () => ({
   useGetProject: vi.fn(() => query({ id: 'project-1', name: 'Example project' })),
   useListInterviews: mocks.listInterviews,
   useListFeedback: vi.fn(() => query({ items: [] })),
+  useGetFeedbackSummary: vi.fn(() => ({ data: { data: { createdAt: null } }, isLoading: false, isError: false })),
   useAddFeedback: vi.fn(() => ({ mutate: vi.fn(), isPending: false, error: null })),
   useCreateInterview: mocks.createInterview,
   useUpdateAssumption: mocks.updateAssumption,
@@ -130,13 +133,16 @@ function renderReportInterviewHandoff() {
     queryKey: options.query.queryKey,
     queryFn: async () => ({ data: { items: [...mocks.interviewItems] } }),
   }));
-  mocks.createInterview.mockReturnValue({
+  mocks.createInterview.mockImplementation((options) => {
+    mocks.createInterviewOptions = options;
+    return {
     mutate: mocks.createInterviewMutate,
     isPending: false,
     error: null,
     reset: vi.fn(),
+    };
   });
-  mocks.createInterviewMutate.mockImplementation((variables, options) => {
+  mocks.createInterviewMutate.mockImplementation((variables) => {
     mocks.interviewItems = [{
       id: 'interview-created',
       projectId: 'project-1',
@@ -148,7 +154,8 @@ function renderReportInterviewHandoff() {
         question: 'What happened the last time?',
       }],
     }];
-    options.onSuccess({
+    (mocks.createInterviewOptions as { mutation: { onSuccess: (result: { data: unknown }) => void } })
+      .mutation.onSuccess({
       data: {
         ...mocks.interviewItems[0],
         questions: [{ assumptionId: 'a1', question: 'What happened the last time?' }],
@@ -305,7 +312,6 @@ describe('analysis report risk regressions', () => {
     await waitFor(() => {
       expect(mocks.createInterviewMutate).toHaveBeenCalledWith(
         { id: 'project-1', data: { participant: 'Clinic ops lead, Leeds' } },
-        expect.objectContaining({ onSuccess: expect.any(Function) }),
       );
     });
     expect(mocks.createInterviewMutate.mock.calls[0][0].data).toEqual({
