@@ -8,7 +8,7 @@ import { readError } from '@/lib/api';
 
 const TABS = [
   { seg: '', label: 'Overview' },
-  { seg: '/interviews', label: 'Interviews' },
+  { seg: '/interviews', label: 'Customer Discovery', tid: 'interviews' },
   { seg: '/evidence', label: 'Evidence' },
   { seg: '/experiments', label: 'Experiments' },
   { seg: '/resources', label: 'Resources' },
@@ -39,7 +39,7 @@ export function ProjectFrame({ id, children }: { id: string; children: (p: Proje
             <h1 className="font-display text-3xl leading-tight md:text-4xl" data-testid="text-project-name">{project.name}</h1>
           </header>
           <nav aria-label="Project sections" className="sticky top-0 z-20 -mx-4 mb-6 border-b border-foreground/10 bg-background/90 px-4 backdrop-blur md:mx-0 md:px-0">
-            <ul className="grid grid-cols-3 gap-1 sm:flex">
+            <ul className="flex gap-1 overflow-x-auto [scrollbar-width:none]">
               {TABS.map((t) => {
                 const href = `/projects/${id}${t.seg}`;
                 const active = loc === href || (t.seg === '' && loc.startsWith(`/projects/${id}/analysis/`));
@@ -48,8 +48,8 @@ export function ProjectFrame({ id, children }: { id: string; children: (p: Proje
                     <Link
                       href={href}
                       aria-current={active ? 'page' : undefined}
-                      className={`relative block px-3 py-2.5 text-sm transition-colors ${active ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
-                      data-testid={`tab-${t.label.toLowerCase()}`}
+                      className={`relative block whitespace-nowrap px-3 py-2.5 text-sm transition-colors ${active ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                      data-testid={`tab-${'tid' in t ? t.tid : t.label.toLowerCase()}`}
                     >
                       {t.label}
                       <span className={`absolute inset-x-3 -bottom-px h-0.5 origin-left bg-accent transition-transform duration-300 ${active ? 'scale-x-100' : 'scale-x-0'}`} />

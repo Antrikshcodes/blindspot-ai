@@ -1,292 +1,257 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Link, useParams, useSearchParams } from 'wouter';
-import { useQueryClient } from '@tanstack/react-query';
-import { ChevronDown, Plus, UserRound } from 'lucide-react';
+import { AnimatePresence, MotionConfig, motion } from 'framer-motion';
+import { Plus, Search, UserRound } from 'lucide-react';
 import {
-  useCreateInterview,
   useListInterviews,
-  useListFeedback,
-  useAddFeedback,
+  useGetFeedbackSummary,
   getListInterviewsQueryKey,
-  getListFeedbackQueryKey,
-  getListAssumptionsQueryKey,
-  type Assumption,
+  getGetFeedbackSummaryQueryKey,
   type Interview,
 } from '@workspace/api-client-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { ProjectFrame } from '@/components/project-frame';
-import { AiLabel, Counter, EmptyState, ErrorPanel, InlineError, Pager, RowsSkeleton, SectionHead } from '@/components/kit';
-import { PAGE_SIZE, fmtDate } from '@/lib/api';
+import { EmptyState, ErrorPanel, Pager, RowsSkeleton } from '@/components/kit';
+import { PAGE_SIZE, fmtDate, fmtDay } from '@/lib/api';
 import { useLatest } from '@/lib/latest';
+import { useAliasDraft, useDiscoveryCache, useDrafts, useInterviewTotal, useNewestNote } from '@/hooks/use-discovery';
+import { CreateInterviewDialog, type ReportContext } from '@/components/discovery/create-interview-dialog';
+import { InterviewDetail } from '@/components/discovery/interview-detail';
+import { FeedbackSummaryPanel } from '@/components/discovery/feedback-summary';
+import { useFade } from '@/components/discovery/motion';
 
 export default function InterviewsPage() {
   const { id = '' } = useParams<{ id: string }>();
-  return <ProjectFrame id={id}>{(p) => <Interviews projectId={p.id} />}</ProjectFrame>;
+  return <MotionConfig reducedMotion="user"><ProjectFrame id={id}>{(p) => <Discovery projectId={p.id} />}</ProjectFrame></MotionConfig>;
 }
 
-function Interviews({ projectId }: { projectId: string }) {
+type Tab = 'interviews' | 'insights';
+
+function Discovery({ projectId }: { projectId: string }) {
+  const { toast } = useToast();
+  const [tab, setTab] = useState<Tab>('interviews');
   const [page, setPage] = useState(1);
+  const [filter, setFilter] = useState('');
   const [creating, setCreating] = useState(false);
-  const [reportContext, setReportContext] = useState<{ analysisId: string; version: number } | null>(null);
+  const [reportContext, setReportContext] = useState<ReportContext | null>(null);
+  const [selected, setSelected] = useState<Interview | null>(null);
+  const [mobileDetail, setMobileDetail] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
+  const [alias, setAlias] = useAliasDraft(projectId);
+  const drafts = useDrafts(projectId);
+  const { newestNoteAt, markNote } = useNewestNote(projectId);
+  const cache = useDiscoveryCache(projectId);
+  const fade = useFade();
+
   const params = { page, limit: PAGE_SIZE };
   const q = useListInterviews(projectId, params, { query: { enabled: !!projectId, queryKey: getListInterviewsQueryKey(projectId, params) } });
+  const total = useInterviewTotal(projectId);
+  const sq = useGetFeedbackSummary(projectId, { query: { enabled: !!projectId, queryKey: getGetFeedbackSummaryQueryKey(projectId) } });
   const latest = useLatest(projectId);
   const assumptions = latest.analysis?.assumptions ?? [];
   const items = q.data?.data.items ?? [];
+  const needle = filter.trim().toLowerCase();
+  const shown = needle ? items.filter((iv) => iv.participant.toLowerCase().includes(needle)) : items;
+  const summaryAt = sq.data?.data?.createdAt ?? null;
+  const active = selected ?? (items[0] && page === 1 ? items[0] : null);
 
   useEffect(() => {
     if (searchParams.get('create') !== '1') return;
     const analysisId = searchParams.get('reportAnalysisId');
     const version = Number(searchParams.get('reportVersion'));
-    if (analysisId && Number.isInteger(version) && version > 0) {
-      setReportContext({ analysisId, version });
-    }
+    if (analysisId && Number.isInteger(version) && version > 0) setReportContext({ analysisId, version });
     setCreating(true);
     setSearchParams({}, { replace: true });
   }, [searchParams, setSearchParams]);
 
+  const dirtyCount = drafts.dirtyCount;
+  useEffect(() => {
+    if (dirtyCount === 0 && !alias.trim()) return;
+    const h = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', h);
+    return () => window.removeEventListener('beforeunload', h);
+  }, [dirtyCount, alias]);
+
+  const open = (iv: Interview) => {
+    setSelected(iv);
+    setMobileDetail(true);
+  };
+
+  const newestInterview = total.data?.items.reduce<string | null>((m, iv) => (!m || iv.createdAt > m ? iv.createdAt : m), null);
+
   return (
     <div className="space-y-6">
-      <SectionHead
-        eyebrow="Customer discovery"
-        title="Interviews"
-        aside={<Button onClick={() => setCreating(true)} disabled={latest.missing} data-testid="button-new-interview"><Plus className="mr-1.5 h-4 w-4" />New interview</Button>}
-      />
-      {latest.missing && (
-        <EmptyState mark="v0" title="Analyze before interviewing" body={<>Questions are mapped to hypotheses from the latest analysis. <Link href={`/projects/${projectId}`} className="text-accent underline">Run an analysis first.</Link></>} />
-      )}
+      <section className="rise overflow-hidden rounded-lg border border-[#1F3D2B]/20 bg-[#1F3D2B] text-[#E8DCC4]" aria-label="Discovery overview">
+        <div className="flex flex-col gap-4 p-5 md:flex-row md:items-end md:justify-between md:p-6">
+          <div className="max-w-xl">
+            <p className="font-mono text-[10.5px] uppercase tracking-[.14em] text-[#E8DCC4]/70">Customer discovery</p>
+            <h2 className="mt-1 font-display text-3xl leading-tight">Customer words, kept apart from model guesses.</h2>
+            <p className="mt-2 text-sm text-[#E8DCC4]/75">Run a session, write down what was actually said, then let the model propose links you still have to confirm.</p>
+          </div>
+          <Button onClick={() => setCreating(true)} disabled={latest.missing} className="shrink-0 bg-[#8B5CF6] text-white hover:bg-[#7C4DEB]" data-testid="button-new-interview">
+            <Plus className="mr-1.5 h-4 w-4" aria-hidden />New interview
+          </Button>
+        </div>
+        <dl className="grid grid-cols-2 border-t border-[#E8DCC4]/15 md:grid-cols-4">
+          <Stat label="Interviews in project" testid="stat-interview-total">
+            {total.isLoading ? <span className="inline-block h-6 w-10 animate-pulse rounded bg-[#E8DCC4]/15" aria-label="Loading" /> : total.isError ? (
+              <button className="text-sm underline" onClick={() => total.refetch()} data-testid="button-retry-total">Unavailable, retry</button>
+            ) : (
+              <>{total.data!.total}{!total.data!.complete && '+'}</>
+            )}
+          </Stat>
+          <Stat label="Latest session">{total.isSuccess ? (newestInterview ? fmtDay(newestInterview) : 'None yet') : '--'}</Stat>
+          <Stat label="Unsaved note drafts" testid="stat-drafts">{dirtyCount}</Stat>
+          <Stat label="Feedback summary">{sq.isLoading ? '--' : sq.isError ? 'Unavailable' : summaryAt ? fmtDay(summaryAt) : 'Not run'}</Stat>
+        </dl>
+      </section>
+
+      <div role="tablist" aria-label="Discovery views" className="flex gap-1 rounded-md border border-[#1F3D2B]/15 bg-[#E8DCC4]/40 p-1 sm:w-fit">
+        {(['interviews', 'insights'] as Tab[]).map((t) => (
+          <button
+            key={t}
+            role="tab"
+            aria-selected={tab === t}
+            aria-controls={`panel-${t}`}
+            id={`tab-${t}`}
+            onClick={() => setTab(t)}
+            className={`relative flex-1 rounded px-4 py-2 text-sm transition-colors sm:flex-none ${tab === t ? 'text-[#F6F1E6]' : 'text-[#1F3D2B]/75 hover:text-[#1F3D2B]'}`}
+            data-testid={`tab-discovery-${t}`}
+          >
+            {tab === t && <motion.span layoutId="disc-tab" className="absolute inset-0 rounded bg-[#1F3D2B]" transition={{ duration: 0.25 }} />}
+            <span className="relative">{t === 'interviews' ? 'Interviews & notes' : 'Insights'}</span>
+          </button>
+        ))}
+      </div>
+
       {latest.failed && <ErrorPanel error={latest.q.error} onRetry={() => latest.q.refetch()} title="Could not load hypotheses for mapping" />}
-      {q.isLoading ? (
-        <RowsSkeleton rows={4} />
-      ) : q.isError ? (
-        <ErrorPanel error={q.error} onRetry={() => q.refetch()} title="Could not load interviews" />
-      ) : items.length === 0 ? (
-        !latest.missing && <EmptyState mark="Q" title="No interviews yet" body="Create a session for each conversation. You will get non-leading questions about past behaviour, mapped to the riskiest hypotheses." action={<Button onClick={() => setCreating(true)}>Create interview</Button>} />
-      ) : (
-        <ul className="space-y-3">
-          {items.map((iv, i) => <InterviewCard key={iv.id} iv={iv} assumptions={assumptions} defaultOpen={i === 0 && page === 1} />)}
-        </ul>
-      )}
-      <Pager page={page} setPage={setPage} count={items.length} limit={PAGE_SIZE} label="Interviews pagination" />
+
+      <AnimatePresence mode="wait" initial={false}>
+        {tab === 'interviews' ? (
+          <motion.div key="iv" {...fade} id="panel-interviews" role="tabpanel" aria-labelledby="tab-interviews">
+            {latest.missing && (
+              <div className="mb-4">
+                <EmptyState mark="v0" title="Analyze before interviewing" body={<>Questions are mapped to hypotheses from the latest analysis. <Link href={`/projects/${projectId}`} className="text-[#1F3D2B] underline">Run an analysis first.</Link></>} />
+              </div>
+            )}
+            {q.isLoading ? (
+              <RowsSkeleton rows={4} />
+            ) : q.isError ? (
+              <ErrorPanel error={q.error} onRetry={() => q.refetch()} title="Could not load interviews" />
+            ) : items.length === 0 && page === 1 ? (
+              !latest.missing && (
+                <EmptyState
+                  mark="Q"
+                  title="No conversations recorded yet"
+                  body="Create a session for each person you speak with. You get non-leading questions about past behaviour, mapped to the riskiest hypotheses, and a place to keep their exact words."
+                  action={<Button onClick={() => setCreating(true)} className="bg-[#1F3D2B] text-[#F6F1E6] hover:bg-[#1F3D2B]/90" data-testid="button-empty-create">Create first interview</Button>}
+                />
+              )
+            ) : (
+              <div className="grid gap-5 lg:grid-cols-[minmax(0,19rem)_minmax(0,1fr)]">
+                <aside className={`min-w-0 space-y-3 ${mobileDetail && active ? 'hidden lg:block' : ''}`} aria-label="Interview list">
+                  <div className="relative">
+                    <Search className="pointer-events-none absolute left-2.5 top-2.5 h-4 w-4 text-[#1F3D2B]/50" aria-hidden />
+                    <Input value={filter} onChange={(e) => setFilter(e.target.value)} placeholder="Filter this page by alias" aria-label="Filter interviews on this page by participant alias" className="border-[#1F3D2B]/20 bg-[#FBF8F1] pl-8" data-testid="input-filter-interviews" />
+                  </div>
+                  {shown.length === 0 ? (
+                    <p className="rounded border border-dashed border-[#1F3D2B]/25 p-3 text-xs text-[#1F3D2B]/70">No alias on this page matches "{filter}".</p>
+                  ) : (
+                    <ul className="space-y-1.5">
+                      {shown.map((iv) => {
+                        const on = active?.id === iv.id;
+                        return (
+                          <li key={iv.id}>
+                            <button
+                              onClick={() => open(iv)}
+                              aria-current={on ? 'true' : undefined}
+                              className={`flex w-full items-center gap-3 rounded-md border px-3 py-2.5 text-left transition-colors ${on ? 'border-[#1F3D2B] bg-[#1F3D2B] text-[#E8DCC4]' : 'border-[#1F3D2B]/15 bg-[#FBF8F1] hover:border-[#1F3D2B]/40'}`}
+                              data-testid={`button-toggle-interview-${iv.id}`}
+                            >
+                              <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${on ? 'bg-[#E8DCC4]/15' : 'bg-[#E8DCC4]'}`}><UserRound className="h-4 w-4" aria-hidden /></span>
+                              <span className="min-w-0 flex-1">
+                                <span className="block truncate text-sm font-medium">{iv.participant}</span>
+                                <span className={`block font-mono text-[10px] ${on ? 'text-[#E8DCC4]/70' : 'text-[#1F3D2B]/60'}`}>
+                                  {fmtDate(iv.createdAt)} / {iv.questions.length} q / {iv.sourceAnalysisVersion == null ? 'version not recorded' : `v${iv.sourceAnalysisVersion}`}
+                                </span>
+                              </span>
+                              {drafts.dirty(iv.id) && <span className="h-2 w-2 shrink-0 rounded-full bg-[#8B5CF6]" title="Unsaved draft" aria-label="Unsaved draft" />}
+                            </button>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                  <Pager page={page} setPage={(p) => { setPage(p); setFilter(''); }} count={items.length} limit={PAGE_SIZE} label="Interviews pagination" />
+                </aside>
+                <div className={`min-w-0 ${!mobileDetail ? 'hidden lg:block' : ''}`}>
+                  <AnimatePresence mode="wait" initial={false}>
+                    {active ? (
+                      <InterviewDetail
+                        key={active.id}
+                        interview={active}
+                        assumptions={assumptions}
+                        draft={drafts.get(active.id)}
+                        setDraft={(d) => drafts.set(active.id, d)}
+                        summaryAt={summaryAt}
+                        onBack={() => setMobileDetail(false)}
+                        onSaved={(f) => {
+                          cache.afterFeedbackAdded(f.interviewId, assumptions.map((a) => a.analysisId));
+                          markNote(f.createdAt);
+                          toast({ title: 'Notes saved', description: summaryAt ? 'Stored unchanged. The existing summary does not include them until you re-analyze.' : 'Stored unchanged.' });
+                        }}
+                      />
+                    ) : (
+                      <p className="rounded-md border border-dashed border-[#1F3D2B]/25 p-6 text-sm text-[#1F3D2B]/70">Select an interview to read its script and notes.</p>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
+            )}
+          </motion.div>
+        ) : (
+          <motion.div key="in" {...fade} id="panel-insights" role="tabpanel" aria-labelledby="tab-insights">
+            <FeedbackSummaryPanel projectId={projectId} assumptions={assumptions} latestMissing={latest.missing} latestAnalysisId={latest.analysis?.id} newestNoteAt={newestNoteAt} onCollectFeedback={() => setTab('interviews')} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <CreateInterviewDialog
         projectId={projectId}
         open={creating}
-        onOpenChange={(open) => {
-          if (!open) setReportContext(null);
-          setCreating(open);
+        onOpenChange={(o) => {
+          if (!o) setReportContext(null);
+          setCreating(o);
         }}
         reportContext={reportContext}
         latestAnalysisId={latest.analysis?.id}
         latestAnalysisVersion={latest.analysis?.version}
-        onCreated={() => setPage(1)}
+        alias={alias}
+        setAlias={setAlias}
+        onCreated={(iv) => {
+          setPage(1);
+          setFilter('');
+          setTab('interviews');
+          setSelected(iv);
+          setMobileDetail(true);
+          cache.afterInterviewCreated();
+          toast({ title: 'Interview created', description: `${iv.questions.length} mapped questions ready for ${iv.participant}.` });
+        }}
       />
     </div>
   );
 }
 
-function CreateInterviewDialog({
-  projectId,
-  open,
-  onOpenChange,
-  reportContext,
-  latestAnalysisId,
-  latestAnalysisVersion,
-  onCreated,
-}: {
-  projectId: string;
-  open: boolean;
-  onOpenChange: (o: boolean) => void;
-  reportContext: { analysisId: string; version: number } | null;
-  latestAnalysisId?: string;
-  latestAnalysisVersion?: number;
-  onCreated: () => void;
-}) {
-  const [alias, setAlias] = useState('');
-  const qc = useQueryClient();
-  const { toast } = useToast();
-  const m = useCreateInterview();
-  const submit = (e: FormEvent) => {
-    e.preventDefault();
-    const v = alias.trim();
-    if (!v || v.length > 150) return;
-    m.mutate(
-      { id: projectId, data: { participant: v } },
-      {
-        onSuccess: (res) => {
-          onCreated();
-          qc.invalidateQueries({ queryKey: getListInterviewsQueryKey(projectId) });
-          toast({ title: 'Interview created', description: `${res.data.questions.length} mapped questions ready.` });
-          setAlias('');
-          onOpenChange(false);
-        },
-      },
-    );
-  };
+function Stat({ label, children, testid }: { label: string; children: ReactNode; testid?: string }) {
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o) m.reset(); onOpenChange(o); }}>
-      <DialogContent className="bg-card">
-        <form onSubmit={submit} className="space-y-4">
-          <DialogHeader>
-            <p className="eyebrow">New session</p>
-            <DialogTitle className="font-display text-2xl">Who are you talking to?</DialogTitle>
-            <DialogDescription>Use an alias such as "Clinic ops lead, Leeds". Avoid names, emails or sensitive personal details; this workspace is not private yet.</DialogDescription>
-            {reportContext && <p role="status" className="rounded border border-accent/25 bg-accent/5 p-2 text-xs text-muted-foreground" data-testid="report-session-context">
-              {latestAnalysisId && reportContext.analysisId !== latestAnalysisId
-                ? `This is report v${reportContext.version}; sessions use the latest analysis${latestAnalysisVersion ? ` (v${latestAnalysisVersion})` : ''}. Questions from this older snapshot are not sent to session creation.`
-                : latestAnalysisId
-                  ? `This is the latest report (v${reportContext.version}). The session uses the latest analysis; report questions are not submitted as a custom script.`
-                  : 'The session is created from the project’s latest analysis. Report questions are not submitted as a custom script.'}
-            </p>}
-          </DialogHeader>
-          <div className="space-y-1">
-            <div className="flex justify-between"><Label htmlFor="alias">Participant alias</Label><Counter value={alias.length} max={150} /></div>
-            <Input id="alias" value={alias} onChange={(e) => setAlias(e.target.value)} maxLength={150} required className="bg-background" data-testid="input-participant" />
-          </div>
-          <InlineError error={m.error} />
-          <DialogFooter>
-            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
-            <Button type="submit" disabled={!alias.trim() || m.isPending} data-testid="button-create-interview">{m.isPending ? 'Generating questions...' : 'Create interview'}</Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function InterviewCard({ iv, assumptions, defaultOpen }: { iv: Interview; assumptions: Assumption[]; defaultOpen: boolean }) {
-  const [open, setOpen] = useState(defaultOpen);
-  const byId = new Map(assumptions.map((a) => [a.id, a]));
-  return (
-    <li className="rise rounded-md border border-card-border bg-card" data-testid={`card-interview-${iv.id}`}>
-      <button className="flex w-full items-center gap-3 p-4 text-left" onClick={() => setOpen(!open)} aria-expanded={open} data-testid={`button-toggle-interview-${iv.id}`}>
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-secondary"><UserRound className="h-4 w-4" aria-hidden /></span>
-        <span className="min-w-0 flex-1">
-          <span className="block truncate font-display text-lg">{iv.participant}</span>
-          <span className="font-mono text-[10.5px] text-muted-foreground">
-            {fmtDate(iv.createdAt)} / {iv.questions.length} questions /{' '}
-            {iv.sourceAnalysisVersion == null
-              ? 'Source analysis version not recorded'
-              : `Source analysis v${iv.sourceAnalysisVersion}`}
-          </span>
-        </span>
-        <ChevronDown className={`h-4 w-4 transition-transform ${open ? 'rotate-180' : ''}`} aria-hidden />
-      </button>
-      {open && (
-        <div className="grid gap-6 border-t border-foreground/10 p-4 lg:grid-cols-2">
-          <section aria-label="Mapped questions">
-            <div className="mb-2 flex items-center justify-between"><p className="eyebrow">Question script</p><AiLabel /></div>
-            <ol className="space-y-3">
-              {iv.questions.map((qn, i) => {
-                const a = byId.get(qn.assumptionId);
-                return (
-                  <li key={i} className="border-l-2 border-accent/50 pl-3 text-sm">
-                    <p className="font-medium leading-snug">{qn.question}</p>
-                    <p className="mt-1 text-xs text-muted-foreground"><span className="eyebrow">Listen for </span>{qn.listenFor}</p>
-                    <p className="mt-1 text-[11px] text-muted-foreground">Tests: {a ? a.description : <span className="font-mono">hypothesis {qn.assumptionId.slice(0, 8)} (from an earlier analysis)</span>}</p>
-                  </li>
-                );
-              })}
-            </ol>
-          </section>
-          <NotesPanel interviewId={iv.id} assumptions={assumptions} />
-        </div>
-      )}
-    </li>
-  );
-}
-
-function NotesPanel({ interviewId, assumptions }: { interviewId: string; assumptions: Assumption[] }) {
-  const [page, setPage] = useState(1);
-  const [notes, setNotes] = useState('');
-  const [links, setLinks] = useState<string[]>([]);
-  const [flash, setFlash] = useState(0);
-  const params = { page, limit: PAGE_SIZE };
-  const q = useListFeedback(interviewId, params, { query: { enabled: !!interviewId, queryKey: getListFeedbackQueryKey(interviewId, params) } });
-  const m = useAddFeedback();
-  const qc = useQueryClient();
-  const len = notes.trim().length;
-  const valid = len >= 10 && notes.length <= 30000 && links.length <= 30;
-  const items = q.data?.data.items ?? [];
-
-  const submit = (e: FormEvent) => {
-    e.preventDefault();
-    if (!valid) return;
-    m.mutate(
-      { id: interviewId, data: links.length ? { notes, assumptionIds: links } : { notes } },
-      {
-        onSuccess: () => {
-          qc.invalidateQueries({ queryKey: getListFeedbackQueryKey(interviewId) });
-          for (const analysisId of new Set(assumptions.map((a) => a.analysisId))) {
-            qc.invalidateQueries({ queryKey: getListAssumptionsQueryKey(analysisId) });
-          }
-          setPage(1);
-          setNotes('');
-          setLinks([]);
-          setFlash((n) => n + 1);
-        },
-      },
-    );
-  };
-
-  return (
-    <section aria-label="Raw notes" className="space-y-4">
-      <form onSubmit={submit} className="space-y-2">
-        <div className="flex items-baseline justify-between">
-          <Label htmlFor={`notes-${interviewId}`} className="eyebrow">Raw notes, stored unchanged</Label>
-          <Counter value={notes.length} max={30000} min={10} />
-        </div>
-        <Textarea id={`notes-${interviewId}`} value={notes} disabled={m.isPending} onChange={(e) => setNotes(e.target.value)} className="min-h-36 bg-background font-mono text-[13px]" placeholder="What did they actually do last time? Write their words, not your interpretation." data-testid="input-notes" />
-        {assumptions.length > 0 && (
-          <fieldset className="rounded border border-foreground/10 p-2">
-            <legend className="px-1 text-[11px] text-muted-foreground">Associate with hypotheses (neutral link, not a supporting judgment) {links.length}/30</legend>
-            <div className="max-h-40 space-y-1 overflow-y-auto">
-              {assumptions.map((a) => {
-                const on = links.includes(a.id);
-                return (
-                  <label key={a.id} className="flex cursor-pointer items-start gap-2 rounded px-1 py-0.5 text-xs hover:bg-secondary">
-                    <Checkbox checked={on} disabled={m.isPending || (!on && links.length >= 30)} onCheckedChange={(c) => setLinks(c ? [...links, a.id] : links.filter((x) => x !== a.id))} className="mt-0.5" data-testid={`checkbox-link-${a.id}`} />
-                    <span>{a.description}</span>
-                  </label>
-                );
-              })}
-            </div>
-          </fieldset>
-        )}
-        <InlineError error={m.error} />
-        <div className="flex items-center gap-3">
-          <Button type="submit" size="sm" disabled={!valid || m.isPending} data-testid="button-save-notes">{m.isPending ? 'Saving...' : 'Save notes'}</Button>
-          {flash > 0 && <span key={flash} className="saved-flash text-xs text-[hsl(158_40%_28%)]" role="status">Saved to the record</span>}
-          {len > 0 && len < 10 && <span className="text-xs text-muted-foreground">Needs at least 10 characters.</span>}
-        </div>
-      </form>
-      <div>
-        <p className="eyebrow mb-2">Saved notes</p>
-        {q.isLoading ? (
-          <RowsSkeleton rows={2} />
-        ) : q.isError ? (
-          <ErrorPanel error={q.error} onRetry={() => q.refetch()} title="Could not load notes" />
-        ) : items.length === 0 ? (
-          <p className="rounded border border-dashed p-3 text-xs text-muted-foreground">No notes recorded for this conversation yet.</p>
-        ) : (
-          <ul className="space-y-2">
-            {items.map((f) => (
-              <li key={f.id} className="rounded border border-foreground/10 bg-background p-3" data-testid={`note-${f.id}`}>
-                <p className="mb-1 font-mono text-[10px] text-muted-foreground">{fmtDate(f.createdAt)} / {f.notes.length.toLocaleString()} chars</p>
-                <p className="mb-1 break-all font-mono text-[10px] text-muted-foreground">Feedback reference: {f.id}</p>
-                <p className="max-h-60 overflow-y-auto whitespace-pre-wrap text-[13px] leading-relaxed">{f.notes}</p>
-              </li>
-            ))}
-          </ul>
-        )}
-        <Pager page={page} setPage={setPage} count={items.length} limit={PAGE_SIZE} label="Notes pagination" />
-      </div>
-    </section>
+    <div className="border-[#E8DCC4]/15 p-4 [&:not(:last-child)]:border-r max-md:[&:nth-child(2)]:border-r-0 max-md:[&:nth-child(-n+2)]:border-b">
+      <dt className="font-mono text-[10px] uppercase tracking-[.12em] text-[#E8DCC4]/60">{label}</dt>
+      <dd className="mt-1 font-display text-2xl" data-testid={testid}>{children}</dd>
+    </div>
   );
 }

@@ -8,7 +8,7 @@ export function DevBanner() {
       <span className="inline-flex items-start gap-2">
         <ShieldAlert className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent" aria-hidden />
         <span>
-          <strong className="font-semibold">Development preview, not private yet.</strong> There is no sign-in; anyone with access to this environment can read these records. Production intentionally returns AUTH_NOT_READY until project authorization ships.
+          <strong className="font-semibold">Development preview.</strong> Private project access requires configured sign-in and ownership checks. Use participant aliases and avoid sensitive customer details.
         </span>
       </span>
     </div>
