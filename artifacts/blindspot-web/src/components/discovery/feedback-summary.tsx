@@ -38,6 +38,7 @@ export function FeedbackSummaryPanel({
   latestAnalysisId,
   newestNoteAt,
   onCollectFeedback,
+  showContradictions = true,
 }: {
   projectId: string;
   assumptions: Assumption[];
@@ -45,6 +46,7 @@ export function FeedbackSummaryPanel({
   latestAnalysisId?: string;
   newestNoteAt?: string | null;
   onCollectFeedback?: () => void;
+  showContradictions?: boolean;
 }) {
   const qc = useQueryClient();
   const { toast } = useToast();
@@ -171,7 +173,7 @@ export function FeedbackSummaryPanel({
             })}
           </Fold>
           <div className="grid gap-4 lg:grid-cols-2">
-            <Fold title="Contradictions" count={contradictions.length} defaultOpen>
+            {showContradictions && <Fold title="Contradictions" count={contradictions.length} defaultOpen>
               {contradictions.map((c, i) => (
                 <li key={i} className="space-y-2 rounded border border-[#8B5CF6]/25 bg-[#8B5CF6]/5 p-3 text-sm">
                   {c.explanation && <p className="break-words">{c.explanation}</p>}
@@ -190,7 +192,7 @@ export function FeedbackSummaryPanel({
                   </div>
                 </li>
               ))}
-            </Fold>
+            </Fold>}
             <div className="space-y-4">
               <Fold title="Evidence gaps" count={summary.result.evidenceGaps.length} defaultOpen>
                 {summary.result.evidenceGaps.map((g, i) => <li key={i} className="break-words border-l-2 border-[#C9A962] pl-2 text-sm">{g}</li>)}

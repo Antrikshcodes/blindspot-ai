@@ -9,7 +9,7 @@ import { readError } from '@/lib/api';
 const TABS = [
   { seg: '', label: 'Overview' },
   { seg: '/interviews', label: 'Customer Discovery', tid: 'interviews' },
-  { seg: '/evidence', label: 'Evidence' },
+  { seg: '/evidence', label: 'Evidence Intelligence', tid: 'evidence' },
   { seg: '/experiments', label: 'Experiments' },
   { seg: '/resources', label: 'Resources' },
 ];

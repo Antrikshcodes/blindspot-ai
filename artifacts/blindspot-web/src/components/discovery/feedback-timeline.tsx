@@ -8,7 +8,7 @@ import { useStagger } from './motion';
 
 const LONG = 700;
 
-export function FeedbackTimeline({ interview, page, setPage, summaryAt }: { interview: Interview; page: number; setPage: (p: number) => void; summaryAt?: string | null }) {
+export function FeedbackTimeline({ interview, page, setPage, summaryAt, highlightedFeedbackId }: { interview: Interview; page: number; setPage: (p: number) => void; summaryAt?: string | null; highlightedFeedbackId?: string }) {
   const params = { page, limit: PAGE_SIZE };
   const q = useListFeedback(interview.id, params, { query: { enabled: !!interview.id, queryKey: getListFeedbackQueryKey(interview.id, params) } });
   const items = q.data?.data.items ?? [];
@@ -38,21 +38,23 @@ export function FeedbackTimeline({ interview, page, setPage, summaryAt }: { inte
           {items.map((f, i) => (
             <motion.li key={f.id} {...stagger(i)} className="relative">
               <span aria-hidden className="absolute -left-[25px] top-4 h-2.5 w-2.5 rounded-full border-2 border-[#F6F1E6] bg-[#1F3D2B]" />
-              <Entry f={f} interview={interview} afterSummary={!!summaryAt && new Date(f.createdAt) > new Date(summaryAt)} />
+              <Entry f={f} interview={interview} highlighted={f.id === highlightedFeedbackId} afterSummary={!!summaryAt && new Date(f.createdAt) > new Date(summaryAt)} />
             </motion.li>
           ))}
         </ol>
       )}
+      {highlightedFeedbackId && q.isSuccess && !items.some((item) => item.id === highlightedFeedbackId) && <p role="status" className="rounded border border-dashed p-3 text-xs text-muted-foreground">The requested source note was not returned on this page. Its reference is {highlightedFeedbackId}.</p>}
       <Pager page={page} setPage={setPage} count={items.length} limit={PAGE_SIZE} label="Notes pagination" />
     </section>
   );
 }
 
-function Entry({ f, interview, afterSummary }: { f: Feedback; interview: Interview; afterSummary: boolean }) {
+function Entry({ f, interview, afterSummary, highlighted }: { f: Feedback; interview: Interview; afterSummary: boolean; highlighted?: boolean }) {
   const long = f.notes.length > LONG;
   const [open, setOpen] = useState(!long);
   return (
-    <article className="rounded-md border border-[#1F3D2B]/15 bg-[#FFFDF8] p-3.5 shadow-[0_1px_0_#1F3D2B14]" data-testid={`note-${f.id}`}>
+    <article className={`rounded-md border bg-[#FFFDF8] p-3.5 shadow-[0_1px_0_#1F3D2B14] ${highlighted ? 'border-[#8B5CF6]/60 ring-1 ring-[#8B5CF6]/30' : 'border-[#1F3D2B]/15'}`} data-testid={`note-${f.id}`}>
+      {highlighted && <p role="status" className="mb-2 text-xs font-medium text-[#6D3FE0]">Requested source feedback</p>}
       <header className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[10.5px] text-[#1F3D2B]/70">
         <time dateTime={f.createdAt}>{fmtDate(f.createdAt)}</time>
         <span>{f.notes.length.toLocaleString()} chars</span>

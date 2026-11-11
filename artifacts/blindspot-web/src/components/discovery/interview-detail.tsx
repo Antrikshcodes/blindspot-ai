@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 import { type Assumption, type Feedback, type Interview } from '@workspace/api-client-react';
@@ -18,6 +18,8 @@ export function InterviewDetail({
   onSaved,
   onBack,
   summaryAt,
+  initialFeedbackPage = 1,
+  highlightedFeedbackId,
 }: {
   interview: Interview;
   assumptions: Assumption[];
@@ -26,8 +28,11 @@ export function InterviewDetail({
   onSaved: (f: Feedback) => void;
   onBack: () => void;
   summaryAt?: string | null;
+  initialFeedbackPage?: number;
+  highlightedFeedbackId?: string;
 }) {
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(initialFeedbackPage);
+  useEffect(() => setPage(initialFeedbackPage), [initialFeedbackPage]);
   const fade = useFade();
   const byId = new Map(assumptions.map((a) => [a.id, a]));
 
@@ -76,7 +81,7 @@ export function InterviewDetail({
               onSaved(f);
             }}
           />
-          <FeedbackTimeline interview={interview} page={page} setPage={setPage} summaryAt={summaryAt} />
+          <FeedbackTimeline interview={interview} page={page} setPage={setPage} summaryAt={summaryAt} highlightedFeedbackId={highlightedFeedbackId} />
         </div>
       </div>
     </motion.article>

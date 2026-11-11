@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Link, useParams, useSearchParams } from 'wouter';
 import { AnimatePresence, MotionConfig, motion } from 'framer-motion';
 import { Plus, Search, UserRound } from 'lucide-react';
@@ -16,6 +16,7 @@ import { ProjectFrame } from '@/components/project-frame';
 import { EmptyState, ErrorPanel, Pager, RowsSkeleton } from '@/components/kit';
 import { PAGE_SIZE, fmtDate, fmtDay } from '@/lib/api';
 import { useLatest } from '@/lib/latest';
+import { readSourceContext, type SourceContext } from '@/lib/source-link';
 import { useAliasDraft, useDiscoveryCache, useDrafts, useInterviewTotal, useNewestNote } from '@/hooks/use-discovery';
 import { CreateInterviewDialog, type ReportContext } from '@/components/discovery/create-interview-dialog';
 import { InterviewDetail } from '@/components/discovery/interview-detail';
@@ -38,7 +39,9 @@ function Discovery({ projectId }: { projectId: string }) {
   const [reportContext, setReportContext] = useState<ReportContext | null>(null);
   const [selected, setSelected] = useState<Interview | null>(null);
   const [mobileDetail, setMobileDetail] = useState(false);
+  const [sourceContext, setSourceContext] = useState<SourceContext | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
+  const requestedSource = useMemo(() => readSourceContext(searchParams), [searchParams]);
   const [alias, setAlias] = useAliasDraft(projectId);
   const drafts = useDrafts(projectId);
   const { newestNoteAt, markNote } = useNewestNote(projectId);
@@ -56,6 +59,26 @@ function Discovery({ projectId }: { projectId: string }) {
   const shown = needle ? items.filter((iv) => iv.participant.toLowerCase().includes(needle)) : items;
   const summaryAt = sq.data?.data?.createdAt ?? null;
   const active = selected ?? (items[0] && page === 1 ? items[0] : null);
+
+  useEffect(() => {
+    if (requestedSource) setPage(requestedSource.interviewPage);
+  }, [requestedSource]);
+
+  useEffect(() => {
+    if (!requestedSource || !q.isSuccess || page !== requestedSource.interviewPage) return;
+    const interview = q.data.data.items.find((item) => item.id === requestedSource.interviewId);
+    if (interview) {
+      setSelected(interview);
+      setSourceContext(requestedSource);
+      setMobileDetail(true);
+      setTab('interviews');
+    } else {
+      toast({ title: 'Source interview not on this page', description: 'The referenced session was not returned. Browse the project’s interviews to locate the feedback reference.', variant: 'destructive' });
+    }
+    const next = new URLSearchParams(searchParams);
+    for (const key of ['interviewId', 'feedbackId', 'interviewPage', 'feedbackPage']) next.delete(key);
+    setSearchParams(next, { replace: true });
+  }, [requestedSource, q.isSuccess, q.data, page, searchParams, setSearchParams, toast]);
 
   useEffect(() => {
     if (searchParams.get('create') !== '1') return;
@@ -78,6 +101,7 @@ function Discovery({ projectId }: { projectId: string }) {
   }, [dirtyCount, alias]);
 
   const open = (iv: Interview) => {
+    setSourceContext(null);
     setSelected(iv);
     setMobileDetail(true);
   };
@@ -199,6 +223,8 @@ function Discovery({ projectId }: { projectId: string }) {
                         draft={drafts.get(active.id)}
                         setDraft={(d) => drafts.set(active.id, d)}
                         summaryAt={summaryAt}
+                        initialFeedbackPage={sourceContext?.interviewId === active.id ? sourceContext.feedbackPage : 1}
+                        highlightedFeedbackId={sourceContext?.interviewId === active.id ? sourceContext.feedbackId : undefined}
                         onBack={() => setMobileDetail(false)}
                         onSaved={(f) => {
                           cache.afterFeedbackAdded(f.interviewId, assumptions.map((a) => a.analysisId));
