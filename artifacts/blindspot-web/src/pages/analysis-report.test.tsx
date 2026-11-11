@@ -1,9 +1,12 @@
 import '@testing-library/jest-dom/vitest';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Assumption } from '@workspace/api-client-react';
+import { Route, Router } from 'wouter';
+import { memoryLocation } from 'wouter/memory-location';
 import { Report } from './analysis-report';
+import InterviewsPage from './interviews';
 import { HypothesisRow } from '@/components/hypothesis';
 
 const mocks = vi.hoisted(() => ({
@@ -15,6 +18,10 @@ const mocks = vi.hoisted(() => ({
   assumptions: vi.fn(),
   history: vi.fn(),
   updateAssumption: vi.fn(),
+  createInterview: vi.fn(),
+  createInterviewMutate: vi.fn(),
+  listInterviews: vi.fn(),
+  interviewItems: [] as Array<Record<string, unknown>>,
   mutate: vi.fn(),
   mutationError: null as Error | null,
   mutationPending: false,
@@ -28,6 +35,9 @@ vi.mock('@workspace/api-client-react', () => ({
   getGetAnalysisInterviewQuestionsQueryKey: vi.fn(() => ['questions']),
   getListAssumptionsQueryKey: vi.fn(() => ['assumptions']),
   getListAnalysisHistoryQueryKey: vi.fn(() => ['history']),
+  getListInterviewsQueryKey: vi.fn(() => ['interviews']),
+  getListFeedbackQueryKey: vi.fn(() => ['feedback']),
+  getGetProjectQueryKey: vi.fn(() => ['project']),
   useGetAnalysis: mocks.getAnalysis,
   useGetLatestAnalysis: mocks.latestAnalysis,
   useGetAnalysisSummary: mocks.summary,
@@ -35,6 +45,11 @@ vi.mock('@workspace/api-client-react', () => ({
   useGetAnalysisInterviewQuestions: mocks.questions,
   useListAssumptions: mocks.assumptions,
   useListAnalysisHistory: mocks.history,
+  useGetProject: vi.fn(() => query({ id: 'project-1', name: 'Example project' })),
+  useListInterviews: mocks.listInterviews,
+  useListFeedback: vi.fn(() => query({ items: [] })),
+  useAddFeedback: vi.fn(() => ({ mutate: vi.fn(), isPending: false, error: null })),
+  useCreateInterview: mocks.createInterview,
   useUpdateAssumption: mocks.updateAssumption,
 }));
 
@@ -73,7 +88,7 @@ function evidence(id: string, assumptionId: string, sentiment: 'SUPPORTING' | 'I
   };
 }
 
-function setupReport(items: Assumption[], latestId = 'analysis-current', questionsAvailable = false) {
+function setupReport(items: Assumption[], latestId = 'analysis-current', questionsAvailable = false, renderUI = true) {
   mocks.getAnalysis.mockReturnValue(query({
     id: 'analysis-current',
     version: 2,
@@ -97,10 +112,60 @@ function setupReport(items: Assumption[], latestId = 'analysis-current', questio
   }));
   mocks.assumptions.mockReturnValue(query({ items }));
   mocks.history.mockReturnValue(query({ items: [] }));
+  mocks.interviewItems = [];
+  mocks.listInterviews.mockImplementation(() => query({ items: mocks.interviewItems }));
+  if (!renderUI) return;
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   return render(
     <QueryClientProvider client={client}>
       <Report projectId="project-1" analysisId="analysis-current" projectName="Example project" />
+    </QueryClientProvider>,
+  );
+}
+
+function renderReportInterviewHandoff() {
+  setupReport([assumption()], 'analysis-newer', true, false);
+  mocks.interviewItems = [];
+  mocks.listInterviews.mockImplementation((_projectId, _params, options) => useQuery({
+    queryKey: options.query.queryKey,
+    queryFn: async () => ({ data: { items: [...mocks.interviewItems] } }),
+  }));
+  mocks.createInterview.mockReturnValue({
+    mutate: mocks.createInterviewMutate,
+    isPending: false,
+    error: null,
+    reset: vi.fn(),
+  });
+  mocks.createInterviewMutate.mockImplementation((variables, options) => {
+    mocks.interviewItems = [{
+      id: 'interview-created',
+      projectId: 'project-1',
+      participant: variables.data.participant,
+      createdAt: '2025-01-03T00:00:00.000Z',
+      sourceAnalysisVersion: 3,
+      questions: [{
+        assumptionId: 'a1',
+        question: 'What happened the last time?',
+      }],
+    }];
+    options.onSuccess({
+      data: {
+        ...mocks.interviewItems[0],
+        questions: [{ assumptionId: 'a1', question: 'What happened the last time?' }],
+      },
+    });
+  });
+
+  const { hook } = memoryLocation({ path: '/projects/project-1/analysis/analysis-current' });
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+  return render(
+    <QueryClientProvider client={client}>
+      <Router hook={hook}>
+        <Route path="/projects/:id/analysis/:analysisId" component={() => (
+          <Report projectId="project-1" analysisId="analysis-current" projectName="Example project" />
+        )} />
+        <Route path="/projects/:id/interviews" component={InterviewsPage} />
+      </Router>
     </QueryClientProvider>,
   );
 }
@@ -222,6 +287,32 @@ describe('analysis report risk regressions', () => {
     );
     expect(screen.getByText(/This is an older report\. Interview sessions use the project’s latest analysis/)).toBeInTheDocument();
     expect(screen.getByText(/questions from this snapshot are not sent to session creation/)).toBeInTheDocument();
+  });
+
+  it('opens a snapshot-aware interview dialog and shows the created session', async () => {
+    renderReportInterviewHandoff();
+
+    fireEvent.click(screen.getByTestId('button-start-interview-from-report'));
+
+    expect(await screen.findByRole('dialog')).toBeInTheDocument();
+    expect(screen.getByTestId('report-session-context')).toHaveTextContent(
+      'This is report v2; sessions use the latest analysis (v3). Questions from this older snapshot are not sent to session creation.',
+    );
+
+    fireEvent.change(screen.getByTestId('input-participant'), { target: { value: 'Clinic ops lead, Leeds' } });
+    fireEvent.click(screen.getByTestId('button-create-interview'));
+
+    await waitFor(() => {
+      expect(mocks.createInterviewMutate).toHaveBeenCalledWith(
+        { id: 'project-1', data: { participant: 'Clinic ops lead, Leeds' } },
+        expect.objectContaining({ onSuccess: expect.any(Function) }),
+      );
+    });
+    expect(mocks.createInterviewMutate.mock.calls[0][0].data).toEqual({
+      participant: 'Clinic ops lead, Leeds',
+    });
+    expect(await screen.findByTestId('card-interview-interview-created')).toHaveTextContent('Clinic ops lead, Leeds');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 });
 
