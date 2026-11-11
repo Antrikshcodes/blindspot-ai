@@ -16,6 +16,8 @@ const mocks = vi.hoisted(() => ({
   history: vi.fn(),
   updateAssumption: vi.fn(),
   mutate: vi.fn(),
+  mutationError: null as Error | null,
+  mutationPending: false,
 }));
 
 vi.mock('@workspace/api-client-react', () => ({
@@ -111,12 +113,14 @@ function getRenderedAssumptionIds() {
 describe('analysis report risk regressions', () => {
   beforeEach(() => {
     mocks.mutate.mockReset();
-    mocks.updateAssumption.mockReturnValue({
+    mocks.mutationError = null;
+    mocks.mutationPending = false;
+    mocks.updateAssumption.mockImplementation(() => ({
       mutate: mocks.mutate,
-      isPending: false,
-      error: null,
+      isPending: mocks.mutationPending,
+      error: mocks.mutationError,
       reset: vi.fn(),
-    });
+    }));
   });
 
   afterEach(cleanup);
@@ -224,35 +228,37 @@ describe('analysis report risk regressions', () => {
 describe('hypothesis outcome evidence gating', () => {
   beforeEach(() => {
     mocks.mutate.mockReset();
-    mocks.updateAssumption.mockReturnValue({
+    mocks.mutationError = null;
+    mocks.mutationPending = false;
+    mocks.updateAssumption.mockImplementation(() => ({
       mutate: mocks.mutate,
-      isPending: false,
-      error: null,
+      isPending: mocks.mutationPending,
+      error: mocks.mutationError,
       reset: vi.fn(),
-    });
+    }));
   });
 
   afterEach(cleanup);
 
   function openOutcomeDialog() {
-    render(
-      <QueryClientProvider client={new QueryClient()}>
-        <HypothesisRow
-          a={assumption({
-            status: 'TESTING',
-            evidenceRecords: [
-              evidence('linked-support', 'a1', 'SUPPORTING'),
-              evidence('linked-invalid', 'a1', 'INVALIDATING'),
-              evidence('linked-neutral', 'a1', 'NEUTRAL'),
-              evidence('unlinked-support', 'other-assumption', 'SUPPORTING'),
-            ],
-          })}
-          rank={1}
-          projectId="project-1"
-        />
-      </QueryClientProvider>,
+    const a = assumption({
+      status: 'TESTING',
+      evidenceRecords: [
+        evidence('linked-support', 'a1', 'SUPPORTING'),
+        evidence('linked-invalid', 'a1', 'INVALIDATING'),
+        evidence('linked-neutral', 'a1', 'NEUTRAL'),
+        evidence('unlinked-support', 'other-assumption', 'SUPPORTING'),
+      ],
+    });
+    const client = new QueryClient();
+    const renderRow = () => (
+      <QueryClientProvider client={client}>
+        <HypothesisRow a={a} rank={1} projectId="project-1" />
+      </QueryClientProvider>
     );
+    const view = render(renderRow());
     fireEvent.click(screen.getByTestId('button-record-outcome-a1'));
+    return { rerender: () => view.rerender(renderRow()) };
   }
 
   it('submits only linked supporting evidence for a supported outcome', () => {
@@ -317,5 +323,47 @@ describe('hypothesis outcome evidence gating', () => {
       { id: 'a1', data: { status: 'INCONCLUSIVE', evidenceIds: ['linked-neutral'] } },
       expect.any(Object),
     );
+  });
+
+  it('keeps the dialog and selected citation available after a rejected save', () => {
+    const { rerender } = openOutcomeDialog();
+    fireEvent.click(screen.getByTestId('checkbox-evidence-linked-support'));
+    fireEvent.click(screen.getByTestId('button-submit-outcome'));
+
+    expect(mocks.mutate).toHaveBeenCalledTimes(1);
+    expect(mocks.mutate).toHaveBeenCalledWith(
+      { id: 'a1', data: { status: 'SUPPORTED', evidenceIds: ['linked-support'] } },
+      expect.any(Object),
+    );
+
+    mocks.mutationError = new Error('Unable to save outcome');
+    rerender();
+
+    expect(screen.getByRole('alert')).toHaveTextContent('Unable to save outcome');
+    expect(screen.getByText('Record an outcome')).toBeInTheDocument();
+    expect(screen.getByText('Cite evidence linked to this hypothesis (1 selected)')).toBeInTheDocument();
+    expect(screen.getByTestId('checkbox-evidence-linked-support')).toBeChecked();
+
+    fireEvent.click(screen.getByTestId('button-submit-outcome'));
+    expect(mocks.mutate).toHaveBeenCalledTimes(2);
+    expect(mocks.mutate).toHaveBeenLastCalledWith(
+      { id: 'a1', data: { status: 'SUPPORTED', evidenceIds: ['linked-support'] } },
+      expect.any(Object),
+    );
+  });
+
+  it('prevents a second submission while an outcome save is pending', () => {
+    const { rerender } = openOutcomeDialog();
+    fireEvent.click(screen.getByTestId('checkbox-evidence-linked-support'));
+    fireEvent.click(screen.getByTestId('button-submit-outcome'));
+    expect(mocks.mutate).toHaveBeenCalledTimes(1);
+
+    mocks.mutationPending = true;
+    rerender();
+
+    const submit = screen.getByTestId('button-submit-outcome');
+    expect(submit).toBeDisabled();
+    fireEvent.click(submit);
+    expect(mocks.mutate).toHaveBeenCalledTimes(1);
   });
 });
