@@ -41,7 +41,7 @@ export default function AnalysisReportPage() {
   return <ProjectFrame id={id}>{(project) => <Report projectId={id} analysisId={analysisId} projectName={project.name} />}</ProjectFrame>;
 }
 
-function Report({ projectId, analysisId, projectName }: { projectId: string; analysisId: string; projectName: string }) {
+export function Report({ projectId, analysisId, projectName }: { projectId: string; analysisId: string; projectName: string }) {
   const { toast } = useToast();
   const analysisQ = useGetAnalysis(analysisId, { query: { enabled: !!analysisId, queryKey: getGetAnalysisQueryKey(analysisId), retry: false } });
   const latestQ = useGetLatestAnalysis(projectId, { query: { enabled: !!projectId, queryKey: getGetLatestAnalysisQueryKey(projectId), retry: false } });
