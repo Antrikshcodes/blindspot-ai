@@ -71,7 +71,7 @@ function evidence(id: string, assumptionId: string, sentiment: 'SUPPORTING' | 'I
   };
 }
 
-function setupReport(items: Assumption[], latestId = 'analysis-current') {
+function setupReport(items: Assumption[], latestId = 'analysis-current', questionsAvailable = false) {
   mocks.getAnalysis.mockReturnValue(query({
     id: 'analysis-current',
     version: 2,
@@ -79,10 +79,20 @@ function setupReport(items: Assumption[], latestId = 'analysis-current') {
     createdAt: '2025-01-01T00:00:00.000Z',
     result: { problemClarity: 'Clear', audienceClarity: 'Known', nextSteps: [] },
   }));
-  mocks.latestAnalysis.mockReturnValue(query({ id: latestId, version: 3, model: 'fixture-model', createdAt: '2025-01-02T00:00:00.000Z' }));
+  mocks.latestAnalysis.mockReturnValue(query({ id: latestId, version: latestId === 'analysis-current' ? 2 : 3, model: 'fixture-model', createdAt: '2025-01-02T00:00:00.000Z' }));
   mocks.summary.mockReturnValue(query({ available: false, reason: 'No structured summary' }));
   mocks.blindspots.mockReturnValue(query({ available: false, reason: 'No blindspots' }));
-  mocks.questions.mockReturnValue(query({ available: false, reason: 'No questions' }));
+  mocks.questions.mockReturnValue(query({
+    available: questionsAvailable,
+    items: questionsAvailable ? [{
+      id: 'question-1',
+      question: 'Tell me about the last time you faced this problem.',
+      purpose: 'Understand recent behavior',
+      evidenceToLookFor: 'Existing workarounds',
+      followUpQuestion: 'What happened next?',
+    }] : [],
+    reason: 'No questions',
+  }));
   mocks.assumptions.mockReturnValue(query({ items }));
   mocks.history.mockReturnValue(query({ items: [] }));
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
@@ -197,6 +207,17 @@ describe('analysis report risk regressions', () => {
     expect(screen.queryByTestId('button-record-outcome-testing')).not.toBeInTheDocument();
     expect(screen.queryByTestId('button-reopen-supported')).not.toBeInTheDocument();
     expect(screen.getByText('This is a preserved historical snapshot. Review controls are disabled.')).toBeInTheDocument();
+  });
+
+  it('offers an interview action from historical reports and states that only latest questions are used', () => {
+    setupReport([assumption()], 'analysis-newer', true);
+
+    expect(screen.getByTestId('button-start-interview-from-report')).toHaveAttribute(
+      'href',
+      '/projects/project-1/interviews?create=1&reportAnalysisId=analysis-current&reportVersion=2',
+    );
+    expect(screen.getByText(/This is an older report\. Interview sessions use the project’s latest analysis/)).toBeInTheDocument();
+    expect(screen.getByText(/questions from this snapshot are not sent to session creation/)).toBeInTheDocument();
   });
 });
 

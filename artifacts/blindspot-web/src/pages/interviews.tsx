@@ -1,5 +1,5 @@
-import { useState, type FormEvent } from 'react';
-import { Link, useParams } from 'wouter';
+import { useEffect, useState, type FormEvent } from 'react';
+import { Link, useParams, useSearchParams } from 'wouter';
 import { useQueryClient } from '@tanstack/react-query';
 import { ChevronDown, Plus, UserRound } from 'lucide-react';
 import {
@@ -33,11 +33,24 @@ export default function InterviewsPage() {
 function Interviews({ projectId }: { projectId: string }) {
   const [page, setPage] = useState(1);
   const [creating, setCreating] = useState(false);
+  const [reportContext, setReportContext] = useState<{ analysisId: string; version: number } | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
   const params = { page, limit: PAGE_SIZE };
   const q = useListInterviews(projectId, params, { query: { enabled: !!projectId, queryKey: getListInterviewsQueryKey(projectId, params) } });
   const latest = useLatest(projectId);
   const assumptions = latest.analysis?.assumptions ?? [];
   const items = q.data?.data.items ?? [];
+
+  useEffect(() => {
+    if (searchParams.get('create') !== '1') return;
+    const analysisId = searchParams.get('reportAnalysisId');
+    const version = Number(searchParams.get('reportVersion'));
+    if (analysisId && Number.isInteger(version) && version > 0) {
+      setReportContext({ analysisId, version });
+    }
+    setCreating(true);
+    setSearchParams({}, { replace: true });
+  }, [searchParams, setSearchParams]);
 
   return (
     <div className="space-y-6">
@@ -62,12 +75,39 @@ function Interviews({ projectId }: { projectId: string }) {
         </ul>
       )}
       <Pager page={page} setPage={setPage} count={items.length} limit={PAGE_SIZE} label="Interviews pagination" />
-      <CreateInterviewDialog projectId={projectId} open={creating} onOpenChange={setCreating} />
+      <CreateInterviewDialog
+        projectId={projectId}
+        open={creating}
+        onOpenChange={(open) => {
+          if (!open) setReportContext(null);
+          setCreating(open);
+        }}
+        reportContext={reportContext}
+        latestAnalysisId={latest.analysis?.id}
+        latestAnalysisVersion={latest.analysis?.version}
+        onCreated={() => setPage(1)}
+      />
     </div>
   );
 }
 
-function CreateInterviewDialog({ projectId, open, onOpenChange }: { projectId: string; open: boolean; onOpenChange: (o: boolean) => void }) {
+function CreateInterviewDialog({
+  projectId,
+  open,
+  onOpenChange,
+  reportContext,
+  latestAnalysisId,
+  latestAnalysisVersion,
+  onCreated,
+}: {
+  projectId: string;
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  reportContext: { analysisId: string; version: number } | null;
+  latestAnalysisId?: string;
+  latestAnalysisVersion?: number;
+  onCreated: () => void;
+}) {
   const [alias, setAlias] = useState('');
   const qc = useQueryClient();
   const { toast } = useToast();
@@ -80,6 +120,7 @@ function CreateInterviewDialog({ projectId, open, onOpenChange }: { projectId: s
       { id: projectId, data: { participant: v } },
       {
         onSuccess: (res) => {
+          onCreated();
           qc.invalidateQueries({ queryKey: getListInterviewsQueryKey(projectId) });
           toast({ title: 'Interview created', description: `${res.data.questions.length} mapped questions ready.` });
           setAlias('');
@@ -96,6 +137,13 @@ function CreateInterviewDialog({ projectId, open, onOpenChange }: { projectId: s
             <p className="eyebrow">New session</p>
             <DialogTitle className="font-display text-2xl">Who are you talking to?</DialogTitle>
             <DialogDescription>Use an alias such as "Clinic ops lead, Leeds". Avoid names, emails or sensitive personal details; this workspace is not private yet.</DialogDescription>
+            {reportContext && <p role="status" className="rounded border border-accent/25 bg-accent/5 p-2 text-xs text-muted-foreground" data-testid="report-session-context">
+              {latestAnalysisId && reportContext.analysisId !== latestAnalysisId
+                ? `This is report v${reportContext.version}; sessions use the latest analysis${latestAnalysisVersion ? ` (v${latestAnalysisVersion})` : ''}. Questions from this older snapshot are not sent to session creation.`
+                : latestAnalysisId
+                  ? `This is the latest report (v${reportContext.version}). The session uses the latest analysis; report questions are not submitted as a custom script.`
+                  : 'The session is created from the project’s latest analysis. Report questions are not submitted as a custom script.'}
+            </p>}
           </DialogHeader>
           <div className="space-y-1">
             <div className="flex justify-between"><Label htmlFor="alias">Participant alias</Label><Counter value={alias.length} max={150} /></div>

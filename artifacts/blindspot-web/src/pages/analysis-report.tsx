@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'wouter';
-import { ArrowLeft, Copy, Search, Target } from 'lucide-react';
+import { ArrowLeft, Copy, Search, Target, UserRoundPlus } from 'lucide-react';
 import {
   getGetAnalysisBlindspotsQueryKey,
   getGetAnalysisInterviewQuestionsQueryKey,
@@ -234,7 +234,19 @@ export function Report({ projectId, analysisId, projectName }: { projectId: stri
       </section>
 
       <section id="questions" className="mb-12 scroll-mt-8">
-        <SectionHead eyebrow="Use verbatim / do not lead the participant" title="Interview questions" aside={questions.length > 0 ? <Button size="sm" variant="outline" onClick={() => void copy(questions.map((q) => q.question).join('\n\n'), 'Questions copied')} data-testid="button-copy-all-questions"><Copy className="mr-1.5 h-3.5 w-3.5" />Copy all</Button> : undefined} />
+        <SectionHead eyebrow="Use verbatim / do not lead the participant" title="Interview questions" aside={questions.length > 0 ? <div className="flex flex-wrap gap-2">
+          <Button size="sm" variant="outline" onClick={() => void copy(questions.map((q) => q.question).join('\n\n'), 'Questions copied')} data-testid="button-copy-all-questions"><Copy className="mr-1.5 h-3.5 w-3.5" />Copy all</Button>
+          <Button size="sm" asChild data-testid="button-start-interview-from-report">
+            <Link href={`/projects/${projectId}/interviews?create=1&reportAnalysisId=${encodeURIComponent(analysisId)}&reportVersion=${analysis.version}`}>
+              <UserRoundPlus className="mr-1.5 h-3.5 w-3.5" />Start an interview
+            </Link>
+          </Button>
+        </div> : undefined} />
+        {questions.length > 0 && <p className="mb-3 text-xs text-muted-foreground">
+          {latest?.id && latest.id !== analysisId
+            ? 'This is an older report. Interview sessions use the project’s latest analysis; questions from this snapshot are not sent to session creation.'
+            : 'Interview sessions use the project’s latest analysis. Report questions are not submitted as a custom script.'}
+        </p>}
         {questionsQ.isLoading ? <RowsSkeleton rows={3} /> : questionsQ.isError ? <ErrorPanel error={questionsQ.error} onRetry={() => questionsQ.refetch()} title="Could not load interview questions" /> : !questionEnvelope?.available ? <EmptyState mark="ENGINE" title="Questions unavailable" body={questionEnvelope?.reason || 'This snapshot does not contain the interview-question engine output.'} /> : questions.length === 0 ? <EmptyState mark="0" title="No interview questions returned" body="This analysis did not return questions. No prompts have been invented." /> : <ol className="space-y-2">{questions.map((q, i) => <li key={q.id} className="rounded-md border border-card-border bg-card p-4">
           <div className="flex items-start gap-3"><span className="font-mono text-xs text-accent">{String(i + 1).padStart(2, '0')}</span><div className="min-w-0 flex-1"><p className="font-display text-lg leading-snug">{q.question}</p><p className="mt-2 text-xs text-muted-foreground">{q.purpose}</p><div className="mt-3 grid gap-2 text-xs sm:grid-cols-2"><p><span className="eyebrow block mb-1">Evidence to listen for</span>{q.evidenceToLookFor}</p><p><span className="eyebrow block mb-1">Follow-up</span>{q.followUpQuestion}</p></div></div><Button size="sm" variant="ghost" aria-label={`Copy question ${i + 1}`} onClick={() => void copy(q.question, 'Question copied')}><Copy className="h-4 w-4" /></Button></div>
         </li>)}</ol>}
