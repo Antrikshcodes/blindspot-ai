@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
 import { Chip } from '@/components/kit';
@@ -6,8 +6,9 @@ import type { Relationship } from '@/lib/evidence';
 import { useFade } from '@/components/discovery/motion';
 import { OriginTag, SentimentTag } from './evidence-library';
 
-export function EvidenceRelationships({ rels, selectedEvidenceId, onSelectEvidence }: { rels: Relationship[]; selectedEvidenceId: string | null; onSelectEvidence: (id: string) => void }) {
-  const [open, setOpen] = useState<string | null>(null);
+export function EvidenceRelationships({ rels, selectedEvidenceId, focusedAssumptionId, onSelectEvidence }: { rels: Relationship[]; selectedEvidenceId: string | null; focusedAssumptionId?: string | null; onSelectEvidence: (id: string) => void }) {
+  const [open, setOpen] = useState<string | null>(focusedAssumptionId ?? null);
+  useEffect(() => { if (focusedAssumptionId) setOpen(focusedAssumptionId); }, [focusedAssumptionId]);
   const fade = useFade(4);
   return (
     <div data-testid="evidence-relationships" className="space-y-2">

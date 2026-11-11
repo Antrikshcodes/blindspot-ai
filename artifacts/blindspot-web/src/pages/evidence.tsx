@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useParams } from 'wouter';
+import { Link, useParams, useSearchParams } from 'wouter';
 import { AnimatePresence, useReducedMotion } from 'framer-motion';
 import { useListAssumptions, getListAssumptionsQueryKey } from '@workspace/api-client-react';
 import { ProjectFrame } from '@/components/project-frame';
@@ -28,6 +28,9 @@ const TABS: { v: Tab; label: string }[] = [
 
 function Evidence({ projectId }: { projectId: string }) {
   const reducedMotion = useReducedMotion();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedAssumption = searchParams.get('assumptionId');
+  const targetAssumption = requestedAssumption && requestedAssumption.length <= 200 ? requestedAssumption : null;
   const latest = useLatest(projectId);
   const analysisId = latest.analysis?.id ?? '';
   const [page, setPage] = useState(1);
@@ -35,6 +38,7 @@ function Evidence({ projectId }: { projectId: string }) {
   const [f, setF] = useState<EvidenceFilters>(DEFAULT_FILTERS);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [source, setSource] = useState<string | null>(null);
+  const [focusedAssumption, setFocusedAssumption] = useState<string | null>(null);
   useEffect(() => { setPage(1); setSelectedId(null); setF(DEFAULT_FILTERS); }, [analysisId]);
 
   const params = { page, limit: PAGE_SIZE };
@@ -52,6 +56,20 @@ function Evidence({ projectId }: { projectId: string }) {
   // Always resolve from fresh query data so outcome mutations refresh the detail.
   const selected = selectedId ? records.find((e) => e.id === selectedId) : undefined;
   const selectedA = selected ? byId.get(selected.assumptionId) : undefined;
+  const targetLoaded = !!targetAssumption && byId.has(targetAssumption);
+  const clearAssumptionRequest = () => {
+    const next = new URLSearchParams(searchParams);
+    next.delete('assumptionId');
+    setSearchParams(next, { replace: true });
+  };
+  useEffect(() => {
+    if (!targetAssumption || !targetLoaded || !q.isSuccess) return;
+    setFocusedAssumption(targetAssumption);
+    setTab('relationships');
+    const next = new URLSearchParams(searchParams);
+    next.delete('assumptionId');
+    setSearchParams(next, { replace: true });
+  }, [targetAssumption, targetLoaded, q.isSuccess, searchParams, setSearchParams]);
   const hasSelection = !!selected;
   useEffect(() => {
     if (!hasSelection || tab !== 'library' || window.innerWidth >= 1024) return;
@@ -61,7 +79,7 @@ function Evidence({ projectId }: { projectId: string }) {
   }, [hasSelection, selectedId, tab, reducedMotion]);
 
   const selectEvidence = (eid: string) => { setF(DEFAULT_FILTERS); setSelectedId(eid); setTab('library'); };
-  const changePage = (p: number) => { setPage(p); setSelectedId(null); setF(DEFAULT_FILTERS); };
+  const changePage = (p: number) => { setPage(p); setSelectedId(null); setFocusedAssumption(null); setF(DEFAULT_FILTERS); };
 
   return (
     <div className="space-y-6" data-testid="evidence-workspace">
@@ -78,6 +96,18 @@ function Evidence({ projectId }: { projectId: string }) {
           </p>
         )}
       </header>
+      {targetAssumption && !targetLoaded && q.isSuccess && (
+        <div role="status" data-testid="evidence-assumption-request" className="space-y-2 rounded-md border border-[#1F3D2B]/20 bg-[#E8DCC4]/35 p-3 text-sm">
+          <p className="break-all">Requested hypothesis: <span className="font-mono text-xs">{targetAssumption}</span></p>
+          <p>{latest.analysis?.assumptions.some((a) => a.id === targetAssumption)
+            ? 'This hypothesis is not on the loaded page. Browse the hypotheses pages below to locate its actual relationships.'
+            : 'This hypothesis is not in the latest analysis. The experiment API does not identify its original analysis; no replacement relationship is inferred.'}</p>
+          <div className="flex flex-wrap gap-4">
+            <Link href={`/projects/${projectId}`} className="underline">Open analysis and history</Link>
+            <button type="button" onClick={clearAssumptionRequest} className="underline">Clear requested reference</button>
+          </div>
+        </div>
+      )}
 
       {latest.missing ? (
         <EmptyState mark="v0" title="No analysis yet" body="Evidence attaches to hypotheses. Run an analysis from Overview first." />
@@ -121,7 +151,7 @@ function Evidence({ projectId }: { projectId: string }) {
               </div>
             </div>
           ) : tab === 'relationships' ? (
-            items.length === 0 ? <EmptyState mark="0" title="No hypotheses on this page" body="Try another page." /> : <EvidenceRelationships rels={rels} selectedEvidenceId={selectedId} onSelectEvidence={selectEvidence} />
+            items.length === 0 ? <EmptyState mark="0" title="No hypotheses on this page" body="Try another page." /> : <EvidenceRelationships rels={rels} selectedEvidenceId={selectedId} focusedAssumptionId={focusedAssumption} onSelectEvidence={selectEvidence} />
           ) : (
             <div className="space-y-8">
               <EvidenceContradictions projectId={projectId} records={records} assumptions={items} onOpenSource={setSource} onSelectEvidence={selectEvidence} />

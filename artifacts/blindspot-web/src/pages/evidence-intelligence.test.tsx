@@ -204,6 +204,24 @@ describe('Evidence Intelligence generated-client regressions', () => {
     expect(screen.getByTestId(`evidence-card-${id(11)}`)).toHaveAttribute('aria-pressed', 'true');
   });
 
+  it('opens the exact hypothesis relationships requested from an experiment', async () => {
+    window.history.replaceState({}, '', `/projects/${projectId}/evidence?assumptionId=${assumptionId}`);
+    mount(<Route path="/projects/:id/evidence" component={EvidencePage} />);
+    const toggle = await screen.findByTestId(`relationship-toggle-${assumptionId}`);
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    expect(await screen.findByTestId(`relationship-evidence-${id(10)}`)).toHaveTextContent(originalQuote);
+    expect(screen.getByTestId('evidence-tab-relationships')).toHaveAttribute('aria-selected', 'true');
+    expect(window.location.search).toBe('');
+  });
+
+  it('reports an unresolved experiment hypothesis rather than assigning another relationship', async () => {
+    window.history.replaceState({}, '', `/projects/${projectId}/evidence?assumptionId=${id(99)}`);
+    mount(<Route path="/projects/:id/evidence" component={EvidencePage} />);
+    expect(await screen.findByTestId('evidence-assumption-request')).toHaveTextContent('not in the latest analysis');
+    expect(screen.getByTestId('evidence-assumption-request')).toHaveTextContent(id(99));
+    expect(screen.queryByTestId('evidence-relationships')).not.toBeInTheDocument();
+  });
+
   it('retains the current outcome after server rejection and refreshes it only after an accepted citation', async () => {
     failPatch = true;
     openWorkspace();
