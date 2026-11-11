@@ -100,7 +100,9 @@ export class ValidationService {
       const questions = result.interviewQuestions.map(question => ({
         ...question, assumptionId: question.relatedAssumptionId, listenFor: question.evidenceToLookFor,
       }));
-      const [interview] = await this.db.insert(t.interviews).values({ projectId, ...input, questions }).returning();
+      const [interview] = await this.db.insert(t.interviews).values({
+        projectId, ...input, questions, sourceAnalysisVersion: latest.version,
+      }).returning();
       return interview;
     }
     const output = c.interviewOutput.parse(await this.llm.generate(
@@ -111,7 +113,9 @@ export class ValidationService {
     if (output.questions.some(question => !allowed.has(question.assumptionId))) {
       throw new ApiError(502, 'AI_REFERENCE_INVALID', 'AI referenced an unknown assumption.');
     }
-    const [interview] = await this.db.insert(t.interviews).values({ projectId, ...input, questions: output.questions }).returning();
+    const [interview] = await this.db.insert(t.interviews).values({
+      projectId, ...input, questions: output.questions, sourceAnalysisVersion: latest.version,
+    }).returning();
     return interview;
   }
   async addFeedback(interviewId: string, input: z.infer<typeof c.feedbackInput>) {

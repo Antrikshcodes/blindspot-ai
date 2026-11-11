@@ -680,6 +680,9 @@ export const CreateInterviewBody = zod.object({
   "participant": zod.string()
 })
 
+
+
+
 export const CreateInterviewResponse = zod.object({
   "success": zod.boolean(),
   "data": zod.object({
@@ -687,6 +690,7 @@ export const CreateInterviewResponse = zod.object({
   "projectId": zod.string(),
   "participant": zod.string(),
   "createdAt": zod.string(),
+  "sourceAnalysisVersion": zod.number().int().min(1).nullable(),
   "questions": zod.array(zod.object({
   "assumptionId": zod.string(),
   "question": zod.string(),
@@ -705,6 +709,9 @@ export const ListInterviewsQueryParams = zod.object({
   "limit": zod.coerce.number().int().optional()
 })
 
+
+
+
 export const ListInterviewsResponse = zod.object({
   "success": zod.boolean(),
   "data": zod.object({
@@ -713,6 +720,7 @@ export const ListInterviewsResponse = zod.object({
   "projectId": zod.string(),
   "participant": zod.string(),
   "createdAt": zod.string(),
+  "sourceAnalysisVersion": zod.number().int().min(1).nullable(),
   "questions": zod.array(zod.object({
   "assumptionId": zod.string(),
   "question": zod.string(),

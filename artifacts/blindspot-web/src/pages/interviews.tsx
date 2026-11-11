@@ -169,7 +169,12 @@ function InterviewCard({ iv, assumptions, defaultOpen }: { iv: Interview; assump
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-secondary"><UserRound className="h-4 w-4" aria-hidden /></span>
         <span className="min-w-0 flex-1">
           <span className="block truncate font-display text-lg">{iv.participant}</span>
-          <span className="font-mono text-[10.5px] text-muted-foreground">{fmtDate(iv.createdAt)} / {iv.questions.length} questions</span>
+          <span className="font-mono text-[10.5px] text-muted-foreground">
+            {fmtDate(iv.createdAt)} / {iv.questions.length} questions /{' '}
+            {iv.sourceAnalysisVersion == null
+              ? 'Source analysis version not recorded'
+              : `Source analysis v${iv.sourceAnalysisVersion}`}
+          </span>
         </span>
         <ChevronDown className={`h-4 w-4 transition-transform ${open ? 'rotate-180' : ''}`} aria-hidden />
       </button>

@@ -2567,6 +2567,10 @@
           "createdAt": {
             "type": "string"
           },
+          "sourceAnalysisVersion": {
+            "type": ["integer", "null"],
+            "minimum": 1
+          },
           "questions": {
             "type": "array",
             "items": {
@@ -2579,6 +2583,7 @@
           "projectId",
           "participant",
           "createdAt",
+          "sourceAnalysisVersion",
           "questions"
         ]
       },

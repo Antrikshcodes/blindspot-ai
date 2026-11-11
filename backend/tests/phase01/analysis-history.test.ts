@@ -66,6 +66,9 @@ describe('Project analysis history', () => {
     expect((await request(app).get(path)).body).toEqual(initial.body);
     const fresh = createApp({ db: storage.db, llm, providers: [] });
     expect((await request(fresh).get(path)).body).toEqual(initial.body);
+    const sessions = await request(fresh).get(`/api/projects/${projectId}/interviews`);
+    expect(sessions.body.data.items).toHaveLength(1);
+    expect(sessions.body.data.items[0].sourceAnalysisVersion).toBe(1);
     const old = await request(fresh).get(`/api/analyses/${originalId}`);
     expect(old.status).toBe(200);
     expect(old.body.data.version).toBe(1);

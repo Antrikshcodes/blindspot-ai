@@ -1,0 +1,1 @@
+ALTER TABLE "blindspot_phase01"."interview_sessions" ADD COLUMN "source_analysis_version" integer;

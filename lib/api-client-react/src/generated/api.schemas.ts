@@ -407,6 +407,11 @@ export interface Interview {
   projectId: string;
   participant: string;
   createdAt: string;
+  /**
+     * @minimum 1
+     * @nullable
+     */
+  sourceAnalysisVersion: number | null;
   questions: Question[];
 }
 

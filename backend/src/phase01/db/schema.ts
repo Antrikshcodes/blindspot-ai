@@ -57,6 +57,7 @@ export const assumptions = platform.table('assumptions', {
 export const interviews = platform.table('interview_sessions', {
   id: key(), projectId: uuid('project_id').notNull().references(() => projects.id, { onDelete: 'cascade' }),
   participant: text('participant').notNull(),
+  sourceAnalysisVersion: integer('source_analysis_version'),
   questions: jsonb('questions').$type<Array<{ assumptionId: string; question: string; listenFor: string }>>().notNull(),
   createdAt: created(),
 }, t => [index('interview_project_idx').on(t.projectId)]);

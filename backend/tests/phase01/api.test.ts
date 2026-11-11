@@ -4,7 +4,7 @@ import { eq } from 'drizzle-orm';
 import { DisabledLLM } from '../../src/phase01/ai/provider.js';
 import type { Provider } from '../../src/phase01/resource-intelligence/types.js';
 import { ApiError } from '../../src/phase01/config.js';
-import { assumptions, analyses, projects, experiments, resources } from '../../src/phase01/db/schema.js';
+import { assumptions, analyses, projects, experiments, resources, interviews } from '../../src/phase01/db/schema.js';
 import { isolatedDatabase, FixtureLLM, projectInput, resourceFixture } from './fixtures.js';
 
 let storage: Awaited<ReturnType<typeof isolatedDatabase>>;
@@ -75,7 +75,16 @@ describe('Project and validation API with isolated PostgreSQL', () => {
     expect(interview.body.data.questions).toHaveLength(8);
     expect(llm.calls).toHaveLength(callsBefore);
     expect(interview.body.data.questions[0].assumptionId).toBe(assumptionId);
-    expect((await request(app).get(`/api/projects/${projectId}/interviews`)).body.data.items).toHaveLength(1);
+    expect(interview.body.data.sourceAnalysisVersion).toBe(1);
+    const legacySession = (await storage.db.insert(interviews).values({
+      projectId,
+      participant: 'Older session without version metadata',
+      questions: interview.body.data.questions,
+    }).returning())[0];
+    const sessions = (await request(app).get(`/api/projects/${projectId}/interviews`)).body.data.items;
+    expect(sessions).toHaveLength(2);
+    expect(sessions.find((row: { id: string }) => row.id === interviewId).sourceAnalysisVersion).toBe(1);
+    expect(sessions.find((row: { id: string }) => row.id === legacySession.id).sourceAnalysisVersion).toBeNull();
     expect((await request(app).post(`/api/interviews/${interviewId}/feedback`).send({ notes: 'short' })).status).toBe(400);
     const feedback = await request(app).post(`/api/interviews/${interviewId}/feedback`).send({
       notes: 'Last week I interviewed three people and tracked their examples in a spreadsheet.',
