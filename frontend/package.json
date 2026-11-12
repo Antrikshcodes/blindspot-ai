@@ -11,8 +11,9 @@
     "test": "node --test --experimental-strip-types src/tests/analysis-integration.test.ts src/tests/resources-integration.test.ts src/tests/notifications-settings-integration.test.ts src/tests/discovery-experiments-integration.test.ts src/tests/accessibility-navigation.test.ts"
   },
   "dependencies": {
+    "@workspace/api-client-react": "workspace:*",
     "@clerk/clerk-react": "^5.61.11",
-    "@tanstack/react-query": "^5.107.0",
+    "@tanstack/react-query": "catalog:",
     "clsx": "^2.1.1",
     "framer-motion": "^12.4.7",
     "lucide-react": "^0.475.0",

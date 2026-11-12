@@ -192,14 +192,17 @@ blindspot-ai/
 Once dependencies are initialized in Phase 2, the following commands will govern local execution:
 
 ```bash
-# 1. Install all dependencies across the workspace
-npm install
+# 1. Install workspace dependencies (includes the frontend and shared API client)
+pnpm install
 
-# 2. Run backend API server in development mode
-cd backend && npm run dev
+# 2. Install the separately managed backend dependencies
+npm ci --prefix backend
 
-# 3. Run frontend interface in development mode (separate terminal)
-cd frontend && npm run dev
+# 3. Run backend API server in development mode
+npm run dev --prefix backend
+
+# 4. Run frontend interface in development mode (separate terminal)
+pnpm --filter blindspot-ai-frontend dev
 ```
 
 ---

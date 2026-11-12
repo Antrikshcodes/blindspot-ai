@@ -18,10 +18,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js 20 LTS
+      - name: Set up Node.js 22 LTS
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
           cache: npm
           cache-dependency-path: backend/package-lock.json
 
@@ -37,6 +37,10 @@ jobs:
         working-directory: backend
         run: npm test
 
+      - name: Generate Prisma client for retained legacy backend
+        working-directory: backend
+        run: npm run prisma:generate
+
       - name: Verify legacy backend build compatibility
         working-directory: backend
         run: npm run build:legacy
@@ -48,24 +52,26 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js 20 LTS
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.25.0
+
+      - name: Set up Node.js 22 LTS
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
+          node-version: "22"
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
 
-      - name: Install frontend dependencies
-        working-directory: frontend
-        run: npm ci
+      - name: Install workspace dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Compile and bundle production assets
-        working-directory: frontend
-        run: npm run build
+        run: pnpm --filter blindspot-ai-frontend build
 
       - name: Run frontend unit & integration tests
-        working-directory: frontend
-        run: npm test
+        run: pnpm --filter blindspot-ai-frontend test
 
   security-compliance:
     name: Security & Secret Scan
