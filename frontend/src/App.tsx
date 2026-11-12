@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense, lazy } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import { IntroOverlay } from './components/intro/IntroOverlay';
@@ -13,11 +13,22 @@ import { FutureFeatureModal } from './components/common/FutureFeatureModal';
 import { InteractiveBackground } from './components/common/InteractiveBackground';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { AppLayout } from './components/layout/AppLayout';
-import { DashboardOverview } from './views/DashboardOverview';
-import { ProjectList } from './views/ProjectList';
-import { CreateProject } from './views/CreateProject';
-import { ProjectDetails } from './views/ProjectDetails';
-import { Settings } from './views/Settings';
+
+// Route-level code splitting for performance optimization
+const DashboardOverview = lazy(() => import('./views/DashboardOverview').then((m) => ({ default: m.DashboardOverview })));
+const ProjectList = lazy(() => import('./views/ProjectList').then((m) => ({ default: m.ProjectList })));
+const CreateProject = lazy(() => import('./views/CreateProject').then((m) => ({ default: m.CreateProject })));
+const ProjectDetails = lazy(() => import('./views/ProjectDetails').then((m) => ({ default: m.ProjectDetails })));
+const Settings = lazy(() => import('./views/Settings').then((m) => ({ default: m.Settings })));
+
+const RouteLoadingFallback = () => (
+  <div className="py-24 flex flex-col items-center justify-center space-y-3 text-forest">
+    <div className="w-8 h-8 rounded-full border-2 border-forest/20 border-t-purple animate-spin" />
+    <span className="text-xs font-mono font-medium tracking-wide text-forest/70">
+      Loading workspace...
+    </span>
+  </div>
+);
 
 export const LandingPage: React.FC<{
   showIntro: boolean;
@@ -124,7 +135,9 @@ export const App: React.FC = () => {
           element={
             <ProtectedRoute>
               <AppLayout>
-                <DashboardOverview />
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <DashboardOverview />
+                </Suspense>
               </AppLayout>
             </ProtectedRoute>
           }
@@ -136,7 +149,9 @@ export const App: React.FC = () => {
           element={
             <ProtectedRoute>
               <AppLayout>
-                <ProjectList />
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <ProjectList />
+                </Suspense>
               </AppLayout>
             </ProtectedRoute>
           }
@@ -148,7 +163,9 @@ export const App: React.FC = () => {
           element={
             <ProtectedRoute>
               <AppLayout>
-                <CreateProject />
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <CreateProject />
+                </Suspense>
               </AppLayout>
             </ProtectedRoute>
           }
@@ -160,7 +177,9 @@ export const App: React.FC = () => {
           element={
             <ProtectedRoute>
               <AppLayout>
-                <ProjectDetails />
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <ProjectDetails />
+                </Suspense>
               </AppLayout>
             </ProtectedRoute>
           }
@@ -172,7 +191,9 @@ export const App: React.FC = () => {
           element={
             <ProtectedRoute>
               <AppLayout>
-                <ProjectDetails defaultTab="analysis" />
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <ProjectDetails defaultTab="analysis" />
+                </Suspense>
               </AppLayout>
             </ProtectedRoute>
           }
@@ -184,7 +205,9 @@ export const App: React.FC = () => {
           element={
             <ProtectedRoute>
               <AppLayout>
-                <ProjectDetails defaultTab="analysis" />
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <ProjectDetails defaultTab="analysis" />
+                </Suspense>
               </AppLayout>
             </ProtectedRoute>
           }
@@ -196,7 +219,9 @@ export const App: React.FC = () => {
           element={
             <ProtectedRoute>
               <AppLayout>
-                <ProjectDetails defaultTab="resources" />
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <ProjectDetails defaultTab="resources" />
+                </Suspense>
               </AppLayout>
             </ProtectedRoute>
           }
@@ -208,7 +233,9 @@ export const App: React.FC = () => {
           element={
             <ProtectedRoute>
               <AppLayout>
-                <Settings />
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <Settings />
+                </Suspense>
               </AppLayout>
             </ProtectedRoute>
           }

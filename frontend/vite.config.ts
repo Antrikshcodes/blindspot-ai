@@ -20,6 +20,33 @@ export default defineConfig(({ mode }) => {
         '@workspace/api-client-react': path.resolve(__dirname, '../lib/api-client-react/src/index.ts'),
       },
     },
+    build: {
+      chunkSizeWarningLimit: 600,
+      rollupOptions: {
+        output: {
+          manualChunks: (id) => {
+            if (id.includes('node_modules')) {
+              if (
+                id.includes('react') ||
+                id.includes('@clerk') ||
+                id.includes('scheduler')
+              ) {
+                return 'vendor-core';
+              }
+              if (id.includes('framer-motion')) {
+                return 'vendor-framer';
+              }
+              if (id.includes('@tanstack')) {
+                return 'vendor-query';
+              }
+              if (id.includes('lucide-react')) {
+                return 'vendor-lucide';
+              }
+            }
+          },
+        },
+      },
+    },
     server: {
       port: frontendPort,
       host: '0.0.0.0',
