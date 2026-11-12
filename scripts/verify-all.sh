@@ -5,7 +5,7 @@
 # Runs build verification, test runners, and secret compliance checks.
 # ==============================================================================
 
-set -e
+set -euo pipefail
 
 GREEN='\033[0;32m'
 RED='\033[0;31m'
@@ -36,19 +36,30 @@ fi
 echo -e "\n${YELLOW}[3/5] Verifying Backend (TypeScript compilation & Vitest suite)...${NC}"
 npm --prefix backend run build
 npm --prefix backend test
-echo -e "${GREEN}  ✅ Backend compilation and 141 tests PASSED.${NC}"
+npm --prefix backend run prisma:generate
+npm --prefix backend run build:legacy
+echo -e "${GREEN}  ✅ Backend build, tests, Prisma client generation, and legacy type check PASSED.${NC}"
 
 # 4. Frontend Build & Test Suite
 echo -e "\n${YELLOW}[4/5] Verifying Frontend (Vite bundle & Node test runner)...${NC}"
-npm --prefix frontend run build
-npm --prefix frontend test
-echo -e "${GREEN}  ✅ Frontend bundle and 44 tests PASSED.${NC}"
+pnpm install --frozen-lockfile
+pnpm --filter blindspot-ai-frontend build
+pnpm --filter blindspot-ai-frontend test
+pnpm run typecheck
+echo -e "${GREEN}  ✅ Frontend bundle, tests, and workspace type checks PASSED.${NC}"
 
 # 5. Production Smoke Test Verification
 echo -e "\n${YELLOW}[5/5] Running automated smoke test assertions...${NC}"
-node scripts/production-smoke-test.mjs || true
-echo -e "${GREEN}  ✅ Smoke test runner verified.${NC}"
+if [[ -n "${PROD_URL:-}" ]]; then
+  node scripts/production-smoke-test.mjs "$PROD_URL"
+  echo -e "${GREEN}  ✅ Configured production smoke checks PASSED.${NC}"
+else
+  echo -e "${YELLOW}  ⏭️  Skipped live smoke checks: set PROD_URL to an explicit target.${NC}"
+fi
 
 echo -e "\n${GREEN}====================================================================${NC}"
-echo -e "${GREEN}🎉 ALL PRE-FLIGHT VERIFICATIONS PASSED! System is release-ready.${NC}"
+echo -e "${GREEN}🎉 Requested local build and test checks passed.${NC}"
+if [[ -z "${PROD_URL:-}" ]]; then
+  echo -e "${YELLOW}Live production behavior remains unverified.${NC}"
+fi
 echo -e "${GREEN}====================================================================${NC}"
