@@ -30,7 +30,33 @@ export const config = z.object({
   PROVIDER_PAGE_SIZE: z.coerce.number().int().min(1).max(10).default(5),
   RESOURCE_RESULT_LIMIT: z.coerce.number().int().min(1).max(40).default(24),
   RANK_WEIGHTS: z.string().optional(),
+  CORS_ORIGIN: z.string().default('*'),
 }).parse(process.env);
+
+export function validateProductionConfig(): { valid: boolean; warnings: string[]; errors: string[] } {
+  const warnings: string[] = [];
+  const errors: string[] = [];
+
+  if (config.NODE_ENV === 'production') {
+    if (!config.DATABASE_URL) {
+      errors.push('DATABASE_URL is required in production mode');
+    }
+    if (!process.env.CLERK_SECRET_KEY) {
+      errors.push('CLERK_SECRET_KEY is required in production mode');
+    }
+    if (!process.env.CLERK_PUBLISHABLE_KEY) {
+      warnings.push('CLERK_PUBLISHABLE_KEY is recommended in production');
+    }
+    if (config.AI_PROVIDER === 'openai' && !config.AI_API_KEY && !config.AI_INTEGRATIONS_OPENAI_API_KEY) {
+      warnings.push('AI_PROVIDER is openai but AI_API_KEY is not set');
+    }
+    if (config.CORS_ORIGIN === '*') {
+      warnings.push('CORS_ORIGIN is set to wildcard *; specify the production frontend domain for enhanced security');
+    }
+  }
+
+  return { valid: errors.length === 0, warnings, errors };
+}
 
 export const log = pino({
   level: config.NODE_ENV === 'test' ? 'silent' : 'info',

@@ -41,7 +41,13 @@ export function createApp(deps: {
   app.disable('x-powered-by');
   app.set('trust proxy', 1);
   app.use(helmet());
-  app.use(cors({ origin: false }));
+  const allowedOrigins = config.CORS_ORIGIN === '*'
+    ? true
+    : config.CORS_ORIGIN.split(',').map(s => s.trim());
+  app.use(cors({
+    origin: allowedOrigins,
+    credentials: true,
+  }));
   app.use(pinoHttp({
     logger: log, genReqId: () => randomUUID(),
     serializers: {
@@ -60,12 +66,13 @@ export function createApp(deps: {
   });
   app.use('/api', limiter(deps.apiRateLimit ?? config.API_RATE_LIMIT, 60000));
   const aiLimit = limiter(deps.aiRateLimit ?? config.AI_RATE_LIMIT, 60000);
-  app.get(['/api/health', '/api/healthz'], route(async (_req, res) => {
+  const healthHandler = route(async (_req, res) => {
     try {
       await db.execute(sql`select 1`);
       return success(res, { status: 'ok', database: 'connected', service: 'blindspot-phase01' });
     } catch { throw new ApiError(503, 'DATABASE_UNAVAILABLE', 'Database health check failed.'); }
-  }));
+  });
+  app.get(['/health', '/healthz', '/ready', '/readyz', '/api/health', '/api/healthz'], healthHandler);
   app.use('/api', authentication(deps.auth));
   app.post('/api/projects', route(async (req, res) => {
     const input = c.projectInput.parse(req.body);
