@@ -1,97 +1,103 @@
-# This is a baseline CI workflow. It will be extended once the tech stack is finalized.
-
-name: CI Pipeline
+name: Blindspot AI CI Pipeline
 
 on:
   push:
     branches: [main, develop, "feature/**"]
   pull_request:
-    branches: [main, develop, "feature/**"]
+    branches: [main, develop]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  quality-checks:
-    name: Quality Checks
+  backend-quality:
+    name: Backend Build & Tests
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: Set up Node.js 20 LTS
         uses: actions/setup-node@v4
         with:
-          node-version: "24"
+          node-version: "20"
           cache: npm
           cache-dependency-path: backend/package-lock.json
 
-      - name: Install checked-in backend dependencies
+      - name: Install backend dependencies
         working-directory: backend
         run: npm ci
 
-      - name: Check active TypeScript backend
+      - name: Type check and build backend
         working-directory: backend
         run: npm run build
 
-      - name: Test Phase 01 without external credentials or services
+      - name: Run Phase 01 Vitest suite
         working-directory: backend
         run: npm test
 
-      - name: Preserve original backend tests
-        working-directory: backend
-        run: npm run test:legacy
-
-      - name: Check retained legacy source
+      - name: Verify legacy backend build compatibility
         working-directory: backend
         run: npm run build:legacy
 
-      - name: Check for .env files (security check)
+  frontend-quality:
+    name: Frontend Build & Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20 LTS
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Compile and bundle production assets
+        working-directory: frontend
+        run: npm run build
+
+      - name: Run frontend unit & integration tests
+        working-directory: frontend
+        run: npm test
+
+  security-compliance:
+    name: Security & Secret Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Scan for committed secrets and .env files
         run: |
-          echo "🔍 Scanning for .env files..."
-          if find . -name ".env" -not -path "./.git/*" | grep -q "."; then
-            echo "❌ ERROR: .env file(s) detected in the repository!"
-            echo "Please remove .env files and add them to .gitignore."
-            find . -name ".env" -not -path "./.git/*"
+          echo "🔍 Scanning working tree for forbidden environment and credential files..."
+          if find . -maxdepth 3 -name ".env*" -not -name "*.example" -not -path "./.git/*" | grep -q "."; then
+            echo "❌ ERROR: Unsafe environment file detected!"
+            find . -maxdepth 3 -name ".env*" -not -name "*.example" -not -path "./.git/*"
             exit 1
           fi
-          echo "✅ No .env files found."
+          echo "✅ No sensitive .env files detected."
 
-      - name: Validate essential markdown files exist
+      - name: Validate documentation structure
         run: |
-          echo "📄 Checking for essential documentation files..."
-          missing=0
-          for file in README.md CONTRIBUTING.md LICENSE; do
-            if [ -f "$file" ]; then
-              echo "  ✅ $file exists"
+          echo "📄 Verifying required operational guides..."
+          for doc in \
+            docs/QA_AUDIT_REPORT.md \
+            docs/SECURITY_AUDIT.md \
+            docs/PERFORMANCE_REPORT.md \
+            docs/PRODUCTION_ARCHITECTURE.md \
+            docs/DATABASE_PRODUCTION_GUIDE.md; do
+            if [ -f "$doc" ]; then
+              echo "  ✅ $doc is present"
             else
-              echo "  ⚠️  $file is missing (expected but not required to pass CI)"
-              missing=$((missing + 1))
+              echo "  ❌ Missing required documentation: $doc"
+              exit 1
             fi
           done
-          if [ $missing -gt 0 ]; then
-            echo "⚠️  $missing file(s) missing — consider adding them."
-          else
-            echo "✅ All essential markdown files are present."
-          fi
-
-      - name: Check folder structure exists
-        run: |
-          echo "📁 Checking project folder structure..."
-          for dir in frontend backend docs; do
-            if [ -d "$dir" ]; then
-              echo "  ✅ $dir/ exists"
-            else
-              echo "  ⚠️  $dir/ is missing (expected but not required to pass CI)"
-            fi
-          done
-          echo "✅ Folder structure check complete."
-
-      - name: Print success message
-        run: |
-          echo "============================================"
-          echo "🎉 CI Pipeline — All Quality Checks Passed!"
-          echo "============================================"
-          echo ""
-          echo "Project: Blindspot AI"
-          echo "Build:   CoNSTruct 2.0 (Replit × Newton School of Technology)"
-          echo ""
-          echo "All checks completed successfully."
+          echo "✅ All required operational guides exist."
