@@ -1,0 +1,15 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+Allow: /favicon.svg
+Allow: /og-image.svg
+
+# Protect authenticated dashboard and internal API routes from search crawlers
+Disallow: /projects
+Disallow: /projects/*
+Disallow: /settings
+Disallow: /api/
+Disallow: /api/*
+
+# Host & Sitemap specification
+Sitemap: https://blindspot-ai.com/sitemap.xml
