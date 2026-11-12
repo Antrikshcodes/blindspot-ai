@@ -40,8 +40,8 @@ verification. The latest baseline was 121 active and 28 retained legacy tests.
 - [x] Clerk identity/ownership baseline merged; further extensions must reuse it.
 - [x] Offline automated tests reject anonymous, expired, forged, malformed, future and wrong-origin identities and verify two-user isolation; live Clerk flows remain unverified.
 - [x] Offline automated tests cover ownership across project children, history, evidence, resources, search history and saves; live identity integration remains unverified.
-- [ ] Add/verify GET/PATCH user profile and server-controlled USER/ADMIN roles.
-- [ ] Document exact provider-backed auth flows and any non-equivalent REST routes.
+- [x] Add GET/PATCH user profile; profile tests verify display-name persistence, owner separation, server-derived USER/ADMIN roles and rejection of client role changes. Live role configuration remains an external deployment check.
+- [x] Document Clerk browser/API auth, allowed origins, bearer session constraints, fail-closed responses and profile-role configuration in AUTHENTICATION.md and API_DOCUMENTATION.md. Live provider setup remains unverified.
 - [x] Offline tests cover allowed frontend-origin cookie writes, cross-site/originless write rejection, and fail-closed auth; live browser verification remains open.
 
 ### Projects and historical reads

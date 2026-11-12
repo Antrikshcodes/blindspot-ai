@@ -122,6 +122,30 @@ describe('Verified identity and owner isolation (production path)', () => {
       expect(response.status, `${method} ${path}`).toBe(401);
     }
   });
+  it('persists owner profile data and derives non-editable roles from server configuration', async () => {
+    const profileApp = createApp({ db: storage.db, llm, providers: [], auth: testAuth,
+      adminUserIds: [testOwner] });
+    const admin = await request(profileApp).get('/api/user/profile')
+      .set('Authorization', `Bearer ${sessionToken(testOwner)}`);
+    expect(admin.status).toBe(200);
+    expect(admin.body.data).toMatchObject({ ownerId: testOwner, displayName: null, role: 'ADMIN' });
+
+    const changed = await request(profileApp).patch('/api/user/profile')
+      .set('Authorization', `Bearer ${sessionToken(testOwner)}`).send({ displayName: 'Founder One' });
+    expect(changed.status).toBe(200);
+    expect(changed.body.data).toMatchObject({ ownerId: testOwner, displayName: 'Founder One', role: 'ADMIN' });
+
+    const other = await request(profileApp).get('/api/user/profile')
+      .set('Authorization', `Bearer ${sessionToken(otherOwner)}`);
+    expect(other.status).toBe(200);
+    expect(other.body.data).toMatchObject({ ownerId: otherOwner, displayName: null, role: 'USER' });
+
+    const privilegeEscalation = await request(profileApp).patch('/api/user/profile')
+      .set('Authorization', `Bearer ${sessionToken(otherOwner)}`).send({ displayName: 'Founder Two', role: 'ADMIN' });
+    expect(privilegeEscalation.status).toBe(400);
+    expect((await request(profileApp).get('/api/user/profile')
+      .set('Authorization', `Bearer ${sessionToken(otherOwner)}`)).body.data.role).toBe('USER');
+  });
   it('keeps missing provider configuration fail-closed, even in development', async () => {
     for (const environment of ['development', 'production']) {
       vi.stubEnv('NODE_ENV', environment);

@@ -30,6 +30,7 @@ export const config = z.object({
   PROVIDER_PAGE_SIZE: z.coerce.number().int().min(1).max(10).default(5),
   RESOURCE_RESULT_LIMIT: z.coerce.number().int().min(1).max(40).default(24),
   RANK_WEIGHTS: z.string().optional(),
+  ADMIN_USER_IDS: z.string().default(''),
   CORS_ORIGIN: z.string().default('http://localhost:5173,http://127.0.0.1:5173,http://localhost,http://127.0.0.1'),
 }).parse(process.env);
 

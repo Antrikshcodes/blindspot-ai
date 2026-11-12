@@ -40,6 +40,19 @@ managed release flow, never startup DDL. The existing website has not yet been
 wired to Clerk sign-in: until its separate integration, anonymous browser API
 requests correctly return 401 instead of exposing data.
 
+## User profile and roles
+
+- `GET /api/user/profile` returns the authenticated Clerk subject, saved display
+  name (or `null` before it is set), and server-derived role (`USER` or `ADMIN`).
+  The first read creates a profile row for that verified subject.
+- `PATCH /api/user/profile` accepts only `{ "displayName": string | null }`.
+  Names are trimmed and limited to 100 characters. Role and owner fields are
+  rejected; callers cannot promote themselves or write another user's profile.
+- Admins are configured with the server-only `ADMIN_USER_IDS` environment
+  variable as a comma-separated allowlist of verified Clerk subject IDs. Empty
+  or omitted configuration makes every profile `USER`. Never expose this
+  variable to the browser.
+
 ## Phase 03 resource API
 
 Existing resource endpoints retain their fields and add normalized aliases and

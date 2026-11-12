@@ -140,6 +140,9 @@ export const userPreferencesInput = z.object({
     compactDensity: z.boolean(),
   }).strict(),
 }).strict();
+export const userProfilePatch = z.object({
+  displayName: z.string().trim().min(1).max(100).nullable(),
+}).strict().refine(value => Object.keys(value).length > 0);
 export const defaultUserPreferences = {
   notificationPreferences: {
     email: {

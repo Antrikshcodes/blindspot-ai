@@ -27,9 +27,11 @@ const emptyBody = z.object({}).strict();
 export function createApp(deps: {
   db: Database; llm: LLM; providers: Provider[];
   apiRateLimit?: number; aiRateLimit?: number;
+  adminUserIds?: string[];
   auth?: AuthConfiguration;
 }) {
   const { db, llm, providers } = deps;
+  const adminUserIds = new Set(deps.adminUserIds ?? config.ADMIN_USER_IDS.split(',').map(id => id.trim()).filter(Boolean));
   // Identity is request-local and comes only from verified Clerk middleware.
   const route = (handler: Handler) => (req: Request, res: Response, next: NextFunction): void => {
     const owner = res.locals.ownerId ?? '';
@@ -284,6 +286,23 @@ export function createApp(deps: {
   app.put('/api/user/preferences', route(async (req, res) => {
     const input = c.userPreferencesInput.parse(req.body);
     return success(res, await notifications.savePreferences(ownerId(res), input));
+  }));
+  app.get('/api/user/profile', route(async (_req, res) => {
+    const user = ownerId(res);
+    const [profile] = await db.insert(t.userProfiles).values({ ownerId: user })
+      .onConflictDoNothing({ target: t.userProfiles.ownerId }).returning();
+    const current = profile ?? (await db.select().from(t.userProfiles)
+      .where(eq(t.userProfiles.ownerId, user)).limit(1))[0];
+    if (!current) throw new ApiError(500, 'PROFILE_UNAVAILABLE', 'User profile could not be loaded.');
+    return success(res, { ...current, role: adminUserIds.has(user) ? 'ADMIN' : 'USER' });
+  }));
+  app.patch('/api/user/profile', route(async (req, res) => {
+    const user = ownerId(res);
+    const input = c.userProfilePatch.parse(req.body);
+    const [profile] = await db.insert(t.userProfiles).values({ ownerId: user, displayName: input.displayName })
+      .onConflictDoUpdate({ target: t.userProfiles.ownerId,
+        set: { displayName: input.displayName, updatedAt: new Date() } }).returning();
+    return success(res, { ...profile, role: adminUserIds.has(user) ? 'ADMIN' : 'USER' });
   }));
   app.use((_req, _res, next) => next(new ApiError(404, 'NOT_FOUND', 'Endpoint not found.')));
   app.use((error: unknown, req: Request, res: Response, _next: NextFunction) => {

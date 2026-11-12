@@ -178,3 +178,13 @@ export const userPreferences = platform.table('user_preferences', {
   uniqueIndex('user_preferences_owner_idx').on(t.ownerId),
 ]);
 
+export const userProfiles = platform.table('user_profiles', {
+  id: key(),
+  ownerId: text('owner_id').notNull(),
+  displayName: text('display_name'),
+  createdAt: created(),
+  updatedAt: updated(),
+}, t => [
+  uniqueIndex('user_profiles_owner_idx').on(t.ownerId),
+]);
+
