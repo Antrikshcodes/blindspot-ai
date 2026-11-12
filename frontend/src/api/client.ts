@@ -19,3 +19,51 @@ export function setupApiClient(tokenGetter?: AuthTokenGetter | null): void {
 // Re-export all generated React Query hooks, types, schemas and error classes
 export * from '@workspace/api-client-react';
 
+// Explicit re-exports from analysisApi to disambiguate from generated hooks
+export {
+  executeAnalysis,
+  useRunRealAnalysis,
+  fetchLatestAnalysis,
+  useGetLatestProjectAnalysis,
+  fetchAnalysisById,
+  useGetAnalysisDetails,
+  fetchAnalysisHistory,
+  useGetAnalysisHistory,
+  fetchAnalysisAssumptions,
+  useGetAnalysisAssumptions,
+  fetchAnalysisBlindspots,
+  useGetAnalysisBlindspots,
+  fetchAnalysisInterviewQuestions,
+  useGetAnalysisInterviewQuestions,
+  fetchAnalysisSummary,
+  useGetAnalysisSummary,
+  executeAssumptionStatusUpdate,
+  useUpdateAssumptionStatus,
+} from './analysisApi';
+export type {
+  TaxonomyCategory,
+  SeverityLevel,
+  GroundingType,
+  DimensionSupport,
+  AnalysisFinding,
+  ProductDecomposition,
+  ValidationDimension,
+  ValidationDimensionsMap,
+  EvidenceRecord,
+  ScoredAssumption,
+  BlindspotItem,
+  InterviewQuestionItem,
+  ProviderStage,
+  ProviderMetadata,
+  AnalysisSummaryData,
+  DetailedAnalysisResult,
+  FullAnalysis,
+  BlindspotsArtifactResponse,
+  InterviewQuestionsArtifactResponse,
+  AnalysisSummaryArtifactResponse,
+} from '../types/analysis';
+export {
+  getPhase02RiskLevel,
+  getRiskLevelStyles,
+  getStatusBadgeStyles,
+} from '../types/analysis';

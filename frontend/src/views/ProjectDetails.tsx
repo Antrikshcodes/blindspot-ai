@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -14,6 +14,7 @@ import {
   Boxes,
   HelpCircle,
   ArrowRight,
+  CheckCircle2,
 } from 'lucide-react';
 import {
   useGetProject,
@@ -22,37 +23,94 @@ import {
   type Project,
   type ProjectUpdate,
 } from '../api/client';
+import {
+  useGetLatestProjectAnalysis,
+  useGetAnalysisDetails,
+} from '../api/analysisApi';
+import type { FullAnalysis } from '../types/analysis';
 import { useQueryClient } from '@tanstack/react-query';
 import { LoadingState, ErrorState } from '../components/common/StatusStates';
 import { DeleteProjectModal } from '../components/projects/DeleteProjectModal';
 import { EditProjectModal } from '../components/projects/EditProjectModal';
 import { FutureModuleModal } from '../components/common/FutureModuleModal';
+import { StartAnalysisModal } from '../components/analysis/StartAnalysisModal';
+import { AnalysisReportView } from '../components/analysis/AnalysisReportView';
+import { InteractiveRiskMatrix } from '../components/analysis/InteractiveRiskMatrix';
+import { AssumptionExplorer } from '../components/analysis/AssumptionExplorer';
+import { ResourceLibraryView } from '../components/resources/ResourceLibraryView';
 
 type ProjectTab = 'overview' | 'analysis' | 'assumptions' | 'interviews' | 'experiments' | 'resources';
 
-export const ProjectDetails: React.FC = () => {
-  const { projectId } = useParams<{ projectId: string }>();
+interface ProjectDetailsProps {
+  defaultTab?: ProjectTab;
+}
+
+export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ defaultTab = 'overview' }) => {
+  const { projectId, analysisId: routeAnalysisId } = useParams<{
+    projectId: string;
+    analysisId?: string;
+  }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const [activeTab, setActiveTab] = useState<ProjectTab>('overview');
+  const [activeTab, setActiveTab] = useState<ProjectTab>(defaultTab);
+  const [selectedAnalysisId, setSelectedAnalysisId] = useState<string | null>(routeAnalysisId || null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isAnalysisModalOpen, setIsAnalysisModalOpen] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [updateError, setUpdateError] = useState<string | null>(null);
   const [futureModalModule, setFutureModalModule] = useState<string | null>(null);
 
+  // Sync route param with state
+  useEffect(() => {
+    if (routeAnalysisId) {
+      setSelectedAnalysisId(routeAnalysisId);
+      setActiveTab('analysis');
+    }
+  }, [routeAnalysisId]);
+
   // Fetch verified project data
-  const { data, isLoading, error, refetch } = useGetProject(projectId || '', {
+  const { data: projectData, isLoading: isProjectLoading, error: projectError, refetch: refetchProject } =
+    useGetProject(projectId || '', {
+      query: {
+        enabled: Boolean(projectId),
+      },
+    });
+
+  const project: Project | undefined = (projectData as any)?.data;
+
+  // 1. Fetch latest analysis if no specific historical analysisId is selected
+  const {
+    data: latestAnalysisData,
+    isLoading: isLatestLoading,
+  } = useGetLatestProjectAnalysis(projectId || '', {
     query: {
-      enabled: Boolean(projectId),
+      enabled: Boolean(projectId) && !selectedAnalysisId,
+      retry: false, // 404 is normal before first analysis
+    },
+  });
+
+  // 2. Fetch specific analysis if selected
+  const {
+    data: specificAnalysisData,
+    isLoading: isSpecificLoading,
+  } = useGetAnalysisDetails(selectedAnalysisId || '', {
+    query: {
+      enabled: Boolean(selectedAnalysisId),
     },
   });
 
   const { mutateAsync: deleteProject, isPending: isDeleting } = useDeleteProject();
   const { mutateAsync: updateProject, isPending: isUpdating } = useUpdateProject();
 
-  const project: Project | undefined = (data as any)?.data;
+  // Active analysis resolving either specific selection or latest
+  const activeAnalysis: FullAnalysis | undefined = selectedAnalysisId
+    ? (specificAnalysisData as any)?.data
+    : (latestAnalysisData as any)?.data;
+
+  const isAnalysisLoading = selectedAnalysisId ? isSpecificLoading : isLatestLoading;
+  const hasAnalysis = Boolean(activeAnalysis);
 
   const handleDeleteConfirm = async () => {
     if (!project) return;
@@ -70,7 +128,6 @@ export const ProjectDetails: React.FC = () => {
     setUpdateError(null);
     try {
       await updateProject({ id, data: updateData });
-      // Invalidate project details and list queries
       await queryClient.invalidateQueries({ queryKey: ['/api/projects', id] });
       await queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
       setIsEditModalOpen(false);
@@ -79,7 +136,18 @@ export const ProjectDetails: React.FC = () => {
     }
   };
 
-  if (isLoading) {
+  const handleAnalysisCompleted = (newAnalysis: FullAnalysis) => {
+    setIsAnalysisModalOpen(false);
+    setSelectedAnalysisId(newAnalysis.id);
+    setActiveTab('analysis');
+  };
+
+  const handleSelectHistoricalVersion = (analysisId: string) => {
+    setSelectedAnalysisId(analysisId);
+    navigate(`/projects/${projectId}/analysis/${analysisId}`);
+  };
+
+  if (isProjectLoading) {
     return (
       <div className="py-16">
         <LoadingState message="Loading project workspace and validation record..." />
@@ -87,14 +155,14 @@ export const ProjectDetails: React.FC = () => {
     );
   }
 
-  if (error || !project) {
+  if (projectError || !project) {
     return (
       <div className="py-12">
         <ErrorState
-          status={(error as any)?.status || 404}
-          code={(error as any)?.code || 'PROJECT_NOT_FOUND'}
+          status={(projectError as any)?.status || 404}
+          code={(projectError as any)?.code || 'PROJECT_NOT_FOUND'}
           message="Project could not be found or you may not have access."
-          onRetry={() => refetch()}
+          onRetry={() => refetchProject()}
         />
       </div>
     );
@@ -115,10 +183,26 @@ export const ProjectDetails: React.FC = () => {
     }
   );
 
+  const assumptionsCount = activeAnalysis?.assumptions?.length || 0;
+  const maxRisk = activeAnalysis?.assumptions?.reduce(
+    (max, a) => Math.max(max, a.riskScore || 0),
+    0
+  );
+
   const TABS: Array<{ id: ProjectTab; label: string; icon: React.ElementType; badge?: string }> = [
     { id: 'overview', label: 'Overview', icon: Layers },
-    { id: 'analysis', label: 'Idea Analysis', icon: Sparkles, badge: 'Phase 2' },
-    { id: 'assumptions', label: 'Assumptions', icon: HelpCircle, badge: 'Phase 2' },
+    {
+      id: 'analysis',
+      label: 'Idea Analysis',
+      icon: Sparkles,
+      badge: hasAnalysis ? `v${activeAnalysis?.version}` : 'Phase 2',
+    },
+    {
+      id: 'assumptions',
+      label: 'Assumptions',
+      icon: HelpCircle,
+      badge: assumptionsCount > 0 ? `${assumptionsCount}` : 'Phase 2',
+    },
     { id: 'interviews', label: 'Interviews', icon: Compass, badge: 'Phase 3' },
     { id: 'experiments', label: 'Experiments', icon: FlaskConical, badge: 'Phase 3' },
     { id: 'resources', label: 'Resources', icon: Boxes, badge: 'Phase 3' },
@@ -136,7 +220,7 @@ export const ProjectDetails: React.FC = () => {
         <div>
           <button
             onClick={() => navigate('/projects')}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-forest/60 hover:text-forest transition-colors mb-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple rounded-md"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-forest/60 hover:text-forest transition-colors mb-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple rounded-md cursor-pointer"
           >
             <ArrowLeft className="w-3.5 h-3.5" /> Back to My Projects
           </button>
@@ -153,6 +237,15 @@ export const ProjectDetails: React.FC = () => {
             <span className="flex items-center gap-1">
               <Clock className="w-3.5 h-3.5 text-purple" /> Last active: {updatedDate}
             </span>
+            {hasAnalysis && (
+              <>
+                <span>•</span>
+                <span className="flex items-center gap-1 text-emerald-800 font-bold">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Analysis Active (v
+                  {activeAnalysis?.version})
+                </span>
+              </>
+            )}
           </div>
         </div>
 
@@ -160,7 +253,7 @@ export const ProjectDetails: React.FC = () => {
         <div className="flex items-center gap-2.5 flex-wrap">
           <button
             onClick={() => setIsEditModalOpen(true)}
-            className="px-4 py-2 rounded-full text-xs font-bold bg-sand-light border border-forest/20 text-forest hover:bg-forest/5 hover:border-forest/40 transition-all flex items-center gap-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple"
+            className="px-4 py-2 rounded-full text-xs font-bold bg-sand-light border border-forest/20 text-forest hover:bg-forest/5 hover:border-forest/40 transition-all flex items-center gap-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple cursor-pointer"
           >
             <Edit3 className="w-3.5 h-3.5" />
             Edit Project
@@ -168,33 +261,40 @@ export const ProjectDetails: React.FC = () => {
 
           <button
             onClick={() => setIsDeleteModalOpen(true)}
-            className="px-4 py-2 rounded-full text-xs font-bold bg-sand-light border border-forest/20 text-forest hover:text-red-600 hover:border-red-300 transition-all flex items-center gap-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            className="px-4 py-2 rounded-full text-xs font-bold bg-sand-light border border-forest/20 text-forest hover:text-red-600 hover:border-red-300 transition-all flex items-center gap-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 cursor-pointer"
           >
             <Trash2 className="w-3.5 h-3.5" />
             Delete
           </button>
 
           <button
-            onClick={() => setFutureModalModule('Idea Analysis')}
-            className="px-5 py-2 rounded-full text-xs font-bold bg-forest text-sand hover:bg-forest-light hover:shadow-lg transition-all flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple"
+            onClick={() => setIsAnalysisModalOpen(true)}
+            className="px-5 py-2 rounded-full text-xs font-bold bg-forest text-sand hover:bg-forest-light hover:shadow-lg transition-all flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple cursor-pointer"
           >
             <Sparkles className="w-3.5 h-3.5 text-purple" />
-            Start AI Analysis
+            {hasAnalysis ? 'Re-Run AI Analysis' : 'Start AI Analysis'}
           </button>
         </div>
       </div>
 
       {/* 2. PROJECT TAB NAVIGATION */}
       <div className="flex items-center gap-1 overflow-x-auto pb-1 border-b border-forest/10 no-scrollbar">
-        {TABS.map(tab => {
+        {TABS.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
 
           return (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold transition-all relative whitespace-nowrap ${
+              onClick={() => {
+                setActiveTab(tab.id);
+                if (tab.id === 'analysis' && selectedAnalysisId) {
+                  navigate(`/projects/${projectId}/analysis/${selectedAnalysisId}`);
+                } else if (tab.id === 'overview') {
+                  navigate(`/projects/${projectId}`);
+                }
+              }}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold transition-all relative whitespace-nowrap cursor-pointer ${
                 isActive
                   ? 'bg-forest text-sand shadow-sm'
                   : 'text-forest/70 hover:text-forest hover:bg-forest/5'
@@ -205,7 +305,9 @@ export const ProjectDetails: React.FC = () => {
               {tab.badge && (
                 <span
                   className={`text-[9px] font-mono px-1.5 py-0.2 rounded-full uppercase tracking-wider ${
-                    isActive ? 'bg-purple/20 text-purple border border-purple/30' : 'bg-forest/10 text-forest/50'
+                    isActive
+                      ? 'bg-purple/20 text-purple border border-purple/30'
+                      : 'bg-forest/10 text-forest/50'
                   }`}
                 >
                   {tab.badge}
@@ -217,6 +319,8 @@ export const ProjectDetails: React.FC = () => {
       </div>
 
       {/* 3. TAB CONTENT */}
+
+      {/* OVERVIEW TAB */}
       {activeTab === 'overview' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Problem & Solution Column (2 Cols) */}
@@ -301,69 +405,211 @@ export const ProjectDetails: React.FC = () => {
               )}
             </div>
 
-            {/* AI Deconstruction Readiness */}
-            <div className="p-6 rounded-3xl bg-forest text-sand shadow-lg space-y-3">
-              <div className="flex items-center gap-2 text-purple text-xs font-bold uppercase tracking-widest font-mono">
-                <Sparkles className="w-4 h-4" /> Next Milestone
+            {/* AI Deconstruction Status Milestone */}
+            {hasAnalysis ? (
+              <div className="p-6 rounded-3xl bg-forest text-sand shadow-lg space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-1.5 text-purple text-xs font-bold uppercase tracking-widest font-mono">
+                    <Sparkles className="w-3.5 h-3.5" /> AI Engine Analysis
+                  </span>
+                  <span className="text-[10px] font-mono bg-purple/20 text-purple border border-purple/30 px-2 py-0.5 rounded-full font-bold">
+                    v{activeAnalysis?.version}
+                  </span>
+                </div>
+
+                <h3 className="text-lg font-serif font-bold">Analysis Complete</h3>
+
+                <div className="grid grid-cols-2 gap-2 pt-1 text-xs font-mono">
+                  <div className="p-2.5 rounded-xl bg-sand-light/10 border border-sand/15">
+                    <span className="text-[10px] text-sand/60">Assumptions</span>
+                    <p className="text-base font-bold text-sand mt-0.5">{assumptionsCount}</p>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-sand-light/10 border border-sand/15">
+                    <span className="text-[10px] text-sand/60">Max Risk</span>
+                    <p className="text-base font-bold text-purple mt-0.5">{maxRisk || 0}/25</p>
+                  </div>
+                </div>
+
+                <div className="space-y-2 pt-1">
+                  <button
+                    onClick={() => setActiveTab('analysis')}
+                    className="w-full py-2.5 rounded-full text-xs font-bold bg-purple hover:bg-purple-hover text-white transition-colors flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
+                  >
+                    View Full Validation Report <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('assumptions')}
+                    className="w-full py-2 rounded-full text-xs font-bold bg-sand-light/10 border border-sand/20 text-sand hover:bg-sand-light/20 transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                  >
+                    Open Risk Matrix & Hypotheses
+                  </button>
+                </div>
               </div>
-              <h3 className="text-lg font-serif font-bold">
-                Run AI Idea Deconstruction
-              </h3>
-              <p className="text-xs text-sand/80 leading-relaxed">
-                Blindspot AI will extract 3–15 risky hypotheses across Problem, Customer, and Solution dimensions and rank them by impact.
-              </p>
-              <button
-                onClick={() => setFutureModalModule('Idea Analysis')}
-                className="w-full mt-2 py-2.5 rounded-full text-xs font-bold bg-purple hover:bg-purple-hover text-white transition-colors flex items-center justify-center gap-1.5 shadow-sm"
-              >
-                Analyze Hypothesis <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
+            ) : (
+              <div className="p-6 rounded-3xl bg-forest text-sand shadow-lg space-y-3">
+                <div className="flex items-center gap-2 text-purple text-xs font-bold uppercase tracking-widest font-mono">
+                  <Sparkles className="w-4 h-4" /> Next Milestone
+                </div>
+                <h3 className="text-lg font-serif font-bold">
+                  Run AI Idea Deconstruction
+                </h3>
+                <p className="text-xs text-sand/80 leading-relaxed font-sans">
+                  Blindspot AI will extract 3–15 risky hypotheses across 10 structured categories and compute deterministic risk scores.
+                </p>
+                <button
+                  onClick={() => setIsAnalysisModalOpen(true)}
+                  className="w-full mt-2 py-2.5 rounded-full text-xs font-bold bg-purple hover:bg-purple-hover text-white transition-colors flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
+                >
+                  Analyze Hypothesis <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
 
-      {/* 4. FUTURE MODULES PLACEHOLDER VIEWS */}
-      {activeTab !== 'overview' && (
+      {/* IDEA ANALYSIS TAB */}
+      {activeTab === 'analysis' && (
+        <div>
+          {isAnalysisLoading ? (
+            <div className="py-16">
+              <LoadingState message="Retrieving AI analysis and validation dimensions..." />
+            </div>
+          ) : hasAnalysis ? (
+            <AnalysisReportView
+              analysis={activeAnalysis!}
+              onRunNewAnalysis={() => setIsAnalysisModalOpen(true)}
+              onSelectHistoricalVersion={handleSelectHistoricalVersion}
+              isLatestVersion={!selectedAnalysisId || selectedAnalysisId === latestAnalysisData?.data?.id}
+            />
+          ) : (
+            <div className="p-8 sm:p-14 rounded-3xl bg-sand-light border border-dashed border-forest/25 text-center max-w-xl mx-auto space-y-4">
+              <div className="w-14 h-14 rounded-2xl bg-purple/15 text-purple mx-auto flex items-center justify-center">
+                <Sparkles className="w-7 h-7" />
+              </div>
+
+              <div>
+                <span className="text-[10px] font-mono uppercase tracking-widest text-purple font-semibold">
+                  Phase 02 AI Engine
+                </span>
+                <h3 className="text-2xl font-serif font-bold tracking-tight text-forest mt-1">
+                  No Analysis Recorded Yet
+                </h3>
+                <p className="text-xs sm:text-sm text-forest/75 mt-2 max-w-md mx-auto leading-relaxed font-sans">
+                  Run the 6-stage AI engine to deconstruct "{project.name}", extract unexamined premises across 10 risk dimensions, and isolate lethal assumptions.
+                </p>
+              </div>
+
+              <div className="pt-2">
+                <button
+                  onClick={() => setIsAnalysisModalOpen(true)}
+                  className="px-6 py-2.5 rounded-full text-xs font-bold bg-forest text-sand hover:bg-forest-light transition-all inline-flex items-center gap-2 cursor-pointer shadow-sm"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-purple" />
+                  Initiate AI Idea Deconstruction
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ASSUMPTIONS TAB */}
+      {activeTab === 'assumptions' && (
+        <div>
+          {isAnalysisLoading ? (
+            <div className="py-16">
+              <LoadingState message="Loading relational assumptions and risk matrix..." />
+            </div>
+          ) : hasAnalysis ? (
+            <div className="space-y-8">
+              <InteractiveRiskMatrix assumptions={activeAnalysis!.assumptions} />
+              <div className="pt-4 border-t border-forest/15">
+                <h3 className="text-xl font-serif font-bold text-forest mb-4">
+                  Full Assumptions Registry & Evidence Life Cycle
+                </h3>
+                <AssumptionExplorer assumptions={activeAnalysis!.assumptions} />
+              </div>
+            </div>
+          ) : (
+            <div className="p-8 sm:p-14 rounded-3xl bg-sand-light border border-dashed border-forest/25 text-center max-w-xl mx-auto space-y-4">
+              <div className="w-14 h-14 rounded-2xl bg-forest/5 text-purple mx-auto flex items-center justify-center">
+                <HelpCircle className="w-7 h-7" />
+              </div>
+
+              <div>
+                <span className="text-[10px] font-mono uppercase tracking-widest text-purple font-semibold">
+                  Assumptions Registry
+                </span>
+                <h3 className="text-2xl font-serif font-bold tracking-tight text-forest mt-1">
+                  Run Idea Analysis to Extract Assumptions
+                </h3>
+                <p className="text-xs sm:text-sm text-forest/75 mt-2 max-w-md mx-auto leading-relaxed font-sans">
+                  The interactive 5×5 risk matrix and hypothesis explorer require a completed AI analysis run.
+                </p>
+              </div>
+
+              <div className="pt-2">
+                <button
+                  onClick={() => setIsAnalysisModalOpen(true)}
+                  className="px-6 py-2.5 rounded-full text-xs font-bold bg-forest text-sand hover:bg-forest-light transition-all inline-flex items-center gap-2 cursor-pointer shadow-sm"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-purple" />
+                  Start AI Analysis
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* 5. RESOURCES TAB (Phase 03 Resource Intelligence) */}
+      {activeTab === 'resources' && project && (
+        <ResourceLibraryView projectId={project.id} />
+      )}
+
+      {/* PHASE 03 PLACEHOLDER TABS (Interviews, Experiments) */}
+      {(activeTab === 'interviews' || activeTab === 'experiments') && (
         <div className="p-8 sm:p-14 rounded-3xl bg-sand-light border border-dashed border-forest/20 text-center max-w-2xl mx-auto space-y-4">
           <div className="w-14 h-14 rounded-2xl bg-forest/5 text-purple mx-auto flex items-center justify-center">
-            {activeTab === 'analysis' && <Sparkles className="w-7 h-7" />}
-            {activeTab === 'assumptions' && <HelpCircle className="w-7 h-7" />}
             {activeTab === 'interviews' && <Compass className="w-7 h-7" />}
             {activeTab === 'experiments' && <FlaskConical className="w-7 h-7" />}
-            {activeTab === 'resources' && <Boxes className="w-7 h-7" />}
           </div>
 
           <div>
             <span className="text-[10px] font-mono uppercase tracking-widest text-purple font-semibold">
-              {activeTab === 'analysis' || activeTab === 'assumptions' ? 'Phase 02 Architecture' : 'Phase 03 Architecture'}
+              Phase 03 Architecture
             </span>
             <h3 className="text-2xl font-serif font-bold tracking-tight text-forest mt-1">
-              {TABS.find(t => t.id === activeTab)?.label}
+              {TABS.find((t) => t.id === activeTab)?.label}
             </h3>
-            <p className="text-xs sm:text-sm text-forest/75 mt-2 max-w-md mx-auto leading-relaxed">
-              {activeTab === 'analysis' &&
-                'Automated multi-dimensional assumption extraction and risk scoring for this project.'}
-              {activeTab === 'assumptions' &&
-                'Matrix of prioritized problem, customer, and solution hypotheses awaiting evidence collection.'}
+            <p className="text-xs sm:text-sm text-forest/75 mt-2 max-w-md mx-auto leading-relaxed font-sans">
               {activeTab === 'interviews' &&
                 'Non-leading customer interview question generator, note transcript mapping, and contradiction engine.'}
               {activeTab === 'experiments' &&
                 'Next validation experiment recommendations and evidence pass/fail thresholds.'}
-              {activeTab === 'resources' &&
-                'Relevant GitHub repos, Hugging Face models, and public datasets matched to this problem statement.'}
             </p>
           </div>
 
           <div className="pt-2">
             <button
               onClick={() => setActiveTab('overview')}
-              className="px-5 py-2.5 rounded-full text-xs font-bold bg-forest text-sand hover:bg-forest-light transition-all"
+              className="px-5 py-2.5 rounded-full text-xs font-bold bg-forest text-sand hover:bg-forest-light transition-all cursor-pointer"
             >
               Return to Project Overview
             </button>
           </div>
         </div>
+      )}
+
+      {/* Real AI Analysis Modal */}
+      {isAnalysisModalOpen && project && (
+        <StartAnalysisModal
+          isOpen={isAnalysisModalOpen}
+          onClose={() => setIsAnalysisModalOpen(false)}
+          project={project}
+          onAnalysisComplete={handleAnalysisCompleted}
+        />
       )}
 
       {/* Delete Project Modal */}

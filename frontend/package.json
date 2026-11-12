@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "node --test --experimental-strip-types src/tests/analysis-integration.test.ts src/tests/resources-integration.test.ts"
   },
   "dependencies": {
     "@clerk/clerk-react": "^5.61.11",

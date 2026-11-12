@@ -165,6 +165,42 @@ export const App: React.FC = () => {
           }
         />
 
+        {/* Protected Project Analysis Route */}
+        <Route
+          path="/projects/:projectId/analysis"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <ProjectDetails defaultTab="analysis" />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Protected Project Analysis Version Route */}
+        <Route
+          path="/projects/:projectId/analysis/:analysisId"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <ProjectDetails defaultTab="analysis" />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Protected Project Resources Route */}
+        <Route
+          path="/projects/:projectId/resources"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <ProjectDetails defaultTab="resources" />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+
         {/* Catch-all fallback redirects to landing page */}
         <Route
           path="*"

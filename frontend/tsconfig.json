@@ -23,5 +23,6 @@
       "@workspace/api-client-react": ["node_modules/@workspace/api-client-react/src/index.ts"]
     }
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["src/tests"]
 }

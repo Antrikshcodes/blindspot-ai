@@ -1,23 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Sparkles, CheckCircle, ArrowRight, AlertTriangle } from 'lucide-react';
+import { X, Sparkles, ArrowRight, ShieldCheck, Layers, CheckCircle2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { MagneticButton } from './MagneticButton';
 
 interface FutureFeatureModalProps {
   isOpen: boolean;
   onClose: () => void;
-  defaultIdea?: string;
 }
 
 export const FutureFeatureModal: React.FC<FutureFeatureModalProps> = ({
   isOpen,
   onClose,
-  defaultIdea = '',
 }) => {
-  const [ideaText, setIdeaText] = useState(defaultIdea);
-  const [analyzed, setAnalyzed] = useState(false);
-
-  const sampleIdea = "An on-demand laundry app for university dorms where students pay $15/month for automated locker drop-off.";
+  const navigate = useNavigate();
 
   // Lock body scroll and listen for Escape key
   useEffect(() => {
@@ -38,16 +34,17 @@ export const FutureFeatureModal: React.FC<FutureFeatureModalProps> = ({
     };
   }, [isOpen, onClose]);
 
-  const handlePreviewAnalysis = () => {
-    if (!ideaText.trim()) {
-      setIdeaText(sampleIdea);
-    }
-    setAnalyzed(true);
+  const handleStartRealAnalysis = () => {
+    onClose();
+    navigate('/dashboard');
   };
 
-  const handleReset = () => {
-    setAnalyzed(false);
-  };
+  const CATEGORIES = [
+    { name: 'Problem & Customer', desc: 'Is the pain severe, frequent, and actively experienced?' },
+    { name: 'Demand & Willingness to Pay', desc: 'Will users commit budget or replace active paid workarounds?' },
+    { name: 'Behavior & Habits', desc: 'Does the solution demand workflow changes people resist?' },
+    { name: 'Technical & Operational', desc: 'Can it be built reliably without fatal dependencies?' },
+  ];
 
   return (
     <AnimatePresence>
@@ -68,19 +65,19 @@ export const FutureFeatureModal: React.FC<FutureFeatureModalProps> = ({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 16 }}
             transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
-            className="relative w-full max-w-2xl bg-sand border-2 border-forest/30 rounded-3xl shadow-2xl overflow-hidden z-10 p-5 sm:p-7 md:p-8 text-forest max-h-[90vh] overflow-y-auto"
+            className="relative w-full max-w-2xl bg-sand border-2 border-forest/30 rounded-3xl shadow-2xl overflow-hidden z-10 p-6 sm:p-8 text-forest max-h-[90vh] overflow-y-auto"
             role="dialog"
             aria-modal="true"
             aria-labelledby="modal-title"
           >
             {/* Header */}
-            <div className="flex items-start justify-between gap-4 border-b border-forest/15 pb-4 mb-5 sm:mb-6">
+            <div className="flex items-start justify-between gap-4 border-b border-forest/15 pb-4 mb-6">
               <div>
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-medium uppercase tracking-wider bg-purple/15 text-purple border border-purple/30 mb-2">
-                  <Sparkles className="w-3.5 h-3.5" /> Phase 1 Architecture Preview
+                  <Sparkles className="w-3.5 h-3.5" /> Real AI Validation Engine
                 </span>
                 <h3 id="modal-title" className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-forest">
-                  Idea Validation Studio
+                  How Blindspot AI Deconstructs Ideas
                 </h3>
               </div>
               <button
@@ -92,112 +89,57 @@ export const FutureFeatureModal: React.FC<FutureFeatureModalProps> = ({
               </button>
             </div>
 
-            {/* Content Body */}
-            {!analyzed ? (
-              <div className="space-y-4">
-                <p className="text-sm sm:text-base text-forest/80 leading-relaxed">
-                  Blindspot AI deconstructs ideas across 10 structured risk categories to isolate lethal assumptions before coding begins. Type your concept or click the sample below to preview how the engine scores assumptions.
-                </p>
+            {/* Educational content explaining genuine workflow */}
+            <div className="space-y-6">
+              <p className="text-sm sm:text-base text-forest/80 leading-relaxed font-sans">
+                Blindspot AI executes a genuine 6-stage AI engine on your product hypothesis. Instead of generating generic hype or arbitrary startup scores, it decomposes your product, extracts 3–15 falsifiable assumptions across 10 risk dimensions, and synthesizes non-leading Mom Test interview questions.
+              </p>
 
-                <div>
-                  <label htmlFor="idea-input" className="block text-xs font-mono uppercase tracking-wider text-forest/70 mb-2 font-semibold">
-                    Describe your product concept & target users:
-                  </label>
-                  <textarea
-                    id="idea-input"
-                    rows={3}
-                    value={ideaText}
-                    onChange={(e) => setIdeaText(e.target.value)}
-                    placeholder="e.g. A peer-to-peer textbook rental marketplace for college students..."
-                    className="w-full p-4 rounded-xl bg-sand-light border border-forest/20 text-forest placeholder:text-forest/40 focus:outline-none focus:border-purple focus:ring-1 focus:ring-purple text-sm font-sans"
-                  />
+              {/* 10-Dimension Risk Taxonomy Overview */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-sand-light border border-forest/15 space-y-3">
+                <div className="flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-wider text-forest/70">
+                  <Layers className="w-4 h-4 text-purple" /> 10 Structured Risk Dimensions
                 </div>
-
-                <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setIdeaText(sampleIdea)}
-                    className="text-xs font-mono underline text-forest/70 hover:text-forest cursor-pointer py-1"
-                  >
-                    Load sample idea
-                  </button>
-
-                  <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
-                    <MagneticButton variant="ghost" size="sm" onClick={onClose}>
-                      Cancel
-                    </MagneticButton>
-                    <MagneticButton variant="purple" size="sm" onClick={handlePreviewAnalysis}>
-                      Preview Assumption Breakdown <ArrowRight className="w-4 h-4 ml-1" />
-                    </MagneticButton>
-                  </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                  {CATEGORIES.map((cat, i) => (
+                    <div key={i} className="p-3 rounded-xl bg-sand border border-forest/10 space-y-1">
+                      <div className="text-xs font-bold text-forest flex items-center gap-1.5">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-purple shrink-0" />
+                        {cat.name}
+                      </div>
+                      <p className="text-[11px] text-forest/70 leading-snug">{cat.desc}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
-            ) : (
-              <div className="space-y-5 animate-in fade-in duration-300">
-                <div className="p-4 rounded-2xl bg-sand-light border border-forest/15">
-                  <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-forest/60 mb-1">
-                    Submitted Concept
-                  </div>
-                  <p className="text-xs sm:text-sm font-medium text-forest italic">
-                    "{ideaText || sampleIdea}"
-                  </p>
+
+              {/* Server-Enforced Evidence Policy */}
+              <div className="p-4 rounded-2xl bg-forest/5 border border-forest/15 space-y-2">
+                <div className="flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-wider text-forest">
+                  <ShieldCheck className="w-4 h-4 text-purple" /> Deterministic Evidence Protocol
                 </div>
+                <p className="text-xs text-forest/75 leading-relaxed font-sans">
+                  Risk scores are strictly computed via <strong>Impact (1–5) × Uncertainty (1–5) = Priority (1–25)</strong>. Market demand is never fabricated or claimed validated until verified qualitative quotes or experiment observations are linked.
+                </p>
+              </div>
 
-                <div>
-                  <div className="flex items-center justify-between mb-3 gap-2">
-                    <h4 className="text-xs font-mono uppercase tracking-wider text-forest/70 font-semibold truncate">
-                      Extracted Blindspots & Risk Matrix (Preview)
-                    </h4>
-                    <span className="text-[11px] font-mono bg-purple/15 text-purple px-2 py-0.5 rounded-full font-bold shrink-0">
-                      Mom Test Logic
-                    </span>
-                  </div>
+              {/* Action Buttons */}
+              <div className="pt-4 border-t border-forest/15 flex flex-wrap items-center justify-between gap-3">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="text-xs font-mono text-forest/70 hover:text-forest underline cursor-pointer py-1"
+                >
+                  Close Preview
+                </button>
 
-                  <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
-                    {/* Critical Risk Item */}
-                    <div className="p-3.5 rounded-xl bg-forest/5 border border-purple/30">
-                      <div className="flex items-center justify-between text-xs mb-1">
-                        <span className="font-mono font-bold text-purple flex items-center gap-1.5">
-                          <AlertTriangle className="w-3.5 h-3.5" /> CRITICAL RISK (Score: 20/25)
-                        </span>
-                        <span className="font-mono text-forest/60 text-[10px]">WILLINGNESS_TO_PAY</span>
-                      </div>
-                      <p className="text-xs sm:text-sm font-semibold text-forest">
-                        Students have sufficient recurring budget and will prioritize paying $15/mo over using existing dorm coin laundry.
-                      </p>
-                      <p className="text-xs font-serif italic text-forest/70 mt-1">
-                        Recommended Mom Test Probe: "How much did you spend on laundry last month, and what workarounds have you tried when machines were broken?"
-                      </p>
-                    </div>
-
-                    {/* Operational Risk Item */}
-                    <div className="p-3.5 rounded-xl bg-forest/5 border border-forest/20">
-                      <div className="flex items-center justify-between text-xs mb-1">
-                        <span className="font-mono font-bold text-forest flex items-center gap-1.5">
-                          <CheckCircle className="w-3.5 h-3.5 text-forest" /> HIGH RISK (Score: 16/25)
-                        </span>
-                        <span className="font-mono text-forest/60 text-[10px]">OPERATIONAL / ACCESS</span>
-                      </div>
-                      <p className="text-xs sm:text-sm font-semibold text-forest">
-                        University residential life authorities will permit external locker installations inside restricted dorm buildings.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="pt-3 border-t border-forest/15 flex items-center justify-between">
-                  <button
-                    onClick={handleReset}
-                    className="text-xs font-mono text-forest/70 hover:text-forest underline cursor-pointer py-1"
-                  >
-                    Test another idea
-                  </button>
-                  <MagneticButton variant="forest" size="sm" onClick={onClose}>
-                    Done Exploring
+                <div className="flex items-center gap-3">
+                  <MagneticButton variant="purple" size="sm" onClick={handleStartRealAnalysis}>
+                    Go to Workspace & Run Real Analysis <ArrowRight className="w-4 h-4 ml-1" />
                   </MagneticButton>
                 </div>
               </div>
-            )}
+            </div>
           </motion.div>
         </div>
       )}
