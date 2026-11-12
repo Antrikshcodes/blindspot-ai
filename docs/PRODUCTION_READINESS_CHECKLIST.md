@@ -24,9 +24,9 @@
 - [x] **Journey A (Authentication)**: Sign-up, Sign-in, Protected routes, Clerk session persistence
 - [x] **Journey B (Projects)**: Project creation, editing, deletion with cascading cleanup
 - [x] **Journey C (AI Analysis)**: Multi-stage pipeline, 5×5 interactive matrix, risk thresholds (1–25)
-- [ ] **Journey D (Customer Discovery)**: Interview logging, transcript mapping, feedback synthesis
-- [ ] **Journey E (Evidence Intelligence)**: Quote grounding, sentiment classification, contradiction alerts
-- [ ] **Journey F (Experiments)**: Experiment plans, observed metrics, status lifecycle
+- [x] **Journey D (Customer Discovery)**: Interview logging, transcript mapping, feedback synthesis
+- [x] **Journey E (Evidence Intelligence)**: Quote grounding, sentiment classification, contradiction alerts
+- [x] **Journey F (Experiments)**: Experiment plans, observed metrics, status lifecycle
 - [x] **Journey G (Resources)**: Cross-provider search, ranking scores, saved project library
 - [x] **Journey H (Notifications & Settings)**: In-app notification center, preference matrix, profile sync
 
@@ -46,4 +46,6 @@
 - [x] TypeScript compiler passes without errors (`tsc --noEmit`)
 - [x] Vite production build succeeds (`vite build`)
 - [x] Node test runner completes with 100% passing test assertions
-- [ ] Rollup bundle chunking optimization below 500 kB per chunk
+- [x] Rollup bundle chunking optimization below 500 kB per chunk (Entry chunk: 97 kB, core vendor: 385 kB)
+- [x] Multi-stage Docker container builds verified for frontend and backend
+- [x] CI/CD automated pipeline active on GitHub Actions (`ci.yml`, `deploy-production.yml`)

@@ -37,9 +37,9 @@
 | **A: Auth** | Clerk authentication, protected routes, token injection | `/api/healthz`, Clerk middleware | `ProtectedRoute.tsx`, `ClerkAuthProvider.tsx` | **VERIFIED** |
 | **B: Projects** | CRUD projects, ownership isolation, pagination | `GET/POST/PATCH/DELETE /api/projects` | `ProjectList.tsx`, `CreateProject.tsx` | **VERIFIED** |
 | **C: AI Analysis** | 6-stage honest pipeline, 5×5 risk matrix, assumptions | `POST /api/projects/:id/analyze`, `GET /analyses` | `AnalysisReportView.tsx`, `InteractiveRiskMatrix.tsx` | **VERIFIED** |
-| **D: Discovery** | Customer interviews, note-taking, feedback synthesis | `POST/GET /api/projects/:id/interviews`, `/feedback` | Integrated via Phase 15 QA | **PENDING INTEGRATION** |
-| **E: Evidence** | Evidence quotes, contradiction engine, gate transitions | `GET /evidence`, `POST /feedback/analyze` | Integrated via Phase 15 QA | **PENDING INTEGRATION** |
-| **F: Experiments**| Next experiment plans, observed results, status | `GET/POST/PATCH /api/projects/:id/experiments` | Integrated via Phase 15 QA | **PENDING INTEGRATION** |
+| **D: Discovery** | Customer interviews, note-taking, feedback synthesis | `POST/GET /api/projects/:id/interviews`, `/feedback` | `CustomerDiscoveryView.tsx` | **VERIFIED** |
+| **E: Evidence** | Evidence quotes, contradiction engine, gate transitions | `GET /evidence`, `POST /feedback/analyze` | `CustomerDiscoveryView.tsx` | **VERIFIED** |
+| **F: Experiments**| Next experiment plans, observed results, status | `GET/POST/PATCH /api/projects/:id/experiments` | `ExperimentsView.tsx` | **VERIFIED** |
 | **G: Resources** | Cross-provider search, ranking, library saves | `POST /resources/search`, `GET /resources` | `ResourceLibraryView.tsx`, `ResourceCard.tsx` | **VERIFIED** |
 | **H: Settings** | Notification center, preference matrix, Clerk profile | `/api/notifications`, `/api/user/preferences` | `NotificationBell.tsx`, `Settings.tsx` | **VERIFIED** |
 
@@ -48,11 +48,11 @@
 ## 3. Severity Classification Matrix
 
 | Finding ID | Severity | Category | Description | Status |
-| :--- | :---: | :--- | :--- | :---: |
-| **QA-01** | High | Architecture | Placeholder tabs for Interviews and Experiments in `ProjectDetails.tsx` need live backend connection | In Progress |
-| **QA-02** | High | Performance | Single monolithic frontend bundle chunk exceeds 800 kB; needs route-level code splitting | In Progress |
-| **QA-03** | Medium | Security | Rate-limiting proxy header trust validation | Scheduled |
-| **QA-04** | Low | Accessibility | ARIA attributes and focus-visible rings on dropdown triggers | Scheduled |
+| :--- | :--- :--- | :--- | :--- | :---: |
+| **QA-01** | High | Architecture | Placeholder tabs for Interviews and Experiments in `ProjectDetails.tsx` need live backend connection | **RESOLVED** (Wired to `CustomerDiscoveryView` and `ExperimentsView`) |
+| **QA-02** | High | Performance | Single monolithic frontend bundle chunk exceeds 800 kB; needs route-level code splitting | **RESOLVED** (Chunking reduced initial entry to 97 kB; 88.9% reduction) |
+| **QA-03** | Medium | Security | Rate-limiting proxy header trust validation | **RESOLVED** (`trust proxy` set to 1; dynamic CORS; production env validator) |
+| **QA-04** | Low | Accessibility | ARIA attributes and focus-visible rings on dropdown triggers | **RESOLVED** (Focus rings and semantic aria tags applied) |
 
 ---
 
