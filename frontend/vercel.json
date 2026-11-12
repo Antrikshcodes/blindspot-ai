@@ -1,6 +1,6 @@
 {
   "framework": "vite",
-  "buildCommand": "npm run build",
+  "buildCommand": "pnpm install --frozen-lockfile && pnpm --filter blindspot-ai-frontend build",
   "outputDirectory": "dist",
   "rewrites": [
     {

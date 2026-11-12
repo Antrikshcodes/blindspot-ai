@@ -4,15 +4,15 @@ services:
     container_name: blindspot-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: blindspot_user
-      POSTGRES_PASSWORD: blindspot_secure_password
-      POSTGRES_DB: blindspot_db
+      POSTGRES_USER: ${POSTGRES_USER:-blindspot_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in your local .env file}
+      POSTGRES_DB: ${POSTGRES_DB:-blindspot_db}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U blindspot_user -d blindspot_db"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -27,11 +27,16 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      NODE_ENV: production
+      NODE_ENV: development
       PORT: 3000
-      DATABASE_URL: postgresql://blindspot_user:blindspot_secure_password@postgres:5432/blindspot_db
-      CORS_ORIGIN: "http://localhost:5173,http://localhost:80,http://127.0.0.1:80"
-      AI_PROVIDER: disabled
+      DATABASE_URL: postgresql://${POSTGRES_USER:-blindspot_user}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in your local .env file}@postgres:5432/${POSTGRES_DB:-blindspot_db}
+      CLERK_PUBLISHABLE_KEY: ${CLERK_PUBLISHABLE_KEY:-}
+      CLERK_SECRET_KEY: ${CLERK_SECRET_KEY:-}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173,http://127.0.0.1:5173,http://localhost,http://127.0.0.1}
+      AI_PROVIDER: ${AI_PROVIDER:-disabled}
+      AI_API_KEY: ${AI_API_KEY:-}
+      AI_INTEGRATIONS_OPENAI_API_KEY: ${AI_INTEGRATIONS_OPENAI_API_KEY:-}
+      AI_INTEGRATIONS_OPENAI_BASE_URL: ${AI_INTEGRATIONS_OPENAI_BASE_URL:-}
       API_RATE_LIMIT: 240
     ports:
       - "3000:3000"
@@ -40,12 +45,14 @@ services:
     build:
       context: .
       dockerfile: frontend/Dockerfile
+      args:
+        VITE_CLERK_PUBLISHABLE_KEY: ${VITE_CLERK_PUBLISHABLE_KEY:-}
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:3000}
+        VITE_BACKEND_URL: ${VITE_BACKEND_URL:-http://localhost:3000}
     container_name: blindspot-frontend
     restart: unless-stopped
     depends_on:
       - backend
-    environment:
-      VITE_API_BASE_URL: http://localhost:3000
     ports:
       - "80:80"
 

@@ -1,34 +1,40 @@
-# Blindspot AI — Official Production Launch Checklist
+# Blindspot AI — Production Launch Checklist
+
+> **Current status: NOT cleared for production.** This file contains historical
+> checklist entries that have not all been re-verified. Live identity journeys,
+> hosting configuration, database backup/restore, Docker builds, and deployment
+> health remain unverified. See [PRODUCTION_READINESS_CHECKLIST.md](PRODUCTION_READINESS_CHECKLIST.md)
+> and [KNOWN_ISSUES.md](KNOWN_ISSUES.md) for the current evidence and open gaps.
 
 ## Pre-Launch Verification
 
-- [x] **Repository Integrity**: Git working copy clean on `main` branch.
-- [x] **Code Quality & Builds**:
+- [ ] **Repository Integrity**: Changes not yet committed or pushed to `main`.
+- [ ] **Code Quality & Builds**:
   - [x] Backend TypeScript build (`npm --prefix backend run build`) compiles with zero errors.
-  - [x] Frontend Vite bundle (`npm --prefix frontend run build`) compiles with zero circular dependencies and all chunks under 400 kB.
-  - [x] Backend automated test suite (133 tests) passing 100%.
-  - [x] Frontend integration test suite (32 tests) passing 100%.
-- [x] **Database Safety**:
-  - [x] Forward-only migrations (`0000` through `0006`) tested on PostgreSQL 15+.
-  - [x] Connection pooling configured with SSL `require`.
-  - [x] Automated daily backup and point-in-time recovery enabled.
-- [x] **Security & Secret Isolation**:
-  - [x] Zero hardcoded secrets, API keys, or active `.env` files in git tree.
-  - [x] Identity & tenancy: All queries scoped to verified Clerk `owner_id`.
-  - [x] IDOR defense: Accessing foreign projects returns HTTP 404.
-  - [x] Rate limiting: Express rate limits active on API and AI endpoints.
-  - [x] Security headers: Helmet and CSP headers configured.
-- [x] **Infrastructure & Deployment Manifests**:
-  - [x] Backend Dockerfile (multi-stage Node 20 LTS with non-root user).
-  - [x] Frontend Dockerfile & Nginx reverse proxy configuration.
-  - [x] Vercel deployment manifest (`frontend/vercel.json`) with SPA fallback and security headers.
-  - [x] Cloudflare / Netlify SPA redirects (`frontend/public/_redirects`).
-  - [x] Multi-container local/staging orchestration (`docker-compose.yml`).
-- [x] **SEO & Public Launch Assets**:
-  - [x] Search engine crawler configuration (`frontend/public/robots.txt`).
-  - [x] Canonical sitemap (`frontend/public/sitemap.xml`).
-  - [x] Social share card (`frontend/public/og-image.svg`).
-  - [x] Open Graph & Twitter summary card tags in `frontend/index.html`.
+  - [x] Frontend workspace Vite build passes in the current checkout.
+  - [ ] Backend automated tests pass locally: 143 passed.
+  - [ ] Frontend tests pass locally: 44 passed.
+- [ ] **Database Safety** (production backups and restore not independently verified):
+  - [ ] Forward-only migrations (`0000` through `0006`) tested on PostgreSQL 15+.
+  - [ ] Connection pooling configured with SSL `require`.
+  - [ ] Automated daily backup and point-in-time recovery enabled.
+- [ ] **Security & Secret Isolation**:
+  - [ ] Zero hardcoded secrets, API keys, or active `.env` files in git tree.
+  - [ ] Identity & tenancy: All queries scoped to verified Clerk `owner_id`.
+  - [ ] IDOR defense: Accessing foreign projects returns HTTP 404.
+  - [ ] Rate limiting: Express rate limits active on API and AI endpoints.
+  - [ ] Security headers: Helmet and CSP headers configured.
+- [ ] **Infrastructure & Deployment Manifests** (container build verification pending):
+  - [ ] Backend Dockerfile (multi-stage Node 22 with non-root user); image build pending CI.
+  - [ ] Frontend Dockerfile & Nginx reverse proxy configuration.
+  - [ ] Vercel deployment manifest (`frontend/vercel.json`) with SPA fallback and security headers.
+  - [ ] Cloudflare / Netlify SPA redirects (`frontend/public/_redirects`).
+  - [ ] Multi-container local/staging orchestration (`docker-compose.yml`).
+- [ ] **SEO & Public Launch Assets**:
+  - [ ] Search engine crawler configuration (`frontend/public/robots.txt`).
+  - [ ] Canonical sitemap (`frontend/public/sitemap.xml`).
+  - [ ] Social share card (`frontend/public/og-image.svg`).
+  - [ ] Open Graph & Twitter summary card tags in `frontend/index.html`.
 
 ---
 

@@ -6,7 +6,7 @@ import type { AuthConfiguration } from '../../src/phase01/auth.js';
 // Ephemeral offline keys exercise the real Clerk signature/expiry verifier.
 // Never a mock identity middleware or a caller-controlled user-ID shortcut.
 const keys = generateKeyPairSync('rsa', { modulusLength: 2048 });
-export const testOrigin = 'http://localhost';
+export const testOrigin = 'http://localhost:5173';
 export const testOwner = 'user_founder_a';
 export const testAuth: AuthConfiguration = {
   publishableKey: `pk_test_${Buffer.from('auth-fixture.clerk.accounts.dev$').toString('base64')}`,

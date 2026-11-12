@@ -1,23 +1,17 @@
-# Multi-stage production Dockerfile for Blindspot AI Frontend SPA
-# ==============================================================================
-
-FROM node:20-alpine AS builder
+# Build the frontend with its root pnpm workspace so the shared API client resolves.
+FROM node:22-alpine AS builder
 
 WORKDIR /app
+ARG VITE_CLERK_PUBLISHABLE_KEY=
+ARG VITE_API_BASE_URL=
+ENV VITE_CLERK_PUBLISHABLE_KEY=$VITE_CLERK_PUBLISHABLE_KEY VITE_API_BASE_URL=$VITE_API_BASE_URL
+RUN corepack enable && corepack prepare pnpm@11.25.0 --activate
 
-# Copy root dependencies if needed, or frontend package
-COPY package*.json ./
-COPY frontend/package*.json ./frontend/
-COPY lib/ ./lib/
+COPY . .
+RUN pnpm install --frozen-lockfile --filter blindspot-ai-frontend...
+RUN pnpm --filter blindspot-ai-frontend build
 
-WORKDIR /app/frontend
-RUN npm ci
-
-COPY frontend/ ./
-RUN npm run build
-
-# ==============================================================================
-# Stage 2: High-Performance Nginx Web Server
+# Serve the static SPA from Nginx.
 FROM nginx:alpine AS runner
 
 COPY --from=builder /app/frontend/dist /usr/share/nginx/html

@@ -73,6 +73,19 @@ jobs:
       - name: Run frontend unit & integration tests
         run: pnpm --filter blindspot-ai-frontend test
 
+  container-build:
+    name: Container Image Builds
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build backend image
+        run: docker build -f backend/Dockerfile -t blindspot-ai-backend:ci ./backend
+
+      - name: Build frontend image
+        run: docker build -f frontend/Dockerfile -t blindspot-ai-frontend:ci .
+
   security-compliance:
     name: Security & Secret Scan
     runs-on: ubuntu-latest

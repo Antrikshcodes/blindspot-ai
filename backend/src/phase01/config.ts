@@ -30,7 +30,7 @@ export const config = z.object({
   PROVIDER_PAGE_SIZE: z.coerce.number().int().min(1).max(10).default(5),
   RESOURCE_RESULT_LIMIT: z.coerce.number().int().min(1).max(40).default(24),
   RANK_WEIGHTS: z.string().optional(),
-  CORS_ORIGIN: z.string().default('*'),
+  CORS_ORIGIN: z.string().default('http://localhost:5173,http://127.0.0.1:5173,http://localhost,http://127.0.0.1'),
 }).parse(process.env);
 
 export function validateProductionConfig(): { valid: boolean; warnings: string[]; errors: string[] } {
@@ -40,18 +40,52 @@ export function validateProductionConfig(): { valid: boolean; warnings: string[]
   if (config.NODE_ENV === 'production') {
     if (!config.DATABASE_URL) {
       errors.push('DATABASE_URL is required in production mode');
+    } else {
+      try {
+        const databaseUrl = new URL(config.DATABASE_URL);
+        if (!['postgres:', 'postgresql:'].includes(databaseUrl.protocol)) {
+          errors.push('DATABASE_URL must use PostgreSQL in production mode');
+        }
+        if (!['require', 'verify-ca', 'verify-full'].includes(databaseUrl.searchParams.get('sslmode') ?? '')) {
+          errors.push('DATABASE_URL must require TLS with sslmode=require, verify-ca, or verify-full');
+        }
+      } catch {
+        errors.push('DATABASE_URL must be a valid PostgreSQL URL in production mode');
+      }
     }
     if (!process.env.CLERK_SECRET_KEY) {
       errors.push('CLERK_SECRET_KEY is required in production mode');
+    } else if (!process.env.CLERK_SECRET_KEY.startsWith('sk_live_')) {
+      errors.push('CLERK_SECRET_KEY must use a live Clerk key in production mode');
     }
     if (!process.env.CLERK_PUBLISHABLE_KEY) {
-      warnings.push('CLERK_PUBLISHABLE_KEY is recommended in production');
+      errors.push('CLERK_PUBLISHABLE_KEY is required in production mode');
+    } else if (!process.env.CLERK_PUBLISHABLE_KEY.startsWith('pk_live_')) {
+      errors.push('CLERK_PUBLISHABLE_KEY must use a live Clerk key in production mode');
     }
     if (config.AI_PROVIDER === 'openai' && !config.AI_API_KEY && !config.AI_INTEGRATIONS_OPENAI_API_KEY) {
-      warnings.push('AI_PROVIDER is openai but AI_API_KEY is not set');
+      errors.push('AI_API_KEY is required when AI_PROVIDER=openai in production mode');
+    }
+    if (config.AI_PROVIDER === 'replit' && (!config.AI_INTEGRATIONS_OPENAI_API_KEY || !config.AI_INTEGRATIONS_OPENAI_BASE_URL)) {
+      errors.push('Replit AI integration credentials are required when AI_PROVIDER=replit in production mode');
+    }
+    if (config.AI_PROVIDER === 'disabled') {
+      errors.push('AI_PROVIDER=disabled is not supported for production release readiness');
     }
     if (config.CORS_ORIGIN === '*') {
-      warnings.push('CORS_ORIGIN is set to wildcard *; specify the production frontend domain for enhanced security');
+      errors.push('CORS_ORIGIN must list the exact frontend origins allowed to call the production API');
+    } else {
+      const origins = config.CORS_ORIGIN.split(',').map(origin => origin.trim()).filter(Boolean);
+      if (origins.length === 0 || origins.some(origin => {
+        try {
+          const parsed = new URL(origin);
+          return parsed.protocol !== 'https:' || parsed.origin !== origin
+            || parsed.hostname === 'localhost' || parsed.hostname.endsWith('.localhost')
+            || parsed.hostname === '127.0.0.1' || parsed.hostname.endsWith('.local');
+        } catch { return true; }
+      })) {
+        errors.push('CORS_ORIGIN must contain comma-separated HTTPS origins with no paths');
+      }
     }
   }
 
