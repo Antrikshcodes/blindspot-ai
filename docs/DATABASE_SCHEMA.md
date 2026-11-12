@@ -1,5 +1,14 @@
 # Database schema — Phase 01
 
+## Profile and project lifecycle additions
+
+Migration `0007_user_profiles.sql` adds one `user_profiles` row per verified
+Clerk subject, with editable display name and timestamps; role is not client
+writable and is derived by the server from `ADMIN_USER_IDS`. Migration
+`0008_project_catalog_and_archive.sql` adds industry, category, user-declared
+technical requirements, and `ACTIVE`/`ARCHIVED` status to projects, with
+owner/status indexing. Existing projects receive non-destructive defaults.
+
 ## Phase 03 additions
 
 Added resource_providers and resource_search_queries; extended resource_searches
@@ -35,7 +44,7 @@ active persistence layer. No SQLite data has been deleted or silently imported.
 
 | Table | Purpose / relationships |
 | --- | --- |
-| projects | Product description, problem, audience, solution, alternatives, timestamps |
+| projects | Owner, product/problem/audience/solution, alternatives, industry/category, technical requirements, ACTIVE/ARCHIVED status and timestamps |
 | analyses | Many per project; project-input snapshot, market context, structured output, model provenance |
 | assumptions | Many per analysis; category, independent 1–5 impact/uncertainty, computed risk, explanation/evidence/validation method, status |
 | interview_sessions | Many per project; participant alias, generated mapped questions |
@@ -48,6 +57,7 @@ active persistence layer. No SQLite data has been deleted or silently imported.
 | resources | Globally reusable real source records, unique canonical URL, provider metadata and retrieval time |
 | resource_recommendations | Many per search; a source may recur in many projects/searches; separate ranking/explanation/source snapshot |
 | saved_resources | Unique project/resource pair with saved integration status |
+| user_profiles | One row per verified owner subject; optional display name; server config supplies role |
 
 ## Constraints and lifecycle
 

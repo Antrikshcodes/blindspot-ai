@@ -57,6 +57,13 @@
       "when": 1794504680870,
       "tag": "0007_user_profiles",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1794504990327,
+      "tag": "0008_project_catalog_and_archive",
+      "breakpoints": true
     }
   ]
 }

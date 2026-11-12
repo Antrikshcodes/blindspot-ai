@@ -46,8 +46,8 @@ verification. The latest baseline was 121 active and 28 retained legacy tests.
 
 ### Projects and historical reads
 
-- [ ] Add industry/category, user-declared technical requirements and project status.
-- [ ] Add archive/restore, filtering and sorting without deleting project history.
+- [x] Add industry/category, user-declared technical requirements and ACTIVE/ARCHIVED project status with defaults.
+- [x] Add owner-scoped archive/restore routes plus status, industry/category, search and sorting filters; tests verify archived records remain readable and restorable.
 - [ ] Add analysis history and project-wide assumption read endpoints.
 - [ ] Preserve existing latest-analysis and interview-question routes; add requested aliases.
 

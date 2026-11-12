@@ -5,7 +5,7 @@ import pinoHttp from 'pino-http';
 import { rateLimit } from 'express-rate-limit';
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
-import { and, desc, eq, inArray, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, ilike, inArray, or, sql } from 'drizzle-orm';
 import type { Database } from './db/client.js';
 import * as t from './db/schema.js';
 import * as c from './contracts.js';
@@ -89,11 +89,25 @@ export function createApp(deps: {
     return success(res, project, 201);
   }));
   app.get('/api/projects', route(async (req, res) => {
-    const query = c.pagination.parse(req.query);
-    const items = await db.select().from(t.projects).where(eq(t.projects.ownerId, ownerId(res)))
-      .orderBy(desc(t.projects.createdAt), desc(t.projects.id))
+    const query = c.projectQuery.parse(req.query);
+    const filters = [
+      eq(t.projects.ownerId, ownerId(res)),
+      query.status === 'ALL' ? undefined : eq(t.projects.status, query.status),
+      query.industry ? ilike(t.projects.industry, query.industry) : undefined,
+      query.category ? ilike(t.projects.category, query.category) : undefined,
+      query.search ? or(ilike(t.projects.name, `%${query.search}%`),
+        ilike(t.projects.productDescription, `%${query.search}%`),
+        ilike(t.projects.problemStatement, `%${query.search}%`)) : undefined,
+    ].filter(Boolean);
+    const sortColumn = query.sort === 'name' ? t.projects.name
+      : query.sort === 'updatedAt' ? t.projects.updatedAt : t.projects.createdAt;
+    const sort = query.order === 'asc' ? asc : desc;
+    const items = await db.select().from(t.projects).where(and(...filters))
+      .orderBy(sort(sortColumn), sort(t.projects.id))
       .limit(query.limit).offset((query.page - 1) * query.limit);
-    return success(res, { items, pagination: query });
+    return success(res, { items, pagination: { page: query.page, limit: query.limit },
+      filters: { status: query.status, industry: query.industry ?? null, category: query.category ?? null,
+        search: query.search ?? null, sort: query.sort, order: query.order } });
   }));
   app.get('/api/projects/:id', route(async (req, res, service) => success(res, await service.project(paramId(req)))));
   app.patch('/api/projects/:id', route(async (req, res, service) => {
@@ -110,6 +124,16 @@ export function createApp(deps: {
     if (!deleted) throw new ApiError(404, 'NOT_FOUND', 'Project not found.');
     return success(res, { deleted: true, id });
   }));
+  const changeProjectStatus = (status: 'ACTIVE' | 'ARCHIVED') => route(async (req, res) => {
+    emptyBody.parse(req.body ?? {});
+    const id = paramId(req);
+    const [project] = await db.update(t.projects).set({ status, updatedAt: new Date() })
+      .where(and(eq(t.projects.id, id), eq(t.projects.ownerId, ownerId(res)))).returning();
+    if (!project) throw new ApiError(404, 'NOT_FOUND', 'Project not found.');
+    return success(res, project);
+  });
+  app.post('/api/projects/:id/archive', changeProjectStatus('ARCHIVED'));
+  app.post('/api/projects/:id/restore', changeProjectStatus('ACTIVE'));
   app.post('/api/projects/:id/analyze', aiLimit, route(async (req, res, service) => {
     const id = paramId(req);
     const project = await service.project(id);

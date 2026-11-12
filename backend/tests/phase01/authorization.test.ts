@@ -66,6 +66,8 @@ function projectOperations(id: string): Operation[] {
     ['get', `/api/projects/${id}`],
     ['patch', `/api/projects/${id}`, { name: 'Must not change' }],
     ['delete', `/api/projects/${id}`],
+    ['post', `/api/projects/${id}/archive`],
+    ['post', `/api/projects/${id}/restore`],
     ['post', `/api/projects/${id}/analyze`, {}],
     ['get', `/api/projects/${id}/analysis`],
     ['get', `/api/projects/${id}/analyses`],

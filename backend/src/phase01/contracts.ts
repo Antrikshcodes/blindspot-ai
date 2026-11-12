@@ -15,11 +15,18 @@ export const projectInput = z.object({
   name: text(100), productDescription: text(4000),
   problemStatement: text(4000).min(20), targetAudience: text(1000).min(5),
   proposedSolution: text(4000), existingAlternatives: z.array(text(300)).max(20).default([]),
+  industry: text(100).default('General'), category: text(100).default('General'),
+  technicalRequirements: z.array(text(200)).max(20).default([]),
 }).strict();
 // Zod 4 applies nested defaults through .partial(); omit the create-only default
 // so an unrelated edit cannot silently erase existing alternatives.
-export const projectPatch = projectInput.omit({ existingAlternatives: true }).partial().extend({
+export const projectPatch = projectInput.omit({
+  existingAlternatives: true, industry: true, category: true, technicalRequirements: true,
+}).partial().extend({
   existingAlternatives: z.array(text(300)).max(20).optional(),
+  industry: text(100).optional(), category: text(100).optional(),
+  technicalRequirements: z.array(text(200)).max(20).optional(),
+  status: z.enum(['ACTIVE', 'ARCHIVED']).optional(),
 }).strict().refine(value => Object.keys(value).length > 0);
 export const analysisInput = z.object({
   marketContext: text(4000).optional(), additionalContext: text(6000).optional(),
@@ -96,6 +103,12 @@ export const requirementsOutput = z.object({
 export const pagination = z.object({
   page: z.coerce.number().int().min(1).max(10000).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
+}).strict();
+export const projectQuery = pagination.extend({
+  status: z.enum(['ACTIVE', 'ARCHIVED', 'ALL']).default('ACTIVE'),
+  industry: text(100).optional(), category: text(100).optional(), search: text(150).optional(),
+  sort: z.enum(['createdAt', 'updatedAt', 'name']).default('createdAt'),
+  order: z.enum(['asc', 'desc']).default('desc'),
 }).strict();
 export const resourceQuery = pagination.extend({
   category: resourceCategory.optional(), saved: z.enum(['true', 'false']).optional(),

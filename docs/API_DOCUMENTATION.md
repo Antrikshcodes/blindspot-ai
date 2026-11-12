@@ -139,9 +139,11 @@ database, provider or credential details.
 | --- | --- | --- | --- |
 | GET | `/api/health` | None | status/database/service; 503 if DB is unreachable |
 | POST | `/api/projects` | Project fields below | Created project, 201 |
-| GET | `/api/projects` | page/limit | Paginated projects |
+| GET | `/api/projects` | page/limit, status, industry, category, search, sort, order | Paginated owner projects; defaults to active, newest first |
 | GET | `/api/projects/:id` | UUID | Project |
-| PATCH | `/api/projects/:id` | Nonempty subset of project fields | Updated project; omitted fields preserved |
+| PATCH | `/api/projects/:id` | Nonempty subset of project fields, including status | Updated project; omitted fields preserved |
+| POST | `/api/projects/:id/archive` | `{}` | Archives the owned project while preserving history |
+| POST | `/api/projects/:id/restore` | `{}` | Restores an archived owned project |
 | DELETE | `/api/projects/:id` | UUID | `{deleted:true,id}`; cascades project-owned records, not global sources |
 | POST | `/api/projects/:id/analyze` | `{}` or `{marketContext}` | New versioned analysis + ranked UNTESTED assumptions, 201 |
 | GET | `/api/projects/:id/analysis` | UUID | Latest analysis with assumptions; 404 before first analysis |
@@ -158,12 +160,15 @@ Project creation:
   "problemStatement": "A specific recurring problem described in at least twenty characters.",
   "targetAudience": "A concrete audience segment",
   "proposedSolution": "The proposed approach.",
-  "existingAlternatives": ["Current workaround"]
+  "existingAlternatives": ["Current workaround"],
+  "industry": "Education",
+  "category": "Marketplace",
+  "technicalRequirements": ["React", "PostgreSQL"]
 }
 ```
 
 Limits: name 100, product/problem/solution 4000, audience 1000 characters.
-Alternatives default to an empty array, maximum 20 × 300 characters.
+Alternatives default to an empty array, maximum 20 × 300 characters. Industry and category default to `General` (100 characters each); technical requirements default to an empty array, maximum 20 × 200 characters. Project status defaults to `ACTIVE`; list filters accept `ACTIVE`, `ARCHIVED`, or `ALL`, case-insensitive industry/category, and a name/problem/description search. Sort by `createdAt`, `updatedAt`, or `name` with `asc`/`desc` order. Archive and restore do not delete any related history.
 Analysis market context is optional, maximum 4000 characters.
 Analysis clarity/assumptions/next steps come from validated AI JSON. Impact and
 uncertainty are 1–5. Server-owned risk score = impact × uncertainty; HIGH ≥16,

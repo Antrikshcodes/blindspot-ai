@@ -28,6 +28,36 @@ describe('Project and validation API with isolated PostgreSQL', () => {
     expect(response.status).toBe(200);
     expect(response.body.data.database).toBe('connected');
   });
+  it('filters, sorts, archives and restores projects without deleting their data', async () => {
+    const created = await request(app).post('/api/projects').send(projectInput);
+    expect(created.status).toBe(201);
+    const id = created.body.data.id;
+    const edited = await request(app).patch(`/api/projects/${id}`).send({
+      industry: 'Education', category: 'Marketplace', technicalRequirements: ['React', 'PostgreSQL'],
+    });
+    expect(edited.status).toBe(200);
+    expect(edited.body.data).toMatchObject({ industry: 'Education', category: 'Marketplace',
+      technicalRequirements: ['React', 'PostgreSQL'], status: 'ACTIVE' });
+
+    const filtered = await request(app).get('/api/projects?industry=education&category=marketplace&search=students&sort=name&order=asc');
+    expect(filtered.status).toBe(200);
+    expect(filtered.body.data.items.map((project: any) => project.id)).toContain(id);
+    expect((await request(app).get('/api/projects?industry=finance')).body.data.items.map((p: any) => p.id)).not.toContain(id);
+
+    const archived = await request(app).post(`/api/projects/${id}/archive`).send({});
+    expect(archived.status).toBe(200);
+    expect(archived.body.data.status).toBe('ARCHIVED');
+    expect((await request(app).get('/api/projects')).body.data.items.map((p: any) => p.id)).not.toContain(id);
+    expect((await request(app).get('/api/projects?status=ARCHIVED')).body.data.items.map((p: any) => p.id)).toContain(id);
+    expect((await request(app).get(`/api/projects/${id}`)).status).toBe(200);
+
+    const restored = await request(app).post(`/api/projects/${id}/restore`).send({});
+    expect(restored.status).toBe(200);
+    expect(restored.body.data.status).toBe('ACTIVE');
+    expect((await request(app).get('/api/projects?status=ALL')).body.data.items.map((p: any) => p.id)).toContain(id);
+    await request(app).delete(`/api/projects/${id}`);
+    expect((await request(app).get('/api/projects?status=invalid')).status).toBe(400);
+  });
   it('rejects missing fields, extra fields, malformed JSON and oversized payloads', async () => {
     expect((await request(app).post('/api/projects').send({})).status).toBe(400);
     expect((await request(app).post('/api/projects').send({ ...projectInput, id: 'spoof' })).status).toBe(400);
