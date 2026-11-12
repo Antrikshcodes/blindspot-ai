@@ -76,6 +76,11 @@ describe('Project analysis history', () => {
     expect(old.body.data.assumptions[0].status).toBe('SUPPORTED');
     const assumptions = await request(fresh).get(`/api/analyses/${originalId}/assumptions`);
     expect(assumptions.body.data.items[0].evidenceRecords.length).toBeGreaterThan(0);
+    const projectAssumptions = await request(fresh).get(`/api/projects/${projectId}/assumptions?limit=10`);
+    expect(projectAssumptions.status).toBe(200);
+    expect(projectAssumptions.body.data.pagination.total).toBe(1);
+    expect(projectAssumptions.body.data.items[0]).toMatchObject({ id: assumptionId, analysisVersion: 1 });
+    expect(projectAssumptions.body.data.items[0].evidenceRecords.length).toBeGreaterThan(0);
     expect(await storage.db.select().from(t.assumptionEvidence)).toEqual(reviewed);
   });
   it('keeps snapshots, evidence and review states intact when a new analysis is created', async () => {
@@ -92,10 +97,20 @@ describe('Project analysis history', () => {
     expect(old.body.data.assumptions[0].status).toBe('SUPPORTED');
     expect(await storage.db.select().from(t.assumptionEvidence)).toEqual(reviewed);
     expect((await storage.db.select().from(t.assumptions).where(eq(t.assumptions.id, assumptionId)))[0].status).toBe('SUPPORTED');
+    const allAssumptions = await request(app).get(`/api/projects/${projectId}/assumptions?limit=10`);
+    expect(allAssumptions.body.data.pagination.total).toBe(4);
+    expect(allAssumptions.body.data.items.map((row: { analysisVersion: number }) => row.analysisVersion))
+      .toEqual([35, 35, 35, 1]);
+    const questionAlias = await request(app).get(`/api/projects/${projectId}/interview-questions`);
+    expect(questionAlias.status).toBe(200);
+    expect(questionAlias.body.data).toMatchObject({ projectId, version: 35, available: true });
   });
   it('returns an empty list for an owned project without analyses and validates pagination', async () => {
     const empty = await request(app).get(`/api/projects/${emptyProjectId}/analyses`);
     expect(empty.status).toBe(200);
+    expect((await request(app).get(`/api/projects/${emptyProjectId}/assumptions`)).body.data)
+      .toEqual({ items: [], pagination: { page: 1, limit: 20, total: 0 } });
+    expect((await request(app).get(`/api/projects/${emptyProjectId}/interview-questions`)).status).toBe(404);
     expect(empty.body.data).toEqual({ items: [], pagination: { page: 1, limit: 20 } });
     for (const query of ['page=0', 'page=1.5', 'page=10001', 'limit=0', 'limit=101', 'limit=no', 'unknown=1']) {
       expect((await request(app).get(`/api/projects/${projectId}/analyses?${query}`)).status).toBe(400);

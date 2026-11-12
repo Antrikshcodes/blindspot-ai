@@ -5,7 +5,7 @@ import pinoHttp from 'pino-http';
 import { rateLimit } from 'express-rate-limit';
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
-import { and, asc, desc, eq, ilike, inArray, or, sql } from 'drizzle-orm';
+import { and, asc, count, desc, eq, ilike, inArray, or, sql } from 'drizzle-orm';
 import type { Database } from './db/client.js';
 import * as t from './db/schema.js';
 import * as c from './contracts.js';
@@ -148,6 +148,15 @@ export function createApp(deps: {
     return success(res, analysis, 201);
   }));
   app.get('/api/projects/:id/analysis', route(async (req, res, service) => success(res, await service.latest(paramId(req)))));
+  app.get('/api/projects/:id/interview-questions', route(async (req, res, service, analysisService) => {
+    const projectId = paramId(req);
+    await service.project(projectId);
+    const [latest] = await db.select({ id: t.analyses.id }).from(t.analyses)
+      .where(eq(t.analyses.projectId, projectId))
+      .orderBy(desc(t.analyses.version), desc(t.analyses.id)).limit(1);
+    if (!latest) throw new ApiError(404, 'NOT_FOUND', 'Project has no analysis history.');
+    return success(res, await analysisService.artifact(latest.id, 'interviewQuestions'));
+  }));
   app.get('/api/projects/:id/analyses', route(async (req, res, service) => {
     const id = paramId(req);
     await service.project(id);
@@ -159,6 +168,25 @@ export function createApp(deps: {
       .orderBy(desc(t.analyses.version), desc(t.analyses.id))
       .limit(query.limit).offset((query.page - 1) * query.limit);
     return success(res, { items, pagination: query });
+  }));
+  app.get('/api/projects/:id/assumptions', route(async (req, res, service) => {
+    const projectId = paramId(req);
+    await service.project(projectId);
+    const query = c.pagination.parse(req.query);
+    const where = eq(t.analyses.projectId, projectId);
+    const rows = await db.select({ assumption: t.assumptions, analysisVersion: t.analyses.version })
+      .from(t.assumptions).innerJoin(t.analyses, eq(t.assumptions.analysisId, t.analyses.id))
+      .where(where).orderBy(desc(t.analyses.version), desc(t.assumptions.riskScore), desc(t.assumptions.id))
+      .limit(query.limit).offset((query.page - 1) * query.limit);
+    const [total] = await db.select({ value: count() }).from(t.assumptions)
+      .innerJoin(t.analyses, eq(t.assumptions.analysisId, t.analyses.id)).where(where);
+    const evidenceRecords = rows.length ? await db.select().from(t.evidence)
+      .where(inArray(t.evidence.assumptionId, rows.map(row => row.assumption.id))) : [];
+    return success(res, {
+      items: rows.map(({ assumption, analysisVersion }) => ({ ...assumption, analysisVersion,
+        evidenceRecords: evidenceRecords.filter(record => record.assumptionId === assumption.id) })),
+      pagination: { ...query, total: Number(total?.value ?? 0) },
+    });
   }));
   app.get('/api/analyses/:id', route(async (req, res, service) => success(res, await service.analysis(paramId(req)))));
   app.get('/api/analyses/:id/blindspots', route(async (req, res, _service, analysisService) =>

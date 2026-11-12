@@ -70,6 +70,8 @@ function projectOperations(id: string): Operation[] {
     ['post', `/api/projects/${id}/restore`],
     ['post', `/api/projects/${id}/analyze`, {}],
     ['get', `/api/projects/${id}/analysis`],
+    ['get', `/api/projects/${id}/assumptions`],
+    ['get', `/api/projects/${id}/interview-questions`],
     ['get', `/api/projects/${id}/analyses`],
     ['post', `/api/projects/${id}/interviews`, { participant: 'Attacker' }],
     ['get', `/api/projects/${id}/interviews`],

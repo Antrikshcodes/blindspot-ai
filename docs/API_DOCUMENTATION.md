@@ -147,6 +147,9 @@ database, provider or credential details.
 | DELETE | `/api/projects/:id` | UUID | `{deleted:true,id}`; cascades project-owned records, not global sources |
 | POST | `/api/projects/:id/analyze` | `{}` or `{marketContext}` | New versioned analysis + ranked UNTESTED assumptions, 201 |
 | GET | `/api/projects/:id/analysis` | UUID | Latest analysis with assumptions; 404 before first analysis |
+| GET | `/api/projects/:id/analyses` | page/limit | Owner-scoped version history, newest first |
+| GET | `/api/projects/:id/assumptions` | page/limit | Assumptions across every project analysis, with version and linked evidence |
+| GET | `/api/projects/:id/interview-questions` | UUID | Compatibility alias for questions from the latest analysis |
 | GET | `/api/analyses/:id` | UUID | That analysis and assumptions |
 | GET | `/api/analyses/:id/assumptions` | page/limit | Ranked assumptions with evidenceRecords |
 | PATCH | `/api/assumptions/:id` | `{status,evidenceIds?}` | Updated assumption; transition/evidence rules below |
