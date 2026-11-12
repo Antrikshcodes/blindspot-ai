@@ -1,0 +1,54 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: blindspot-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: blindspot_user
+      POSTGRES_PASSWORD: blindspot_secure_password
+      POSTGRES_DB: blindspot_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U blindspot_user -d blindspot_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: blindspot-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://blindspot_user:blindspot_secure_password@postgres:5432/blindspot_db
+      CORS_ORIGIN: "http://localhost:5173,http://localhost:80,http://127.0.0.1:80"
+      AI_PROVIDER: disabled
+      API_RATE_LIMIT: 240
+    ports:
+      - "3000:3000"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: blindspot-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      VITE_API_BASE_URL: http://localhost:3000
+    ports:
+      - "80:80"
+
+volumes:
+  postgres_data:
+    driver: local
