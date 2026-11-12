@@ -21,6 +21,7 @@ export const sentimentEnum = platform.enum('evidence_sentiment', ['SUPPORTING', 
 export const experimentStatusEnum = platform.enum('experiment_status', ['PLANNED', 'IN_PROGRESS', 'COMPLETED', 'ABANDONED']);
 export const savedStatusEnum = platform.enum('saved_status', ['CONSIDERING', 'TRYING', 'INTEGRATED']);
 export const projectStatusEnum = platform.enum('project_status', ['ACTIVE', 'ARCHIVED']);
+export const interviewStatusEnum = platform.enum('interview_status', ['IN_PROGRESS', 'COMPLETED']);
 export const projects = platform.table('projects', {
   id: key(),
   // NULL quarantines pre-authentication records; no automatic claiming/backfill.
@@ -63,14 +64,30 @@ export const assumptions = platform.table('assumptions', {
 export const interviews = platform.table('interview_sessions', {
   id: key(), projectId: uuid('project_id').notNull().references(() => projects.id, { onDelete: 'cascade' }),
   participant: text('participant').notNull(),
+  participantContext: text('participant_context'),
+  status: interviewStatusEnum('status').notNull().default('IN_PROGRESS'),
+  completedAt: timestamp('completed_at', { withTimezone: true }),
   sourceAnalysisVersion: integer('source_analysis_version'),
   questions: jsonb('questions').$type<Array<{ assumptionId: string; question: string; listenFor: string }>>().notNull(),
-  createdAt: created(),
-}, t => [index('interview_project_idx').on(t.projectId)]);
+  createdAt: created(), updatedAt: updated(),
+}, t => [index('interview_project_idx').on(t.projectId), index('interview_project_status_idx').on(t.projectId, t.status)]);
 export const feedback = platform.table('interview_feedback', {
   id: key(), interviewId: uuid('interview_id').notNull().references(() => interviews.id, { onDelete: 'cascade' }),
   notes: text('notes').notNull(), createdAt: created(),
 }, t => [index('feedback_interview_idx').on(t.interviewId)]);
+export const interviewResponses = platform.table('interview_responses', {
+  id: key(),
+  interviewId: uuid('interview_id').notNull().references(() => interviews.id, { onDelete: 'cascade' }),
+  questionIndex: integer('question_index').notNull(),
+  assumptionId: uuid('assumption_id').notNull().references(() => assumptions.id, { onDelete: 'cascade' }),
+  answer: text('answer').notNull(),
+  sourceFeedbackId: uuid('source_feedback_id').references(() => feedback.id, { onDelete: 'set null' }),
+  createdAt: created(), updatedAt: updated(),
+}, t => [
+  uniqueIndex('interview_response_question_unique').on(t.interviewId, t.questionIndex),
+  index('interview_response_assumption_idx').on(t.assumptionId),
+  check('interview_response_question_index_valid', sql`${t.questionIndex} >= 0`),
+]);
 export const evidence = platform.table('evidence_records', {
   id: key(), feedbackId: uuid('feedback_id').notNull().references(() => feedback.id, { onDelete: 'cascade' }),
   assumptionId: uuid('assumption_id').notNull().references(() => assumptions.id, { onDelete: 'cascade' }),

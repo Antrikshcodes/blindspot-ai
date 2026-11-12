@@ -189,8 +189,11 @@ human judgment, not an automatic AI certification.
 
 | Method | Path | Request | Response data |
 | --- | --- | --- | --- |
-| POST | `/api/projects/:id/interviews` | `{participant:"alias"}` | Session with non-leading mapped questions, 201 |
+| POST | `/api/projects/:id/interviews` | `{participant,participantContext?}` | In-progress session with mapped questions, 201 |
 | GET | `/api/projects/:id/interviews` | page/limit | Sessions |
+| GET | `/api/interviews/:id` | UUID | Session, answered/unanswered question states, responses and progress |
+| PATCH | `/api/interviews/:id` | participant?, participantContext?, status? | Update in-progress session; completion requires every question answered |
+| PUT | `/api/interviews/:id/responses/:questionIndex` | `{assumptionId,answer,sourceFeedbackId?}` | Upsert an answer linked to its generated question and optional same-session feedback |
 | POST | `/api/interviews/:id/feedback` | `{notes,assumptionIds?}` | Original feedback record, 201 |
 | GET | `/api/interviews/:id/feedback` | page/limit | Paginated original feedback records, newest first |
 | POST | `/api/projects/:id/feedback/analyze` | `{}` | Versioned summary + evidenceRecords + reviewRequired, 201 |
@@ -199,7 +202,12 @@ human judgment, not an automatic AI certification.
 | GET | `/api/projects/:id/experiments` | page/limit | Experiments |
 | PATCH | `/api/experiments/:id` | `{status,observedResult?}` | Updated experiment |
 
-Participant: 1–150 characters; use an alias, not sensitive personal details.
+Participant: 1–150 characters; use an alias, not sensitive personal details. Participant
+context is optional and limited to 1000 characters. Responses are 1–30000 characters,
+upserted by question index, and must use that question's exact assumption ID. Optional
+source feedback must belong to the same session. Session status starts at IN_PROGRESS;
+COMPLETED requires an answer for every generated question. Completed sessions are
+read-only; the original feedback-note endpoints and raw notes remain unchanged.
 Notes: 10–30000 characters, up to 30 same-project assumption IDs. Manual
 associations are neutral evidence, not an inferred supporting sentiment.
 Feedback analysis requires an existing analysis and actual notes. Quote and

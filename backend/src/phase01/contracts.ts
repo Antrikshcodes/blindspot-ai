@@ -46,7 +46,14 @@ export const interviewOutput = z.object({
     assumptionId: id, question: text(500), listenFor: text(1000),
   }).strict()).min(1).max(20),
 }).strict();
-export const interviewInput = z.object({ participant: text(150) }).strict();
+export const interviewInput = z.object({ participant: text(150), participantContext: text(1000).optional() }).strict();
+export const interviewPatch = z.object({
+  participant: text(150).optional(), participantContext: text(1000).nullable().optional(),
+  status: z.enum(['IN_PROGRESS', 'COMPLETED']).optional(),
+}).strict().refine(value => Object.keys(value).length > 0);
+export const interviewResponseInput = z.object({
+  assumptionId: id, answer: text(30000).min(1), sourceFeedbackId: id.optional(),
+}).strict();
 export const feedbackInput = z.object({
   notes: text(30000).min(10), assumptionIds: z.array(id).max(30).default([]),
 }).strict();

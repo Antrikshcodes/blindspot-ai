@@ -7,7 +7,7 @@ import * as t from '../../src/phase01/db/schema.js';
 import { FixtureLLM, isolatedDatabase, projectInput, resourceFixture } from './fixtures.js';
 import { sessionToken, testAuth, testOrigin, testOwner } from './auth.fixtures.js';
 
-type Method = 'get' | 'post' | 'patch' | 'delete';
+type Method = 'get' | 'post' | 'put' | 'patch' | 'delete';
 type Operation = [Method, string, Record<string, unknown>?];
 let storage: Awaited<ReturnType<typeof isolatedDatabase>>;
 let app: ReturnType<typeof createApp>;
@@ -96,6 +96,9 @@ function childOperations(): Operation[] {
     ['get', `/api/analyses/${analysisId}/summary`],
     ['get', `/api/analyses/${analysisId}/assumptions`],
     ['patch', `/api/assumptions/${assumptionId}`, { status: 'TESTING' }],
+    ['get', `/api/interviews/${interviewId}`],
+    ['patch', `/api/interviews/${interviewId}`, { participantContext: 'Attacker' }],
+    ['put', `/api/interviews/${interviewId}/responses/0`, { assumptionId, answer: 'Attacker response.' }],
     ['post', `/api/interviews/${interviewId}/feedback`, { notes: 'Unauthorized note.', assumptionIds: [] }],
     ['get', `/api/interviews/${interviewId}/feedback`],
     ['patch', `/api/experiments/${experimentId}`, { status: 'IN_PROGRESS' }],

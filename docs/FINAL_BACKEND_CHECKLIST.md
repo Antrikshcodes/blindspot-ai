@@ -53,10 +53,10 @@ verification. The latest baseline was 121 active and 28 retained legacy tests.
 
 ### Interviews
 
-- [ ] Add session detail/update and lifecycle/completion tracking.
-- [ ] Add participant context without replacing original participant labels/notes.
-- [ ] Store individual responses with question/assumption/source associations.
-- [ ] Track answered/unanswered questions and reject cross-project references.
+- [x] Add session detail/update and IN_PROGRESS/COMPLETED lifecycle; completion requires all questions answered and completed sessions are read-only.
+- [x] Add optional participant context while preserving participant aliases and original notes.
+- [x] Store one updatable response per generated question, validate its exact assumption link, and optionally link same-session feedback.
+- [x] Return answered/unanswered progress and reject mismatched question/assumption IDs, foreign-session feedback and cross-owner operations.
 - [ ] Preserve existing raw-feedback endpoint and long-note behavior.
 
 ### Feedback and evidence

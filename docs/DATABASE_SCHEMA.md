@@ -7,7 +7,9 @@ Clerk subject, with editable display name and timestamps; role is not client
 writable and is derived by the server from `ADMIN_USER_IDS`. Migration
 `0008_project_catalog_and_archive.sql` adds industry, category, user-declared
 technical requirements, and `ACTIVE`/`ARCHIVED` status to projects, with
-owner/status indexing. Existing projects receive non-destructive defaults.
+owner/status indexing. Migration `0009_interview_responses_and_lifecycle.sql` adds
+participant context, session completion state, and one source-linked response per
+generated question. Existing rows receive non-destructive defaults.
 
 ## Phase 03 additions
 
@@ -47,7 +49,8 @@ active persistence layer. No SQLite data has been deleted or silently imported.
 | projects | Owner, product/problem/audience/solution, alternatives, industry/category, technical requirements, ACTIVE/ARCHIVED status and timestamps |
 | analyses | Many per project; project-input snapshot, market context, structured output, model provenance |
 | assumptions | Many per analysis; category, independent 1–5 impact/uncertainty, computed risk, explanation/evidence/validation method, status |
-| interview_sessions | Many per project; participant alias, generated mapped questions |
+| interview_sessions | Many per project; participant alias/context, mapped questions, IN_PROGRESS/COMPLETED lifecycle |
+| interview_responses | One per session/question index; exact assumption link, raw answer, optional same-session feedback source |
 | interview_feedback | Many per session; original notes, never overwritten by AI |
 | evidence_records | Feedback-to-assumption quote links with sentiment, reasoning and origin; one feedback record can relate to many assumptions |
 | assumption_evidence | Records explicit evidence IDs cited when a person requests an outcome status |

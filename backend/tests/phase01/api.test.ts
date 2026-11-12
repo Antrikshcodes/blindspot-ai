@@ -10,7 +10,7 @@ import { isolatedDatabase, FixtureLLM, projectInput, resourceFixture } from './f
 let storage: Awaited<ReturnType<typeof isolatedDatabase>>;
 let app: ReturnType<typeof createApp>;
 let projectId: string; let analysisId: string; let assumptionId: string; let interviewId: string;
-let resourceId: string; let evidenceId: string; let experimentId: string;
+let resourceId: string; let evidenceId: string; let experimentId: string; let feedbackId: string;
 const llm = new FixtureLLM();
 const provider: Provider = {
   name: 'github', enabled: true, categories: ['GITHUB_REPOSITORY'],
@@ -120,7 +120,7 @@ describe('Project and validation API with isolated PostgreSQL', () => {
       notes: 'Last week I interviewed three people and tracked their examples in a spreadsheet.',
       assumptionIds: [assumptionId],
     });
-    expect(feedback.status).toBe(201);
+    expect(feedback.status).toBe(201); feedbackId = feedback.body.data.id;
     const persisted = await request(app).get(`/api/interviews/${interviewId}/feedback?limit=1&page=1`);
     expect(persisted.status).toBe(200);
     expect(persisted.body.data.items[0]).toEqual(feedback.body.data);
@@ -135,6 +135,43 @@ describe('Project and validation API with isolated PostgreSQL', () => {
     const [unchanged] = await storage.db.select().from(assumptions).where(eq(assumptions.id, assumptionId));
     expect(unchanged.status).toBe('TESTING');
     expect((await request(app).get(`/api/projects/${projectId}/feedback/summary`)).body.data.result.evidence).toHaveLength(1);
+  });
+  it('stores question-mapped responses, source links and a complete interview lifecycle', async () => {
+    const initial = await request(app).get(`/api/interviews/${interviewId}`);
+    expect(initial.status).toBe(200);
+    expect(initial.body.data).toMatchObject({ status: 'IN_PROGRESS', participant: 'Participant alias' });
+    expect(initial.body.data.answerProgress).toEqual({ answered: 0, total: 8, unanswered: 8 });
+    expect((await request(app).patch(`/api/interviews/${interviewId}`).send({
+      participantContext: 'Student founder; remote call',
+    })).body.data.participantContext).toBe('Student founder; remote call');
+
+    const firstQuestion = initial.body.data.questions[0];
+    const responsePath = `/api/interviews/${interviewId}/responses/0`;
+    expect((await request(app).put(responsePath).send({ assumptionId: projectId, answer: 'A mismatched assumption.' })).status).toBe(400);
+    expect((await request(app).put(responsePath).send({ assumptionId: firstQuestion.assumptionId,
+      answer: 'I used a spreadsheet yesterday.', sourceFeedbackId: projectId })).status).toBe(404);
+    const first = await request(app).put(responsePath).send({ assumptionId: firstQuestion.assumptionId,
+      answer: 'I used a spreadsheet yesterday.', sourceFeedbackId: feedbackId });
+    expect(first.status).toBe(200);
+    expect((await request(app).patch(`/api/interviews/${interviewId}`).send({ status: 'COMPLETED' })).body.error.code)
+      .toBe('QUESTIONS_UNANSWERED');
+
+    for (const question of initial.body.data.questions.slice(1)) {
+      const saved = await request(app).put(`/api/interviews/${interviewId}/responses/${question.index}`).send({
+        assumptionId: question.assumptionId, answer: `Answer for question ${question.index}.`,
+      });
+      expect(saved.status).toBe(200);
+    }
+    const detail = await request(app).get(`/api/interviews/${interviewId}`);
+    expect(detail.body.data.answerProgress).toEqual({ answered: 8, total: 8, unanswered: 0 });
+    expect(detail.body.data.questions.every((question: { answered: boolean }) => question.answered)).toBe(true);
+    expect(detail.body.data.questions[0].response.sourceFeedbackId).toBe(feedbackId);
+
+    const completed = await request(app).patch(`/api/interviews/${interviewId}`).send({ status: 'COMPLETED' });
+    expect(completed.status).toBe(200);
+    expect(completed.body.data.status).toBe('COMPLETED');
+    expect(completed.body.data.completedAt).toBeTruthy();
+    expect((await request(app).put(responsePath).send({ assumptionId: firstQuestion.assumptionId, answer: 'Late edit.' })).status).toBe(409);
   });
   it('rejects fabricated quotes without saving a summary', async () => {
     const invalidLLM = {

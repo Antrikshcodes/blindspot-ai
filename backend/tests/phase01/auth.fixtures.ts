@@ -34,6 +34,7 @@ export function authenticatedRequest(app: Parameters<typeof supertest>[0]) {
     get: (path: string) => agent.get(path).set(headers),
     post: (path: string) => agent.post(path).set(headers),
     patch: (path: string) => agent.patch(path).set(headers),
+    put: (path: string) => agent.put(path).set(headers),
     delete: (path: string) => agent.delete(path).set(headers),
   };
 }

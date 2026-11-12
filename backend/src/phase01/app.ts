@@ -214,6 +214,70 @@ export function createApp(deps: {
       .orderBy(desc(t.interviews.createdAt), desc(t.interviews.id)).limit(query.limit).offset((query.page - 1) * query.limit);
     return success(res, { items, pagination: query });
   }));
+  app.get('/api/interviews/:id', route(async (req, res, service) => {
+    const id = paramId(req);
+    const [interview] = await db.select().from(t.interviews).where(eq(t.interviews.id, id));
+    if (!interview) throw new ApiError(404, 'NOT_FOUND', 'Interview not found.');
+    await service.project(interview.projectId);
+    const responses = await db.select().from(t.interviewResponses)
+      .where(eq(t.interviewResponses.interviewId, id)).orderBy(asc(t.interviewResponses.questionIndex));
+    const byIndex = new Map(responses.map(response => [response.questionIndex, response]));
+    const questions = interview.questions.map((question, index) => ({
+      index, ...question, answered: byIndex.has(index), response: byIndex.get(index) ?? null,
+    }));
+    return success(res, { ...interview, questions, responses,
+      answerProgress: { answered: responses.length, total: interview.questions.length,
+        unanswered: interview.questions.length - responses.length } });
+  }));
+  app.patch('/api/interviews/:id', route(async (req, res, service) => {
+    const id = paramId(req); const input = c.interviewPatch.parse(req.body);
+    const [interview] = await db.select().from(t.interviews).where(eq(t.interviews.id, id));
+    if (!interview) throw new ApiError(404, 'NOT_FOUND', 'Interview not found.');
+    await service.project(interview.projectId);
+    if (interview.status === 'COMPLETED') {
+      throw new ApiError(409, 'INTERVIEW_COMPLETED', 'Completed interview sessions are read-only.');
+    }
+    if (input.status === 'COMPLETED') {
+      const [result] = await db.select({ answered: count() }).from(t.interviewResponses)
+        .where(eq(t.interviewResponses.interviewId, id));
+      if (Number(result?.answered ?? 0) !== interview.questions.length) {
+        throw new ApiError(400, 'QUESTIONS_UNANSWERED', 'Answer every generated question before completing this interview.');
+      }
+    }
+    const [updated] = await db.update(t.interviews).set({ ...input,
+      completedAt: input.status === 'COMPLETED' ? new Date() : undefined, updatedAt: new Date(),
+    }).where(eq(t.interviews.id, id)).returning();
+    return success(res, updated);
+  }));
+  app.put('/api/interviews/:id/responses/:questionIndex', route(async (req, res, service) => {
+    const id = paramId(req); const questionIndex = z.coerce.number().int().min(0).max(19).parse(req.params.questionIndex);
+    const input = c.interviewResponseInput.parse(req.body);
+    const [interview] = await db.select().from(t.interviews).where(eq(t.interviews.id, id));
+    if (!interview) throw new ApiError(404, 'NOT_FOUND', 'Interview not found.');
+    await service.project(interview.projectId);
+    if (interview.status === 'COMPLETED') {
+      throw new ApiError(409, 'INTERVIEW_COMPLETED', 'Completed interview sessions are read-only.');
+    }
+    const question = interview.questions[questionIndex];
+    if (!question) throw new ApiError(400, 'QUESTION_NOT_FOUND', 'Question index is not part of this interview.');
+    if (question.assumptionId !== input.assumptionId) {
+      throw new ApiError(400, 'INTERVIEW_QUESTION_MISMATCH', 'Response assumption must match the selected interview question.');
+    }
+    if (input.sourceFeedbackId) {
+      const [source] = await db.select({ id: t.feedback.id }).from(t.feedback)
+        .where(and(eq(t.feedback.id, input.sourceFeedbackId), eq(t.feedback.interviewId, id)));
+      if (!source) throw new ApiError(404, 'NOT_FOUND', 'Source feedback not found for this interview.');
+    }
+    const [response] = await db.insert(t.interviewResponses).values({
+      interviewId: id, questionIndex, assumptionId: input.assumptionId,
+      answer: input.answer, sourceFeedbackId: input.sourceFeedbackId ?? null,
+    }).onConflictDoUpdate({
+      target: [t.interviewResponses.interviewId, t.interviewResponses.questionIndex],
+      set: { assumptionId: input.assumptionId, answer: input.answer,
+        sourceFeedbackId: input.sourceFeedbackId ?? null, updatedAt: new Date() },
+    }).returning();
+    return success(res, response);
+  }));
   app.post('/api/interviews/:id/feedback', route(async (req, res, service) =>
     success(res, await service.addFeedback(paramId(req), c.feedbackInput.parse(req.body)), 201)));
   app.get('/api/interviews/:id/feedback', route(async (req, res, service) => {
