@@ -9,9 +9,9 @@ are retained only as history; they are not a statement of current status.
   project archive/filtering, richer interview response lifecycle, evidence
   listing, experiment result synthesis, and project analytics are still listed
   as unfinished in [FINAL_BACKEND_CHECKLIST.md](FINAL_BACKEND_CHECKLIST.md).
-- Clerk ownership code and tests exist, but complete live sign-in, invalid and
-  expired session, cross-user isolation, and all nested-resource authorization
-  journeys have not been verified against a configured Clerk application.
+- Offline automated tests cover signed-token rejection, expiry, wrong origins,
+  cross-user isolation, and nested-resource authorization. Complete live browser
+  sign-in/session journeys against a configured Clerk application remain unverified.
 - Production hosting, TLS database connectivity, secrets, backups, restore,
   DNS, and post-deployment health have not been verified. Production deployment
   is manual and gated; no deployment was performed in this audit.

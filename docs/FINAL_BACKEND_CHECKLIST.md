@@ -38,11 +38,11 @@ verification. The latest baseline was 121 active and 28 retained legacy tests.
 ### Identity, authorization and user profile
 
 - [x] Clerk identity/ownership baseline merged; further extensions must reuse it.
-- [ ] Verify anonymous/expired/invalid identity rejection and two-user isolation.
-- [ ] Verify ownership through all nested IDs, history, evidence, resources and saves.
+- [x] Offline automated tests reject anonymous, expired, forged, malformed, future and wrong-origin identities and verify two-user isolation; live Clerk flows remain unverified.
+- [x] Offline automated tests cover ownership across project children, history, evidence, resources, search history and saves; live identity integration remains unverified.
 - [ ] Add/verify GET/PATCH user profile and server-controlled USER/ADMIN roles.
 - [ ] Document exact provider-backed auth flows and any non-equivalent REST routes.
-- [ ] Verify origin handling and retain fail-closed behavior until authorization passes.
+- [x] Offline tests cover allowed frontend-origin cookie writes, cross-site/originless write rejection, and fail-closed auth; live browser verification remains open.
 
 ### Projects and historical reads
 
