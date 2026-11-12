@@ -17,6 +17,7 @@ import { DashboardOverview } from './views/DashboardOverview';
 import { ProjectList } from './views/ProjectList';
 import { CreateProject } from './views/CreateProject';
 import { ProjectDetails } from './views/ProjectDetails';
+import { Settings } from './views/Settings';
 
 export const LandingPage: React.FC<{
   showIntro: boolean;
@@ -196,6 +197,18 @@ export const App: React.FC = () => {
             <ProtectedRoute>
               <AppLayout>
                 <ProjectDetails defaultTab="resources" />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Protected Account Settings Route */}
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <Settings />
               </AppLayout>
             </ProtectedRoute>
           }

@@ -16,6 +16,7 @@ import { ResourceSearchService } from './resource-intelligence/search.service.js
 import { resourceDTO } from './resource-intelligence/dto.js';
 import { ValidationService } from './validation/service.js';
 import { IdeaAnalysisService } from './analysis/service.js';
+import { NotificationService } from './notifications/service.js';
 import { authentication, ownerId, type AuthConfiguration } from './auth.js';
 import { CLERK_PROXY_PATH, clerkProxyMiddleware } from './middlewares/clerkProxyMiddleware.js';
 
@@ -35,6 +36,7 @@ export function createApp(deps: {
     void handler(req, res, new ValidationService(db, llm, owner), new IdeaAnalysisService(db, llm, owner)).catch(next);
   };
   const resources = new ResourceSearchService(db, llm, providers);
+  const notifications = new NotificationService(db);
   const app = express();
   app.disable('x-powered-by');
   app.set('trust proxy', 1);
@@ -68,6 +70,13 @@ export function createApp(deps: {
   app.post('/api/projects', route(async (req, res) => {
     const input = c.projectInput.parse(req.body);
     const [project] = await db.insert(t.projects).values({ ...input, ownerId: ownerId(res) }).returning();
+    await notifications.notify(ownerId(res), {
+      type: 'PROJECT_ACTIVITY',
+      title: 'Project Initialized',
+      message: `Project "${project.name}" was successfully created.`,
+      projectId: project.id,
+      actionUrl: `/projects/${project.id}`,
+    });
     return success(res, project, 201);
   }));
   app.get('/api/projects', route(async (req, res) => {
@@ -92,8 +101,19 @@ export function createApp(deps: {
     if (!deleted) throw new ApiError(404, 'NOT_FOUND', 'Project not found.');
     return success(res, { deleted: true, id });
   }));
-  app.post('/api/projects/:id/analyze', aiLimit, route(async (req, res, service) =>
-    success(res, await service.analyze(paramId(req), c.analysisInput.parse(req.body ?? {})), 201)));
+  app.post('/api/projects/:id/analyze', aiLimit, route(async (req, res, service) => {
+    const id = paramId(req);
+    const project = await service.project(id);
+    const analysis = await service.analyze(id, c.analysisInput.parse(req.body ?? {}));
+    await notifications.notify(ownerId(res), {
+      type: 'ANALYSIS_COMPLETED',
+      title: 'AI Analysis Completed',
+      message: `Phase 02 validation analysis completed for "${project.name}" (version ${analysis.version}).`,
+      projectId: project.id,
+      actionUrl: `/projects/${project.id}/analysis`,
+    });
+    return success(res, analysis, 201);
+  }));
   app.get('/api/projects/:id/analysis', route(async (req, res, service) => success(res, await service.latest(paramId(req)))));
   app.get('/api/projects/:id/analyses', route(async (req, res, service) => {
     const id = paramId(req);
@@ -167,8 +187,21 @@ export function createApp(deps: {
   }));
   app.patch('/api/experiments/:id', route(async (req, res, service) =>
     success(res, await service.updateExperiment(paramId(req), c.experimentPatch.parse(req.body)))));
-  app.post('/api/projects/:id/resources/search', aiLimit, route(async (req, res, service) =>
-    success(res, await resources.search(await service.project(paramId(req)), c.searchInput.parse(req.body ?? {})), 201)));
+  app.post('/api/projects/:id/resources/search', aiLimit, route(async (req, res, service) => {
+    const id = paramId(req);
+    const project = await service.project(id);
+    const searchRes = await resources.search(project, c.searchInput.parse(req.body ?? {}));
+    if (searchRes.items.length > 0) {
+      await notifications.notify(ownerId(res), {
+        type: 'RESOURCE_RECOMMENDATION',
+        title: 'Resources Discovered',
+        message: `Found ${searchRes.items.length} technical assets and models matching "${project.name}".`,
+        projectId: project.id,
+        actionUrl: `/projects/${project.id}/resources`,
+      });
+    }
+    return success(res, searchRes, 201);
+  }));
   app.get('/api/projects/:id/resources', route(async (req, res, service) => {
     const id = paramId(req); await service.project(id); const query = c.resourceQuery.parse(req.query);
     return success(res, { items: await resources.list(id, query), pagination: { page: query.page, limit: query.limit } });
@@ -221,6 +254,29 @@ export function createApp(deps: {
     await service.project(projectId);
     await db.delete(t.saves).where(and(eq(t.saves.projectId, projectId), eq(t.saves.resourceId, resourceId)));
     return success(res, { removedFromSaved: true });
+  }));
+  app.get('/api/notifications', route(async (req, res) => {
+    const query = c.notificationQuery.parse(req.query);
+    return success(res, await notifications.list(ownerId(res), query));
+  }));
+  app.patch('/api/notifications/:id/read', route(async (req, res) => {
+    return success(res, await notifications.markRead(ownerId(res), paramId(req)));
+  }));
+  app.post('/api/notifications/mark-all-read', route(async (_req, res) => {
+    return success(res, await notifications.markAllRead(ownerId(res)));
+  }));
+  app.delete('/api/notifications/:id', route(async (req, res) => {
+    return success(res, await notifications.dismiss(ownerId(res), paramId(req)));
+  }));
+  app.delete('/api/notifications', route(async (_req, res) => {
+    return success(res, await notifications.clearAll(ownerId(res)));
+  }));
+  app.get('/api/user/preferences', route(async (_req, res) => {
+    return success(res, await notifications.getPreferences(ownerId(res)));
+  }));
+  app.put('/api/user/preferences', route(async (req, res) => {
+    const input = c.userPreferencesInput.parse(req.body);
+    return success(res, await notifications.savePreferences(ownerId(res), input));
   }));
   app.use((_req, _res, next) => next(new ApiError(404, 'NOT_FOUND', 'Endpoint not found.')));
   app.use((error: unknown, req: Request, res: Response, _next: NextFunction) => {

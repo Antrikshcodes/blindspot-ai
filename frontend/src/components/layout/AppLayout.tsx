@@ -19,6 +19,7 @@ import {
 import { UserButton, useUser } from '@clerk/clerk-react';
 import { BrandLogo } from '../common/BrandLogo';
 import { FutureModuleModal } from '../common/FutureModuleModal';
+import { NotificationBell } from '../notifications/NotificationBell';
 
 interface NavItemDef {
   label: string;
@@ -35,7 +36,7 @@ const SIDEBAR_ITEMS: NavItemDef[] = [
   { label: 'Customer Discovery', icon: Compass, badge: 'Phase 3', isAction: true },
   { label: 'Experiments', icon: FlaskConical, badge: 'Phase 3', isAction: true },
   { label: 'Resource Intelligence', icon: Boxes, badge: 'Phase 3', isAction: true },
-  { label: 'Settings', icon: Settings, badge: 'Soon', isAction: true },
+  { label: 'Settings', path: '/settings', icon: Settings },
 ];
 
 export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -85,6 +86,7 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
     const p = location.pathname;
     if (p === '/dashboard') return [{ label: 'Dashboard', path: '/dashboard' }];
     if (p === '/projects') return [{ label: 'Projects', path: '/projects' }];
+    if (p === '/settings') return [{ label: 'Settings', path: '/settings' }];
     if (p === '/projects/new') {
       return [
         { label: 'Projects', path: '/projects' },
@@ -353,6 +355,9 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
                 <span className="sm:hidden">New</span>
               </button>
             )}
+
+            {/* In-App Notification Center Bell */}
+            <NotificationBell />
 
             {/* Header User Profile on desktop */}
             <div className="hidden sm:block">

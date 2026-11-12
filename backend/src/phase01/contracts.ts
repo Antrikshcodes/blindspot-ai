@@ -103,5 +103,69 @@ export const resourceQuery = pagination.extend({
   minRelevance: z.coerce.number().min(0).max(100).default(0),
   sort: z.enum(['relevance', 'lastUpdated']).default('relevance'),
 });
+export const notificationType = z.enum([
+  'ANALYSIS_COMPLETED',
+  'FEEDBACK_RECEIVED',
+  'CONTRADICTION_DETECTED',
+  'EXPERIMENT_UPDATE',
+  'RESOURCE_RECOMMENDATION',
+  'PROJECT_ACTIVITY',
+  'SYSTEM',
+]);
+export const notificationQuery = pagination.extend({
+  unreadOnly: z.enum(['true', 'false']).optional(),
+});
+export const userPreferencesInput = z.object({
+  notificationPreferences: z.object({
+    email: z.object({
+      analysisCompleted: z.boolean(),
+      feedbackReceived: z.boolean(),
+      contradictions: z.boolean(),
+      experimentUpdates: z.boolean(),
+      resourceAlerts: z.boolean(),
+      productAnnouncements: z.boolean(),
+    }).strict(),
+    inApp: z.object({
+      analysisCompleted: z.boolean(),
+      feedbackReceived: z.boolean(),
+      contradictions: z.boolean(),
+      experimentUpdates: z.boolean(),
+      resourceAlerts: z.boolean(),
+      productAnnouncements: z.boolean(),
+    }).strict(),
+  }).strict(),
+  appPreferences: z.object({
+    theme: z.enum(['light', 'system']),
+    defaultLandingPage: z.enum(['/dashboard', '/projects']),
+    compactDensity: z.boolean(),
+  }).strict(),
+}).strict();
+export const defaultUserPreferences = {
+  notificationPreferences: {
+    email: {
+      analysisCompleted: true,
+      feedbackReceived: true,
+      contradictions: true,
+      experimentUpdates: false,
+      resourceAlerts: false,
+      productAnnouncements: false,
+    },
+    inApp: {
+      analysisCompleted: true,
+      feedbackReceived: true,
+      contradictions: true,
+      experimentUpdates: true,
+      resourceAlerts: true,
+      productAnnouncements: true,
+    },
+  },
+  appPreferences: {
+    theme: 'light' as const,
+    defaultLandingPage: '/dashboard' as const,
+    compactDensity: false,
+  },
+};
 export type AnalysisOutput = z.infer<typeof analysisOutput>;
 export type FeedbackOutput = z.infer<typeof feedbackOutput>;
+export type NotificationType = z.infer<typeof notificationType>;
+export type UserPreferencesInput = z.infer<typeof userPreferencesInput>;

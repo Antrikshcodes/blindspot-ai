@@ -140,3 +140,41 @@ export const saves = platform.table('saved_resources', {
   resourceId: uuid('resource_id').notNull().references(() => resources.id, { onDelete: 'cascade' }),
   status: savedStatusEnum('status').notNull().default('CONSIDERING'), createdAt: created(), updatedAt: updated(),
 }, t => [uniqueIndex('saved_project_resource_unique').on(t.projectId, t.resourceId)]);
+
+export const notificationTypeEnum = platform.enum('notification_type', [
+  'ANALYSIS_COMPLETED',
+  'FEEDBACK_RECEIVED',
+  'CONTRADICTION_DETECTED',
+  'EXPERIMENT_UPDATE',
+  'RESOURCE_RECOMMENDATION',
+  'PROJECT_ACTIVITY',
+  'SYSTEM',
+]);
+
+export const notifications = platform.table('notifications', {
+  id: key(),
+  ownerId: text('owner_id').notNull(),
+  projectId: uuid('project_id').references(() => projects.id, { onDelete: 'cascade' }),
+  title: text('title').notNull(),
+  message: text('message').notNull(),
+  type: notificationTypeEnum('type').notNull().default('SYSTEM'),
+  read: boolean('read').notNull().default(false),
+  actionUrl: text('action_url'),
+  metadata: jsonb('metadata'),
+  createdAt: created(),
+}, t => [
+  index('notification_owner_created_idx').on(t.ownerId, t.createdAt),
+  index('notification_owner_read_idx').on(t.ownerId, t.read),
+]);
+
+export const userPreferences = platform.table('user_preferences', {
+  id: key(),
+  ownerId: text('owner_id').notNull(),
+  notificationPreferences: jsonb('notification_preferences').notNull(),
+  appPreferences: jsonb('app_preferences').notNull(),
+  createdAt: created(),
+  updatedAt: updated(),
+}, t => [
+  uniqueIndex('user_preferences_owner_idx').on(t.ownerId),
+]);
+
