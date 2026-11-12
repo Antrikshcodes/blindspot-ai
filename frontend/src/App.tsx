@@ -227,6 +227,34 @@ export const App: React.FC = () => {
           }
         />
 
+        {/* Protected Project Customer Discovery Interviews Route */}
+        <Route
+          path="/projects/:projectId/interviews"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <ProjectDetails defaultTab="interviews" />
+                </Suspense>
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Protected Project Experiments Route */}
+        <Route
+          path="/projects/:projectId/experiments"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <Suspense fallback={<RouteLoadingFallback />}>
+                  <ProjectDetails defaultTab="experiments" />
+                </Suspense>
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+
         {/* Protected Account Settings Route */}
         <Route
           path="/settings"
