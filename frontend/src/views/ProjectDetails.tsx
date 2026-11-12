@@ -38,6 +38,8 @@ import { AnalysisReportView } from '../components/analysis/AnalysisReportView';
 import { InteractiveRiskMatrix } from '../components/analysis/InteractiveRiskMatrix';
 import { AssumptionExplorer } from '../components/analysis/AssumptionExplorer';
 import { ResourceLibraryView } from '../components/resources/ResourceLibraryView';
+import { CustomerDiscoveryView } from '../components/discovery/CustomerDiscoveryView';
+import { ExperimentsView } from '../components/experiments/ExperimentsView';
 
 type ProjectTab = 'overview' | 'analysis' | 'assumptions' | 'interviews' | 'experiments' | 'resources';
 
@@ -203,9 +205,9 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ defaultTab = 'ov
       icon: HelpCircle,
       badge: assumptionsCount > 0 ? `${assumptionsCount}` : 'Phase 2',
     },
-    { id: 'interviews', label: 'Interviews', icon: Compass, badge: 'Phase 3' },
-    { id: 'experiments', label: 'Experiments', icon: FlaskConical, badge: 'Phase 3' },
-    { id: 'resources', label: 'Resources', icon: Boxes, badge: 'Phase 3' },
+    { id: 'interviews', label: 'Interviews', icon: Compass, badge: 'Live' },
+    { id: 'experiments', label: 'Experiments', icon: FlaskConical, badge: 'Live' },
+    { id: 'resources', label: 'Resources', icon: Boxes, badge: 'Live' },
   ];
 
   return (
@@ -563,43 +565,26 @@ export const ProjectDetails: React.FC<ProjectDetailsProps> = ({ defaultTab = 'ov
         </div>
       )}
 
-      {/* 5. RESOURCES TAB (Phase 03 Resource Intelligence) */}
-      {activeTab === 'resources' && project && (
-        <ResourceLibraryView projectId={project.id} />
+      {/* 4. INTERVIEWS TAB (Customer Discovery & Feedback Engine) */}
+      {activeTab === 'interviews' && project && (
+        <CustomerDiscoveryView projectId={project.id} />
       )}
 
-      {/* PHASE 03 PLACEHOLDER TABS (Interviews, Experiments) */}
-      {(activeTab === 'interviews' || activeTab === 'experiments') && (
-        <div className="p-8 sm:p-14 rounded-3xl bg-sand-light border border-dashed border-forest/20 text-center max-w-2xl mx-auto space-y-4">
-          <div className="w-14 h-14 rounded-2xl bg-forest/5 text-purple mx-auto flex items-center justify-center">
-            {activeTab === 'interviews' && <Compass className="w-7 h-7" />}
-            {activeTab === 'experiments' && <FlaskConical className="w-7 h-7" />}
-          </div>
+      {/* 5. EXPERIMENTS TAB (Falsification Tests & Outcomes) */}
+      {activeTab === 'experiments' && project && (
+        <ExperimentsView
+          projectId={project.id}
+          assumptions={activeAnalysis?.assumptions?.map((a) => ({
+            id: a.id,
+            assumption: a.title || a.description,
+            riskScore: a.riskScore,
+          }))}
+        />
+      )}
 
-          <div>
-            <span className="text-[10px] font-mono uppercase tracking-widest text-purple font-semibold">
-              Phase 03 Architecture
-            </span>
-            <h3 className="text-2xl font-serif font-bold tracking-tight text-forest mt-1">
-              {TABS.find((t) => t.id === activeTab)?.label}
-            </h3>
-            <p className="text-xs sm:text-sm text-forest/75 mt-2 max-w-md mx-auto leading-relaxed font-sans">
-              {activeTab === 'interviews' &&
-                'Non-leading customer interview question generator, note transcript mapping, and contradiction engine.'}
-              {activeTab === 'experiments' &&
-                'Next validation experiment recommendations and evidence pass/fail thresholds.'}
-            </p>
-          </div>
-
-          <div className="pt-2">
-            <button
-              onClick={() => setActiveTab('overview')}
-              className="px-5 py-2.5 rounded-full text-xs font-bold bg-forest text-sand hover:bg-forest-light transition-all cursor-pointer"
-            >
-              Return to Project Overview
-            </button>
-          </div>
-        </div>
+      {/* 6. RESOURCES TAB (Phase 03 Resource Intelligence) */}
+      {activeTab === 'resources' && project && (
+        <ResourceLibraryView projectId={project.id} />
       )}
 
       {/* Real AI Analysis Modal */}
