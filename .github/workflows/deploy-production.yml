@@ -46,7 +46,7 @@ jobs:
     name: Apply Safe Schema Migrations
     needs: validate
     runs-on: ubuntu-latest
-    if: github.event.inputs.skip_migrations != 'true'
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.skip_migrations != 'true'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -76,6 +76,7 @@ jobs:
     name: Deploy Backend API
     needs: migrate-database
     runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -99,6 +100,7 @@ jobs:
     name: Deploy Frontend SPA
     needs: validate
     runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -137,6 +139,7 @@ jobs:
     name: Verify Production Health Probe
     needs: [deploy-backend, deploy-frontend]
     runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
     steps:
       - name: Probe Health Endpoint
         env:
